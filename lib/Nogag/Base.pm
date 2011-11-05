@@ -7,6 +7,8 @@ use parent qw(Exporter::Lite);
 
 use Router::Simple;
 use Try::Tiny;
+use Path::Class;
+use DBI;
 
 use Plack::Session;
 
@@ -85,9 +87,22 @@ sub req { $_[0]->{req} }
 sub res { $_[0]->{res} }
 
 sub session {
-    $_[0]->{session} //= do {
-        $_[0]->{req}->env->{'psgix.session'} ? Plack::Session->new($_[0]->{req}->env) : ''
-    };
+	$_[0]->{session} //= do {
+		$_[0]->{req}->env->{'psgix.session'} ? Plack::Session->new($_[0]->{req}->env) : ''
+	};
+}
+
+sub dbh {
+	$_[0]->{dbh} //= do {
+		DBI->connect('dbi:SQLite:' . config->param('db'));
+	};
+}
+
+sub setup_schema {
+	my ($class) = @_;
+	my $schema = file('db/schema.sql')->slurp;
+	my $dbh = DBI->connect('dbi:SQLite:' . config->param('db'));
+	$dbh->do($_) for split /;/, $schema;
 }
 
 1;

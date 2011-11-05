@@ -8,4 +8,4 @@ CREATE TABLE entries (
 	`created_at` DATETIME NOT NULL,
 	`modified_at` DATETIME NOT NULL
 );
-CREATE INDEX index_sort_time ON entry (sort_time);
+CREATE INDEX index_sort_time ON entries (sort_time);

@@ -18,6 +18,10 @@ $MessagePack->canonical;
 
 use Nogag;
 
+if (not -e config->param('db')) {
+	Nogag->setup_schema;
+}
+
 builder {
 	enable "Plack::Middleware::Static",
 		path => qr{^/(images|js|css)/},
