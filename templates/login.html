@@ -1,0 +1,13 @@
+[%- WRAPPER "_wrapper.html" WITH title = "" %]
+
+<form action="" method="post">
+	<p>
+		<label>
+			Password:
+			<input type="password" name="password"/>
+		</label>
+	<input type="hidden" name="sk" value="[% r.sk %]"/>
+	</p>
+</form>
+
+[%- END -%]

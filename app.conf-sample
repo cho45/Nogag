@@ -1,4 +1,4 @@
 # vim:set ft=perl
 +{
-	var => 'bar',
+	password => 'xxxxxx',
 };

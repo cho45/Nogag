@@ -1,3 +1,9 @@
 [%- WRAPPER "_wrapper.html" WITH title = "" id="top" %]
+index
+
+[% IF r.has_auth %]
+[% ELSE %]
+<a href="/login">login</a>
+[% END %]
 
 [%- END -%]

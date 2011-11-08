@@ -9,7 +9,7 @@ use constant root => dir(".")->absolute;
 
 common +{
 	appname => 'nogag',
-	load("app.conf-sample"),
+	load("app.conf"),
 };
 
 config development => {

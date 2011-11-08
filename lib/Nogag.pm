@@ -9,7 +9,28 @@ use parent qw(Nogag::Base);
 our @EXPORT = qw(config throw);
 
 route "/" => sub {
-	$_->res->content('Hello, World!');
+	my ($r) = @_;
+	$r->html('index.html');
+};
+
+route "/login" => sub {
+	my ($r) = @_;
+
+	if ($r->req->method eq 'POST') {
+		if ($r->req->param('password') eq config->param('password')) {
+			$r->session->set('auth' => 1);
+			throw code => 302, location => '/';
+		} else {
+			$r->stash('error' => 'Invalid Password');
+		}
+	}
+
+	$r->html('login.html');
+};
+
+route "/edit" => sub {
+	my ($r) = @_;
+	$r->html('edit.html');
 };
 
 1;

@@ -9,6 +9,7 @@ use Router::Simple;
 use Try::Tiny;
 use Path::Class;
 use DBI;
+use Digest::HMAC_SHA1 qw(hmac_sha1_hex);
 
 use Plack::Session;
 
@@ -16,13 +17,14 @@ use Nogag::Config;
 use Nogag::Request;
 use Nogag::Response;
 use Nogag::Exception;
+use Nogag::Views;
 
 our @EXPORT = qw(config route throw);
 
 our $router = Router::Simple->new;
 
 sub throw (%) { Nogag::Exception->throw(@_) }
-sub route ($$) { $router->connect(shift, { action => shift }) }
+sub route ($$) { $router->connect(shift, { action => shift }, { method => }) }
 
 sub new {
 	my ($class, $env) = @_;
@@ -37,6 +39,13 @@ sub new {
 
 sub before_dispatch {
 	my ($r) = @_;
+	if ($r->req->method eq 'POST') {
+		my $sk = $r->req->param('sk') or throw code => 400, message => 'Require session key';
+		if ($r->sk ne $sk) {
+			throw code => 400, message => 'Invalid session key';
+		}
+	}
+
 	$r->res->header('X-Frame-Options'  => 'DENY');
 	$r->res->header('X-XSS-Protection' => '1');
 }
@@ -103,6 +112,34 @@ sub setup_schema {
 	my $schema = file('db/schema.sql')->slurp;
 	my $dbh = DBI->connect('dbi:SQLite:' . config->param('db'));
 	$dbh->do($_) for split /;/, $schema;
+}
+
+sub sk {
+	my ($r) = @_;
+	hmac_sha1_hex($r->session->id, config->param('password'));
+}
+
+sub stash {
+	my ($r, $key, $val) = @_;
+	$r->{stash} ||= {};
+
+	if (defined $val) {
+		$r->{stash}->{$key} = $val;
+	} elsif (defined $key) {
+		$r->{stash}->{$key};
+	} else {
+		$r->{stash};
+	}
+}
+
+sub has_auth {
+	my ($r) = @_;
+	$r->session->get('auth') 
+}
+
+sub require_auth {
+	my ($r) = @_;
+	$r->has_auth or throw code => 403, message => 'Require authentication';
 }
 
 1;
