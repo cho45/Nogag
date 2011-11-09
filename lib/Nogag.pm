@@ -13,6 +13,18 @@ our @EXPORT = qw(config throw);
 route "/" => sub {
 	my ($r) = @_;
 
+	my $entries = $r->dbh->select(q{
+		SELECT * FROM entries
+		ORDER BY sort_time DESC
+		LIMIT 7 OFFSET 0
+	}, {
+	});
+
+	my $count = $r->dbh->value('SELECT count(*) FROM entries');
+
+	$r->stash(entries => $entries);
+	$r->stash(count => $count);
+
 	$r->html('index.html');
 };
 

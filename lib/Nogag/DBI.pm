@@ -13,16 +13,19 @@ use SQL::NamedPlaceholder qw(bind_named);
 
 sub select {
 	my ($self, $sql, $bind) = @_;
-	($sql, $bind) = bind_named($sql, $bind);
-	my $sth = $self->prepare_cached($sql);
-	$sth->bind_columns(@$bind);
-	$sth->fetchall_arrayref({ Slice => {} });
+	($sql, $bind) = bind_named($sql, $bind || {});
+	$self->selectall_arrayref($sql, { Slice => {} }, @$bind);
 }
 
+sub value {
+	my ($self, $sql, $bind) = @_;
+	my $first = $self->select($sql, $bind)->[0];
+	(values %$first)[0];
+}
 
 sub update {
 	my ($self, $sql, $bind) = @_;
-	($sql, $bind) = bind_named($sql, $bind);
+	($sql, $bind) = bind_named($sql, $bind || {});
 	$self->prepare_cached($sql)->execute(@$bind);
 }
 

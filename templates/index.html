@@ -1,5 +1,25 @@
 [%- WRAPPER "_wrapper.html" WITH title = "" id="top" %]
-index
+
+<div class="hfeed">
+[% FOR entry IN entries %]
+<article class="hentry">
+	<h1>[% entry.title %]</h1>
+
+	<div class="content">
+		[% entry.formatted_body | raw %]
+	</div>
+
+	<footer>
+		<time>[% entry.created_at %]</time>
+		[% IF entry.created_at != entry.modified_at %]
+		<time>[% entry.modified_at %]</time>
+		[% END %]
+	</footer>
+</article>
+[% END %]
+</div>
+
+[% count %] entries;
 
 [% IF r.has_auth %]
 [% ELSE %]

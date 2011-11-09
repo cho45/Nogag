@@ -6,6 +6,7 @@ use warnings;
 use lib lib => glob 'modules/*/lib';
 
 use Nogag;
+use Nogag::Time;
 
 my $r = Nogag->new({});
 
