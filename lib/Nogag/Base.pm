@@ -10,6 +10,7 @@ use Try::Tiny;
 use Path::Class;
 use DBI;
 use Digest::HMAC_SHA1 qw(hmac_sha1_hex);
+use URI::Escape;
 
 use Plack::Session;
 
@@ -139,7 +140,7 @@ sub has_auth {
 
 sub require_auth {
 	my ($r) = @_;
-	$r->has_auth or throw code => 403, message => 'Require authentication';
+	$r->has_auth or throw code => 302, message => 'Require authentication', location => '/login?redirect=' . uri_escape($r->req->uri);
 }
 
 1;

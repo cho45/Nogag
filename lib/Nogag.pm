@@ -30,7 +30,11 @@ route "/login" => sub {
 
 route "/edit" => sub {
 	my ($r) = @_;
-	$r->html('edit.html');
+	return $r->json({ error => 'require authentication' }) unless $r->has_auth;
+
+	$r->json(+{
+		foo => 'bar'
+	});
 };
 
 1;
