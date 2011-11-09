@@ -10,7 +10,7 @@ use Plack::Runner;
 my $runner = Plack::Runner->new;
 $runner->parse_options(
 	'--server', 'HTTP::Server::Simple',
-	'--port', 3000,
+	'--port', 5000,
 	'--Reload', join(',', glob('modules/*/lib'), 'lib'),
 	'--loader', 'Shotgun',
 	'--app', 'script/app.psgi',

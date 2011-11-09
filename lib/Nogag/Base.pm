@@ -8,13 +8,13 @@ use parent qw(Exporter::Lite);
 use Router::Simple;
 use Try::Tiny;
 use Path::Class;
-use DBI;
 use Digest::HMAC_SHA1 qw(hmac_sha1_hex);
 use URI::Escape;
 
 use Plack::Session;
 
 use Nogag::Config;
+use Nogag::DBI;
 use Nogag::Request;
 use Nogag::Response;
 use Nogag::Exception;
@@ -25,7 +25,7 @@ our @EXPORT = qw(config route throw);
 our $router = Router::Simple->new;
 
 sub throw (%) { Nogag::Exception->throw(@_) }
-sub route ($$) { $router->connect(shift, { action => shift }, { method => }) }
+sub route ($$) { $router->connect(shift, { action => shift }) }
 
 sub new {
 	my ($class, $env) = @_;
@@ -57,7 +57,7 @@ sub after_dispatch {
 
 sub run {
 	my ($r) = @_;
-	try {
+	eval {
 		my ($dest, $route) = $router->routematch($r->req->env);
 		if ($dest) {
 			my $action = delete $dest->{action};
@@ -76,19 +76,20 @@ sub run {
 		} else {
 			throw code => 404, message => 'Action not Found';
 		}
-	} catch {
-		if (try { $_->isa('Nogag::Exception') }) {
-			$r->res->code($_->{code});
-			$r->res->header('X-Message' => $_->{message}) if $_->{message};
-			$r->res->header('Location' => $_->{location}) if $_->{location};
-			$r->res->content_type('text/plain');
-			$r->res->content($_->{message});
-		} else {
-			die $_;
-		}
-	} finally {
-		$r->after_dispatch;
 	};
+	if (my $e = $@) {
+		if (try { $e->isa('Nogag::Exception') }) {
+			$r->res->code($e->{code});
+			$r->res->header('X-Message' => $e->{message}) if $e->{message};
+			$r->res->header('Location' => $e->{location}) if $e->{location};
+			$r->res->content_type('text/plain');
+			$r->res->content($e->{message});
+		} else {
+			die $e;
+		}
+	}
+
+	$r->after_dispatch;
 
 	$r;
 }
@@ -104,7 +105,10 @@ sub session {
 
 sub dbh {
 	$_[0]->{dbh} //= do {
-		DBI->connect('dbi:SQLite:' . config->param('db'));
+		DBI->connect('dbi:SQLite:' . config->param('db'), "", "", {
+			RaiseError => 1,
+			sqlite_see_if_its_a_number => 1
+		});
 	};
 }
 

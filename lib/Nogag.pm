@@ -4,12 +4,15 @@ use strict;
 use warnings;
 
 use Nogag::Base;
+use Nogag::Time;
+
 use parent qw(Nogag::Base);
 
 our @EXPORT = qw(config throw);
 
 route "/" => sub {
 	my ($r) = @_;
+
 	$r->html('index.html');
 };
 
