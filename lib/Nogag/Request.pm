@@ -27,5 +27,14 @@ sub path_parameters {
     $self->{_path_parameters} ||= Hash::MultiValue->new;
 }
 
+sub number_param {
+    my ($self, $key) = @_;
+    my $val = $self->param($key) // "";
+    if ($val =~ /^[\d.]+$/) {
+        $val + 0;
+    } else {
+        undef;
+    }
+}
 
 1;

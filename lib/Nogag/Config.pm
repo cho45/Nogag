@@ -9,6 +9,7 @@ use constant root => dir(".")->absolute;
 
 common +{
 	appname => 'nogag',
+	entry_per_page => 7,
 	load("app.conf"),
 };
 

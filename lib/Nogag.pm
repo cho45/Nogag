@@ -13,17 +13,22 @@ our @EXPORT = qw(config throw);
 route "/" => sub {
 	my ($r) = @_;
 
+	my $page = $r->req->number_param('page') || 1;
+
 	my $entries = $r->dbh->select(q{
 		SELECT * FROM entries
 		ORDER BY sort_time DESC
-		LIMIT 7 OFFSET 0
+		LIMIT :limit OFFSET :offset
 	}, {
+		limit  => config->param('entry_per_page'),
+		offset => $page * config->param('entry_per_page'),
 	});
 
 	my $count = $r->dbh->value('SELECT count(*) FROM entries');
 
 	$r->stash(entries => $entries);
 	$r->stash(count => $count);
+	$r->stash(page => $page);
 
 	$r->html('index.html');
 };

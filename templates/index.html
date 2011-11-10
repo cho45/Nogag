@@ -3,7 +3,7 @@
 <div class="hfeed">
 [% FOR entry IN entries %]
 <article class="hentry">
-	<h1>[% entry.title %]</h1>
+	<h1><a href="/[% entry.path %]" class="bookmark" rel="bookmark">[% entry.title %]</a></h1>
 
 	<div class="content">
 		[% entry.formatted_body | raw %]
@@ -20,6 +20,9 @@
 </div>
 
 [% count %] entries;
+<div class="pager">
+	<a href="?page=[% page + 1 %]">Next</a>
+</div>
 
 [% IF r.has_auth %]
 [% ELSE %]
