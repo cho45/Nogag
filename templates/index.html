@@ -10,9 +10,9 @@
 	</div>
 
 	<footer>
-		<time>[% entry.created_at %]</time>
+		<time data-epoch="[% entry.created_at.epoch %]" datetime="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z" pubdate>[% entry.created_at.offset(9) %]</time>
 		[% IF entry.created_at != entry.modified_at %]
-		<time>[% entry.modified_at %]</time>
+		<time datetime="[% entry.modified_at.strftime('%Y-%m-%d') _ 'T' _ entry.modified_at.strftime('%H:%M:%S') %]Z">[% entry.modified_at.offset(9) %]</time>
 		[% END %]
 	</footer>
 </article>

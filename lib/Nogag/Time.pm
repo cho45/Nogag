@@ -14,6 +14,16 @@ sub cdate {
 	$self->strftime('%Y-%m-%d %H:%M:%S');
 }
 
+sub from_db {
+	my ($class, $db) = @_;
+	$class->strptime($db, '%Y-%m-%d %H:%M:%S');
+}
+
+sub offset {
+	my ($self, $offset) = @_;
+	$self + (60 * 60 * $offset)
+}
+
 *str_compare = \&Time::Piece::str_compare;
 
 1;
