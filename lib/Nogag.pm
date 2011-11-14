@@ -39,6 +39,26 @@ route "/" => sub {
 	$r->html('index.html');
 };
 
+route "/{path:.+}" => sub {
+	my ($r) = @_;
+
+	my $entries = $r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE path = :path
+	}, {
+		path => scalar $r->req->param('path'),
+	});
+
+	for (@$entries) {
+		$_->{created_at} = Nogag::Time->from_db($_->{created_at});
+		$_->{modified_at} = Nogag::Time->from_db($_->{modified_at});
+	}
+
+	$r->stash(entries => $entries);
+
+	$r->html('index.html');
+};
+
 route "/login" => sub {
 	my ($r) = @_;
 
