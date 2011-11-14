@@ -5,6 +5,7 @@ use warnings;
 
 use Nogag::Base;
 use Nogag::Time;
+use Encode;
 
 use parent qw(Nogag::Base);
 
@@ -21,7 +22,7 @@ route "/" => sub {
 		LIMIT :limit OFFSET :offset
 	}, {
 		limit  => config->param('entry_per_page'),
-		offset => $page * config->param('entry_per_page'),
+		offset => ($page - 1) * config->param('entry_per_page'),
 	});
 
 	my $count = $r->dbh->value('SELECT count(*) FROM entries');

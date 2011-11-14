@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-
+$ENV{PLACK_ENV} = 'development';
 use v5.14;
 use utf8;
 use strict;
@@ -8,8 +8,17 @@ use lib lib => glob 'modules/*/lib';
 
 use Path::Class;
 use XML::LibXML;
+use Text::Xatena;
 
-my $xml = file(shift @ARGV);
+use Nogag;
+use Nogag::Time;
+
+my $xml = file(shift @ARGV || "../cho45.xml");
+
+my $thx = Text::Xatena->new;
+
+my $r = Nogag->new({});
+$r->dbh->begin_work;
 
 my $doc = XML::LibXML->load_xml( string => scalar $xml->slurp );
 for my $day (@{ $doc->findnodes('diary/day') }) {
@@ -41,7 +50,50 @@ for my $day (@{ $doc->findnodes('diary/day') }) {
 		}
 	}
 
-	use Data::Dumper;
-	warn Dumper $sections ;
+
+	for my $section (@$sections) {
+		warn $section->{body};
+
+		my $time = Nogag::Time->new($section->{epoch});
+		my $sort_time = Nogag::Time->strptime($section->{date}, '%Y-%m-%d') - $section->{number};
+		my $path = $sort_time->strftime("%Y/%m/%d") . "/" . $section->{number};
+
+		$r->dbh->update(q{
+			INSERT INTO entries
+				(
+					`title`,
+					`body`,
+					`formatted_body`,
+					`path`,
+					`format`,
+					`sort_time`,
+					`created_at`,
+					`modified_at`
+				)
+				VALUES
+				(
+					:title,
+					:body,
+					:formatted_body,
+					:path,
+					"hatena",
+					:sort_time,
+					:created_at,
+					:modified_at
+				)
+		}, {
+			title          => $section->{title} || '■',
+			body           => $section->{body},
+			formatted_body => $thx->format($section->{body}),
+			path           => $path,
+			sort_time      => $sort_time,
+			created_at     => $time,
+			modified_at    => $time,
+		});
+
+	}
+
 }
+
+$r->dbh->commit;
 

@@ -4,6 +4,7 @@ CREATE TABLE entries (
 	`body` TEXT NOT NULL,
 	`formatted_body` TEXT NOT NULL,
 	`path` TEXT NOT NULL,
+	`format` TEXT NOT NULL,
 	`sort_time` DATETIME NOT NULL,
 	`created_at` DATETIME NOT NULL,
 	`modified_at` DATETIME NOT NULL

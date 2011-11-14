@@ -107,7 +107,8 @@ sub dbh {
 	$_[0]->{dbh} //= do {
 		DBI->connect('dbi:SQLite:' . config->param('db'), "", "", {
 			RaiseError => 1,
-			sqlite_see_if_its_a_number => 1
+			sqlite_see_if_its_a_number => 1,
+			sqlite_unicode => 1,
 		});
 	};
 }
