@@ -56,7 +56,7 @@ for my $day (@{ $doc->findnodes('diary/day') }) {
 		warn Dumper $section ;
 
 		my $time = Nogag::Time->gmtime($section->{epoch} + 0);
-		my $sort_time = Nogag::Time->strptime($section->{date}, '%Y-%m-%d') - $section->{number};
+		my $sort_time = Nogag::Time->strptime($section->{date}, '%Y-%m-%d') + (100 - $section->{number});
 		my $path = $sort_time->strftime("%Y/%m/%d") . "/" . $section->{number};
 
 		$r->dbh->update(q{
