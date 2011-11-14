@@ -8,14 +8,12 @@ use lib lib => glob 'modules/*/lib';
 
 use Path::Class;
 use XML::LibXML;
-use Text::Xatena;
 
 use Nogag;
 use Nogag::Time;
+use Nogag::Formatter::Hatena;
 
 my $xml = file(shift @ARGV || "../cho45.xml");
-
-my $thx = Text::Xatena->new;
 
 my $r = Nogag->new({});
 $r->dbh->begin_work;
@@ -77,7 +75,7 @@ for my $day (@{ $doc->findnodes('diary/day') }) {
 					:body,
 					:formatted_body,
 					:path,
-					"hatena",
+					"Hatena",
 					:sort_time,
 					:created_at,
 					:modified_at
@@ -85,7 +83,7 @@ for my $day (@{ $doc->findnodes('diary/day') }) {
 		}, {
 			title          => $section->{title} || '■',
 			body           => $section->{body},
-			formatted_body => $thx->format($section->{body}),
+			formatted_body => Nogag::Formatter::Hatena->format($section->{body}),
 			path           => $path,
 			sort_time      => $sort_time,
 			created_at     => $time,
