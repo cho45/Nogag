@@ -22,7 +22,7 @@ route "/" => sub {
 
 	my $entries = $r->dbh->select(q{
 		SELECT * FROM entries
-		ORDER BY sort_time DESC
+		ORDER BY `date` DESC, `path` ASC
 		LIMIT :limit OFFSET :offset
 	}, {
 		limit  => config->param('entry_per_page'),
@@ -60,7 +60,7 @@ my $archive = sub {
 
 	my $entries = $r->dbh->select(q{
 		SELECT * FROM entries
-		WHERE :start <= sort_time AND sort_time <= :end
+		WHERE :start <= date AND date <= :end
 		ORDER BY path
 	}, {
 		start => $start,
@@ -77,6 +77,41 @@ my $archive = sub {
 route '/{year:[0-9]{4}}/' => $archive;
 route '/{year:[0-9]{4}}/{month:[0-9]{2}}/' => $archive;
 route '/{year:[0-9]{4}}/{month:[0-9]{2}}/{day:[0-9]{2}}/' => $archive;
+
+route '/archive' => sub {
+	my ($r) = @_;
+
+	my $dates = $r->dbh->select(q{
+		SELECT
+			strftime('%Y', date) as year,
+			strftime('%Y-%m', date) as date,
+			count(*) as count
+		FROM entries
+		GROUP BY strftime('%Y-%m', date)
+		ORDER BY date
+	});
+
+	my %dates = map { $_->{date} => $_->{count} } @$dates;
+
+	my $years = [];
+	for my $year ($dates->[0]->{year} .. $dates->[-1]->{year}) {
+		my $months = [];
+		for my $month (1..12) {
+			push @$months, +{
+				link  => sprintf("/%04d/%02d/", $year, $month),
+				month => $month,
+				count => $dates{sprintf("%04d-%02d", $year, $month)} || 0,
+			};
+		}
+		push @$years, +{
+			year   => $year,
+			months => $months,
+		};
+	}
+
+	$r->stash(archive => $years);
+	$r->html('index.html');
+};
 
 route '/{path:.+}' => sub {
 	my ($r) = @_;

@@ -16,7 +16,7 @@ sub cdate {
 
 sub from_db {
 	my ($class, $db) = @_;
-	$class->strptime($db, '%Y-%m-%d %H:%M:%S');
+	$class->strptime($db, '%Y-%m-%d %H:%M:%S') || $class->strptime($db, '%Y-%m-%d');
 }
 
 sub offset {

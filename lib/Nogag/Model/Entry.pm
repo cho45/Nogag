@@ -17,8 +17,8 @@ sub formatted_body { $_[0]->{formatted_body} }
 sub path           { $_[0]->{path} }
 sub format         { $_[0]->{format} }
 
-sub sort_time {
-	Nogag::Time->from_db($_[0]->{sort_time});
+sub date {
+	Nogag::Time->from_db($_[0]->{date});
 }
 
 sub created_at {

@@ -224,6 +224,59 @@ body * {
 	background: none;
 }
 
+#archive {
+	padding: 2em 0;
+}
+
+ul.flatarchives {
+	list-style: none;
+	margin: 0 2em 0 0;
+}
+
+ul.flatarchives .year {
+	font-weight: bold;
+}
+
+ul.flatarchives li {
+	clear: both;
+	padding: 0.5em 0;
+}
+
+ul.flatarchives li .months {
+	display: block;
+}
+
+ul.flatarchives li .months .month {
+	display: block;
+	float: left;
+	width: 8.33333333%;
+	text-align: center;
+	background: rgba(0, 0, 0, 0.5);
+	padding: 0.5em 0;
+}
+
+ul.flatarchives li .months span.month {
+	color: #999;
+	background: #efefef;
+}
+
+ul.flatarchives li .months a.month:link {
+	text-decoration: none;
+}
+
+ul.flatarchives li .months a.month:visited {
+	text-decoration: none;
+}
+
+ul.flatarchives li .months a.month:hover {
+	color: #fff;
+}
+
+ul.flatarchives li .months .count{
+	color: #666;
+	font-size: 70%;
+}
+
 @media only screen and (max-width : 980px) {
 	body {
 		width: 100%;

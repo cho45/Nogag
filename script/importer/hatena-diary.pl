@@ -59,8 +59,11 @@ for my $day (@{ $doc->findnodes('diary/day') }) {
 		warn Dumper $section ;
 
 		my $time = Nogag::Time->gmtime($section->{epoch} + 0);
-		my $sort_time = Nogag::Time->strptime($section->{date}, '%Y-%m-%d') + (100 - $section->{number});
-		my $path = $sort_time->strftime("%Y/%m/%d") . "/" . $section->{number};
+		my $date = Nogag::Time->strptime($section->{date}, '%Y-%m-%d');
+
+		my $count = $r->dbh->select('SELECT count(*) FROM entries WHERE `date` = ?', { date => $section->{date} })->[0]->{'count(*)'};
+
+		my $path = $date->strftime("%Y/%m/%d") . "/" . ($section->{number} + $count);
 
 		$r->dbh->update(q{
 			INSERT INTO entries
@@ -70,7 +73,7 @@ for my $day (@{ $doc->findnodes('diary/day') }) {
 					`formatted_body`,
 					`path`,
 					`format`,
-					`sort_time`,
+					`date`,
 					`created_at`,
 					`modified_at`
 				)
@@ -81,7 +84,7 @@ for my $day (@{ $doc->findnodes('diary/day') }) {
 					:formatted_body,
 					:path,
 					"Hatena",
-					:sort_time,
+					:date,
 					:created_at,
 					:modified_at
 				)
@@ -90,7 +93,7 @@ for my $day (@{ $doc->findnodes('diary/day') }) {
 			body           => $section->{body},
 			formatted_body => Nogag::Formatter::Hatena->format($section->{body}),
 			path           => $path,
-			sort_time      => $sort_time,
+			date           => $date->strftime('%Y-%m-%d'),
 			created_at     => $time,
 			modified_at    => $time,
 		});

@@ -21,15 +21,18 @@
 		[% END %]
 
 		<div id="content">
+
+			[% IF entries %]
+
 			<div class="hfeed">
 				[% date = '' %]
 				[% FOR entry IN entries %]
-				[% d = entry.sort_time.strftime("%Y-%m-%d") %]
+				[% d = entry.date.strftime("%Y-%m-%d") %]
 				[% is_first = (date != d) %]
 				[% date = d %]
 
 				[% IF is_first %]
-				<div class="date"><a href="[% entry.sort_time.strftime('/%Y/%m/%d/') %]">[% date %]</a></div>
+				<div class="date"><a href="[% entry.date.strftime('/%Y/%m/%d/') %]">[% date %]</a></div>
 				[% END %]
 
 				<article class="hentry [% entry.tags.join(' ') %] [% IF is_first %]first[% END %]" id="post-[% entry.created_at.epoch %]">
@@ -58,6 +61,30 @@
 			<div class="pager">
 				<a href="?page=[% page + 1 %]" rel="next">Next</a>
 			</div>
+
+			[% END %]
+
+			[% IF archive %]
+			<div id="archive">
+				<ul class="flatarchives">
+				[% FOR year IN archive %]
+				<li>
+					<span class="year">[% year.year %]</span>
+					<span class="months">
+						[% FOR month IN year.months %]
+						[% IF month.count %]
+						<a class="month" href="[% month.link %]" title="[% month.count %]">[% month.month %]</a>
+						[% ELSE %]
+						<a class="month">[% month.month %]</a>
+						[% END %]
+						[% END %]
+					</span>
+				</li>
+				[% END %]
+				</ul>
+				<hr />
+			</div>
+			[% END %]
 		</div>
 
 		<footer id="global-footer">

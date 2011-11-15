@@ -5,11 +5,12 @@ CREATE TABLE entries (
 	`formatted_body` TEXT NOT NULL,
 	`path` TEXT NOT NULL,
 	`format` TEXT NOT NULL,
-	`sort_time` DATETIME NOT NULL,
+	`date` DATE NOT NULL,
 	`created_at` DATETIME NOT NULL,
 	`modified_at` DATETIME NOT NULL
 );
-CREATE INDEX index_sort_time ON entries (sort_time);
+CREATE INDEX index_date ON entries (`date`, `path`);
+CREATE INDEX index_path ON entries (`path`);
 
 CREATE TABLE options (
 	`id` INTEGER PRIMARY KEY,
