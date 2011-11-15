@@ -63,8 +63,8 @@ my $archive = sub {
 		WHERE :start <= date AND date <= :end
 		ORDER BY path
 	}, {
-		start => $start,
-		end   => $end,
+		start => $start->strftime("%Y-%m-%d"),
+		end   => $end->strftime("%Y-%m-%d"),
 	});
 
 	Nogag::Model::Entry->bless($_) for @$entries;
