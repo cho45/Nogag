@@ -13,10 +13,10 @@ $r->dbh->begin_work;
 
 my $rows = $r->dbh->select('SELECT * FROM entries');
 for my $row (@$rows) {
-	warn $row->{id};
-
 	my $formatter = "Nogag::Formatter::" . $row->{format};
 	$formatter->use;
+
+	warn $row->{id};
 
 	my $formatted_body = $formatter->format($row->{body});
 

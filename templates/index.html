@@ -1,32 +1,82 @@
-[%- WRAPPER "_wrapper.html" WITH title = "" id="top" %]
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>[% title ? title _ " - " : "" %]餡の雲</title>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+		<link rel="stylesheet" type="text/css" href="/css/style.css" media="screen,tv"/>
+		<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"/>
 
-<div class="hfeed">
-[% FOR entry IN entries %]
-<article class="hentry [% entry.tags.join(' ') %]">
-	<h1><a href="/[% entry.path %]" class="bookmark" rel="bookmark">[% entry.title %]</a></h1>
+		<!--[if lt IE 9]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+	</head>
+	<body id="[% id %]">
+		<header id="global-header">
+			<h1 id="header"><a href="/">餡の雲</a></h1>
+		</header>
 
-	<div class="content">
-		[% entry.formatted_body | raw %]
-	</div>
-
-	<footer>
-		<time data-epoch="[% entry.created_at.epoch %]" datetime="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z" pubdate>[% entry.created_at.offset(9) %]</time>
-		[% IF entry.created_at != entry.modified_at %]
-		<time datetime="[% entry.modified_at.strftime('%Y-%m-%d') _ 'T' _ entry.modified_at.strftime('%H:%M:%S') %]Z">[% entry.modified_at.offset(9) %]</time>
+		[% IF error %]
+		<p class="error">[% error %]</p>
 		[% END %]
-	</footer>
-</article>
-[% END %]
-</div>
 
-[% count %] entries;
-<div class="pager">
-	<a href="?page=[% page + 1 %]">Next</a>
-</div>
+		<div id="content">
+			<div class="hfeed">
+				[% date = '' %]
+				[% FOR entry IN entries %]
+				[% d = entry.sort_time.strftime("%Y-%m-%d") %]
+				[% is_first = (date != d) %]
+				[% date = d %]
 
-[% IF r.has_auth %]
-[% ELSE %]
-<a href="/login">login</a>
-[% END %]
+				[% IF is_first %]
+				<div class="date"><a href="[% entry.sort_time.strftime('/%Y/%m/%d/') %]">[% date %]</a></div>
+				[% END %]
 
-[%- END -%]
+				<article class="hentry [% entry.tags.join(' ') %] [% IF is_first %]first[% END %]" id="post-[% entry.created_at.epoch %]">
+					<header>
+						<h1><a href="/[% entry.path %]" class="bookmark" rel="bookmark">[% entry.title || '-' %]</a></h1>
+						<span class="metadata">
+							<!--
+							[% FOR tag IN entry.tags %]
+							<a href="/?search=[[% tag %]]">[% tag %]</a>
+							[% END %]
+							-->
+							<time data-epoch="[% entry.created_at.epoch %]" datetime="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z" pubdate>[% entry.created_at.offset(9) %]</time>
+							[% IF entry.created_at != entry.modified_at %]
+							<time datetime="[% entry.modified_at.strftime('%Y-%m-%d') _ 'T' _ entry.modified_at.strftime('%H:%M:%S') %]Z">[% entry.modified_at.offset(9) %]</time>
+							[% END %]
+						</span>
+					</header>
+
+					<div class="content">
+						[% entry.formatted_body | raw %]
+					</div>
+				</article>
+				[% END %]
+			</div>
+
+			<div class="pager">
+				<a href="?page=[% page + 1 %]" rel="next">Next</a>
+			</div>
+		</div>
+
+		<footer id="global-footer">
+			<p>
+				[% count %] entries.
+				[% IF r.has_auth %]
+				<a href="">New Entry</a>
+				[% ELSE %]
+				<a href="/login">login</a>
+				[% END %]
+			</p>
+			<p>
+				<a href="mailto:cho45@lowreal.net">cho45@lowreal.net</a>
+			</p>
+		</footer>
+
+		<script src="/js/daterelative.js"></script>
+		<script type="text/javascript">
+			DateRelative.updateAll();
+		</script>
+	</body>
+</html>

@@ -10,3 +10,10 @@ CREATE TABLE entries (
 	`modified_at` DATETIME NOT NULL
 );
 CREATE INDEX index_sort_time ON entries (sort_time);
+
+CREATE TABLE options (
+	`id` INTEGER PRIMARY KEY,
+	`key` TEXT,
+	`value` BLOB
+);
+CREATE INDEX index_key ON options (`key`);

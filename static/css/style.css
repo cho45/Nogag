@@ -1,0 +1,288 @@
+
+/**
+ * 960px solid layout
+ */
+
+a:link {
+	color: #ff8108;
+}
+
+a:visited {
+	color: #ff8108;
+}
+
+a:hover {
+	text-decoration: none;
+}
+
+hr {
+	clear: both;
+	border: none;
+	background: transparent;
+	height: 1px;
+}
+
+img {
+	border: none;
+}
+
+input ,
+textarea {
+	background: #333;
+	color: #fff;
+	border: 1px solid #2f3839;
+	padding: 2px;
+}
+
+a.keyword {
+	color: inherit;
+	text-decoration: none;
+}
+
+ins {
+	display: block;
+	text-decoration: none;
+	background: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20101128/20101128232735.png') no-repeat 0 0;
+	padding: 10px 0 0 1em;
+	margin: 1em 0;
+}
+
+blockquote {
+	background: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20101128/20101128232736.png') no-repeat 0 0;
+	padding: 10px 0 0 1em;
+	margin: 1em 0;
+}
+
+html {
+	background: #111;
+	color: #efefef;
+	margin: 0;
+	padding: 0;
+	line-height: 1.66;
+}
+
+body {
+	text-align: center;
+	width: 960px;
+	margin: 0 auto;
+	padding: 20px 0 0;
+	background: #1a1a1a;
+}
+
+body * {
+	text-align: left;
+}
+
+#global-header {
+	display: block;
+	position: relative;
+	width: 716px;
+	height: 100px;
+	margin: 0 auto -20px;
+	padding: 12px 20px 0 244px;
+	background: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20101128/20101128051218.png?1290888746') no-repeat 30px 16px transparent;
+	_width: 960px;
+	_margin: 0 auto 0;
+}
+
+#global-header h1 a {
+	display: block;
+	position: absolute;
+	top: 15px;
+	left: 32px;
+	width: 187px;
+	height: 68px;
+	text-indent: -1000px;
+}
+
+#global-header h1 a:link ,
+#global-header h1 a:visited ,
+#global-header h1 a:hover {
+	text-decoration: none;
+	color: #fff;
+}
+
+#content {
+	width: 960px;
+}
+
+.pager {
+	font-size: 11px;
+	text-align: right;
+	margin: 0 30px 20px;
+}
+
+.pager a:link ,
+.pager a:visited ,
+.pager a:hover {
+	text-decoration: none;
+	color: #fff;
+}
+
+.hfeed {
+	margin: 30px 0;
+	padding: 0px 30px;
+	_padding: 30px 30px;
+}
+
+
+.hfeed article {
+	background: #111;
+	padding: 5px 30px;
+	margin: 0 0 10px 0;
+}
+
+.hfeed .date {
+	display: block;
+	background: #2F3839;
+	margin: 20px 0;
+	padding: 3px 30px;
+	font-size: 100%;
+}
+
+.hfeed .date a {
+	color: #fff;
+	text-decoration: none;
+}
+
+.hfeed article header h1 {
+	text-align: left;
+	padding: 3px 0;
+	margin: 0;
+	font-size: 100%;
+}
+
+.hfeed article header h1 a {
+	text-decoration: none;
+}
+
+.hfeed article header .metadata {
+	text-align: left;
+	padding: 3px 0;
+	margin: 0;
+	font-size: 80%;
+	color: #999;
+}
+
+.hfeed article a.hatena-fotolife ,
+.hfeed article p.photo {
+	display: block;
+	margin: 0 -30px;;
+	border: none;
+	text-align: center;
+}
+
+.hfeed article a.hatena-fotolife img {
+	display: block;
+	max-width: 900px;
+	max-height: 700px;
+	margin: 0 auto;
+	border: none;
+}
+
+.hfeed article.photo {
+	background: #000;
+	padding-bottom: 0;
+}
+
+.hfeed article.photo .metadata {
+	display: none;
+}
+
+.amazon .image {
+	float: left;
+	margin: 0 1em 0 0;
+}
+
+.amazon .detail {
+}
+
+#global-footer {
+	margin: 0;
+	padding: 30px;
+	font-size: 80%;
+	text-align: center;
+	background: #111;
+	width: 900px;
+}
+
+#global-footer p {
+	text-align: center;
+}
+
+#global-footer img {
+	border: none;
+}
+
+.ad {
+	background: #000;
+	padding: 5px 30px;
+	margin: 0 0 5px 0;
+}
+
+.ad ins {
+	background: none;
+}
+
+@media only screen and (max-width : 980px) {
+	body {
+		width: 100%;
+		padding: 0;
+		margin: 0;
+		font-size: 13px;
+	}
+
+	#global-header {
+		width: 100%;
+		padding: 0;
+		margin: 0;
+		background: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20101128/20101128051218.png?1290888746') no-repeat 10px 26px transparent;
+	}
+
+	#global-header h1 {
+		margin: 0;
+		padding: 0;
+	}
+
+	#global-header h1 a {
+		left: 0px;
+	}
+
+	#content {
+		width: 100%;
+		margin: 0;
+	}
+
+	.hfeed {
+		margin: 0;
+		padding: 0;
+	}
+
+
+	.hfeed .date {
+		padding: 3px 12px;
+	}
+
+	.hfeed article {
+		padding: 5px 10px;
+	}
+
+	.hfeed article a.hatena-fotolife ,
+	.hfeed article p.photo {
+		display: block;
+		margin: 0 -10px;
+		border: none;
+		text-align: center;
+	}
+
+	.hfeed article a.hatena-fotolife img {
+		max-width: 100%;
+		margin: 0;
+	}
+
+	#global-footer {
+		margin: 0;
+		padding: 10px;
+		width: 100%;
+	}
+}

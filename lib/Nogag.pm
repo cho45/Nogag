@@ -9,6 +9,8 @@ use Nogag::Base;
 use Nogag::Time;
 use Nogag::Model::Entry;
 
+use Time::Seconds;
+
 use parent qw(Nogag::Base);
 
 our @EXPORT = qw(config throw);
@@ -38,22 +40,58 @@ route "/" => sub {
 	$r->html('index.html');
 };
 
-route "/{path:.+}" => sub {
+my $archive = sub {
 	my ($r) = @_;
+	my $year  = $r->req->param('year');
+	my $month = $r->req->param('month');
+	my $day   = $r->req->param('day');
+
+	my $start = Nogag::Time->gmtime([
+		0, 0, 0,
+		defined $day   ? $day         : 1,
+		defined $month ? $month - 1   : 1,
+		$year - 1900,
+		undef, undef, undef
+	]);
+
+	my $end   = defined $day   ? $start + ONE_DAY:
+	            defined $month ? $start->add_months(1):
+	            $start->add_years(1);
 
 	my $entries = $r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE :start <= sort_time AND sort_time <= :end
+		ORDER BY path
+	}, {
+		start => $start,
+		end   => $end,
+	});
+
+	Nogag::Model::Entry->bless($_) for @$entries;
+
+	$r->stash(entries => $entries);
+
+	$r->html('index.html');
+};
+
+route '/{year:[0-9]{4}}/' => $archive;
+route '/{year:[0-9]{4}}/{month:[0-9]{2}}/' => $archive;
+route '/{year:[0-9]{4}}/{month:[0-9]{2}}/{day:[0-9]{2}}/' => $archive;
+
+route '/{path:.+}' => sub {
+	my ($r) = @_;
+
+	my $entry = $r->dbh->select(q{
 		SELECT * FROM entries
 		WHERE path = :path
 	}, {
 		path => scalar $r->req->param('path'),
-	});
+	})->[0] or throw code => 404, message => 'Not Found';
 
-	for (@$entries) {
-		$_->{created_at} = Nogag::Time->from_db($_->{created_at});
-		$_->{modified_at} = Nogag::Time->from_db($_->{modified_at});
-	}
+	Nogag::Model::Entry->bless($entry);
 
-	$r->stash(entries => $entries);
+	$r->stash(entries => [ $entry ]);
+	$r->stash(title => $entry->{title} || $entry->created_at->offset(9)->strftime("%H:%M/%Y-%m-%d") );
 
 	$r->html('index.html');
 };

@@ -14,6 +14,8 @@ use Nogag::Time;
 use Nogag::Formatter::Hatena;
 
 my $xml = file(shift @ARGV || "../cho45.xml");
+my $user = $xml->basename;
+$user =~ s/\.xml$//;
 
 my $r = Nogag->new({});
 $r->dbh->begin_work;
@@ -27,6 +29,9 @@ for my $day (@{ $doc->findnodes('diary/day') }) {
 	my $number   = 1;
 
 	$body =~ s{^\s+|\s+$}{}g;
+	$body =~ s{http://d.hatena.ne.jp/$user/(\d\d\d\d)(\d\d)(\d\d)#(\d+)}{
+		sprintf('/%04d/%02d/%02d/#post-%d', $1, $2, $3, $4);
+	}ge;
 	for my $line (split /^/m, $body) {
 		if ($line =~ /^\*(?<epoch>\d+)\*(?<title>.*)/) {
 			push @$sections, +{
@@ -81,7 +86,7 @@ for my $day (@{ $doc->findnodes('diary/day') }) {
 					:modified_at
 				)
 		}, {
-			title          => $section->{title} || '■',
+			title          => $section->{title} || '',
 			body           => $section->{body},
 			formatted_body => Nogag::Formatter::Hatena->format($section->{body}),
 			path           => $path,
