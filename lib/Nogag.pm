@@ -3,9 +3,11 @@ package Nogag;
 use strict;
 use warnings;
 
+use Encode;
+
 use Nogag::Base;
 use Nogag::Time;
-use Encode;
+use Nogag::Model::Entry;
 
 use parent qw(Nogag::Base);
 
@@ -25,10 +27,7 @@ route "/" => sub {
 		offset => ($page - 1) * config->param('entry_per_page'),
 	});
 
-	for (@$entries) {
-		$_->{created_at} = Nogag::Time->from_db($_->{created_at});
-		$_->{modified_at} = Nogag::Time->from_db($_->{modified_at});
-	}
+	Nogag::Model::Entry->bless($_) for @$entries;
 
 	my $count = $r->dbh->value('SELECT count(*) FROM entries');
 

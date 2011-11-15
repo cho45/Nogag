@@ -2,7 +2,7 @@
 
 <div class="hfeed">
 [% FOR entry IN entries %]
-<article class="hentry">
+<article class="hentry [% entry.tags.join(' ') %]">
 	<h1><a href="/[% entry.path %]" class="bookmark" rel="bookmark">[% entry.title %]</a></h1>
 
 	<div class="content">

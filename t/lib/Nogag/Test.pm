@@ -1,4 +1,5 @@
 package Nogag::Test;
+$ENV{PLACK_ENV} = 'test';
 
 use utf8;
 use strict;
@@ -10,6 +11,9 @@ use Test::More;
 use Test::WWW::Mechanize::PSGI;
 
 use Nogag;
+
+unlink config->param('db');
+Nogag->setup_schema;
 
 our @EXPORT = qw(
 	mechanize

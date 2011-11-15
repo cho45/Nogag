@@ -17,6 +17,10 @@ config development => {
 	db => 'db/development.db',
 };
 
+config test => {
+	db => 'db/test.db',
+};
+
 config production => {
 	db => 'db/data.db',
 };
