@@ -161,7 +161,7 @@ body * {
 .pager {
 	font-size: 11px;
 	text-align: right;
-	margin: 0 30px 20px;
+	margin: 20px 10px 20px;
 }
 
 .pager a:link ,
@@ -361,6 +361,19 @@ ul.flatarchives li .months .count{
 		left: 0px;
 	}
 
+	#global-header #search-form {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+	}
+
+	#global-navigation {
+		position: static;
+		width: 100%;
+		margin: 0;
+		padding: 0;
+	}
+
 	#content {
 		width: 100%;
 		margin: 0;
@@ -395,7 +408,7 @@ ul.flatarchives li .months .count{
 
 	#global-footer {
 		margin: 0;
-		padding: 10px;
+		padding: 10px 0;
 		width: 100%;
 	}
 }
