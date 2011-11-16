@@ -38,7 +38,7 @@ sub render ($$) {
 	$str;
 }
 
-match qr{f:id:([^:]+):(\d+)([jpeg]):image} => sub {
+match qr{\[?f:id:([^:]+):(\d+)([jpeg]):image\]?} => sub {
 	my ($self, $user, $id, $type) = @_;
 
 	render(q{
