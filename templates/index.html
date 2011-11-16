@@ -14,6 +14,9 @@
 	<body id="[% id %]">
 		<header id="global-header">
 			<h1 id="header"><a href="/">餡の雲</a></h1>
+			<form action="/" method="GET">
+				<p><input type="text" name="query" placeholder="Search"/></p>
+			</form>
 		</header>
 
 		[% IF error %]
@@ -39,11 +42,9 @@
 					<header>
 						<h1><a href="/[% entry.path %]" class="bookmark" rel="bookmark">[% entry.title || '-' %]</a></h1>
 						<span class="metadata">
-							<!--
 							[% FOR tag IN entry.tags %]
-							<a href="/?search=[[% tag %]]">[% tag %]</a>
+							<a href="/[% tag %]/">[% tag %]</a>
 							[% END %]
-							-->
 							<time data-epoch="[% entry.created_at.epoch %]" datetime="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z" pubdate>[% entry.created_at.offset(9) %]</time>
 							[% IF entry.created_at != entry.modified_at %]
 							<time datetime="[% entry.modified_at.strftime('%Y-%m-%d') _ 'T' _ entry.modified_at.strftime('%H:%M:%S') %]Z">[% entry.modified_at.offset(9) %]</time>
@@ -59,7 +60,17 @@
 			</div>
 
 			<div class="pager">
-				<a href="?page=[% page + 1 %]" rel="next">Next</a>
+				[% IF page %]
+				<a href="?page=[% page + 1 %]" rel="next">Old Entries</a>
+				[% END %]
+
+				[% IF old_entry %]
+				<a href="/[% old_entry.path %]" rel="next">&#x25BC; [% old_entry.title || 'Old' %]</a>
+				[% END %]
+
+				[% IF new_entry %]
+				<a href="/[% new_entry.path %]" rel="prev">&#x25B2; [% new_entry.title || 'New' %]</a>
+				[% END %]
 			</div>
 
 			[% END %]
@@ -69,13 +80,13 @@
 				<ul class="flatarchives">
 				[% FOR year IN archive %]
 				<li>
-					<span class="year">[% year.year %]</span>
+					<span class="year">[% year.year %]年</span>
 					<span class="months">
 						[% FOR month IN year.months %]
 						[% IF month.count %]
-						<a class="month" href="[% month.link %]" title="[% month.count %]">[% month.month %]</a>
+						<a class="month" href="[% month.link %]" title="[% month.count %]">[% month.month %]月</a>
 						[% ELSE %]
-						<a class="month">[% month.month %]</a>
+						<a class="month">[% month.month %]月</a>
 						[% END %]
 						[% END %]
 					</span>

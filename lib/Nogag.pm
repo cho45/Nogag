@@ -1,5 +1,6 @@
 package Nogag;
 
+use utf8;
 use strict;
 use warnings;
 
@@ -20,14 +21,29 @@ route "/" => sub {
 
 	my $page = $r->req->number_param('page') || 1;
 
-	my $entries = $r->dbh->select(q{
-		SELECT * FROM entries
-		ORDER BY `date` DESC, `path` ASC
-		LIMIT :limit OFFSET :offset
-	}, {
-		limit  => config->param('entry_per_page'),
-		offset => ($page - 1) * config->param('entry_per_page'),
-	});
+	my $entries;
+
+	if (my $query = $r->req->string_param('query')) {
+		$entries = $r->dbh->select(q{
+			SELECT * FROM entries
+			WHERE title LIKE :query OR formatted_body LIKE :query
+			ORDER BY `date` DESC, `path` ASC
+			LIMIT :limit OFFSET :offset
+		}, {
+			query  => "%$query%",
+			limit  => config->param('entry_per_page'),
+			offset => ($page - 1) * config->param('entry_per_page'),
+		});
+	} else {
+		$entries = $r->dbh->select(q{
+			SELECT * FROM entries
+			ORDER BY `date` DESC, `path` ASC
+			LIMIT :limit OFFSET :offset
+		}, {
+			limit  => config->param('entry_per_page'),
+			offset => ($page - 1) * config->param('entry_per_page'),
+		});
+	}
 
 	Nogag::Model::Entry->bless($_) for @$entries;
 
@@ -60,7 +76,7 @@ my $archive = sub {
 
 	my $entries = $r->dbh->select(q{
 		SELECT * FROM entries
-		WHERE :start <= date AND date <= :end
+		WHERE :start <= date AND date < :end
 		ORDER BY path
 	}, {
 		start => $start->strftime("%Y-%m-%d"),
@@ -74,7 +90,7 @@ my $archive = sub {
 	$r->html('index.html');
 };
 
-route '/{year:[0-9]{4}}/' => $archive;
+# route '/{year:[0-9]{4}}/' => $archive;
 route '/{year:[0-9]{4}}/{month:[0-9]{2}}/' => $archive;
 route '/{year:[0-9]{4}}/{month:[0-9]{2}}/{day:[0-9]{2}}/' => $archive;
 
@@ -116,17 +132,66 @@ route '/archive' => sub {
 route '/{path:.+}' => sub {
 	my ($r) = @_;
 
-	my $entry = $r->dbh->select(q{
-		SELECT * FROM entries
-		WHERE path = :path
-	}, {
-		path => scalar $r->req->param('path'),
-	})->[0] or throw code => 404, message => 'Not Found';
+	my $path = $r->req->param('path');
 
-	Nogag::Model::Entry->bless($entry);
+	my $is_category = ($path =~ m{/$});
 
-	$r->stash(entries => [ $entry ]);
-	$r->stash(title => $entry->{title} || $entry->created_at->offset(9)->strftime("%H:%M/%Y-%m-%d") );
+	if ($is_category) {
+		my $page = $r->req->number_param('page') || 1;
+		$path =~ s{/}{}g;
+
+		my $entries = $r->dbh->select(q{
+			SELECT * FROM entries
+			WHERE title LIKE :query OR formatted_body LIKE :query
+			ORDER BY `date` DESC, `path` ASC
+			LIMIT :limit OFFSET :offset
+		}, {
+			query  => "%[$path]%",
+			limit  => config->param('entry_per_page'),
+			offset => ($page - 1) * config->param('entry_per_page'),
+		});
+
+		Nogag::Model::Entry->bless($_) for @$entries;
+
+		my $count = $r->dbh->value('SELECT count(*) FROM entries');
+
+		$r->stash(entries => $entries);
+		$r->stash(count => $count);
+		$r->stash(page => $page);
+	} else {
+		my $entry = $r->dbh->select(q{
+			SELECT * FROM entries
+			WHERE path = :path
+		}, {
+			path => $path,
+		})->[0] or throw code => 404, message => 'Not Found';
+
+		my $old_entry = $r->dbh->select(q{
+			SELECT * FROM entries
+			WHERE created_at < :created_at
+			ORDER BY created_at DESC
+			LIMIT 1
+		}, {
+			created_at => $entry->{created_at}
+		})->[0];
+
+		my $new_entry = $r->dbh->select(q{
+			SELECT * FROM entries
+			WHERE created_at > :created_at
+			ORDER BY created_at ASC
+			LIMIT 1
+		}, {
+			created_at => $entry->{created_at}
+		})->[0];
+
+		Nogag::Model::Entry->bless($entry);
+
+		$r->stash(entries => [ $entry ]);
+		$r->stash(entry => $entry);
+		$r->stash(old_entry => $old_entry);
+		$r->stash(new_entry => $new_entry);
+		$r->stash(title => $entry->{title} || $entry->created_at->offset(9)->strftime("%H:%M/%Y-%m-%d") );
+	}
 
 	$r->html('index.html');
 };

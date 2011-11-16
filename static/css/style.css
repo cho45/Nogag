@@ -115,6 +115,11 @@ body * {
 .pager a:link ,
 .pager a:visited ,
 .pager a:hover {
+	display: inline-block;
+	padding: 10px 20px;
+	text-align: center;
+	width: 8em;
+	background: #333;
 	text-decoration: none;
 	color: #fff;
 }
@@ -164,6 +169,10 @@ body * {
 	color: #999;
 }
 
+.hfeed article header .metadata a {
+	text-decoration: none;
+}
+
 .hfeed article a.hatena-fotolife ,
 .hfeed article p.photo {
 	display: block;
@@ -186,7 +195,6 @@ body * {
 }
 
 .hfeed article.photo .metadata {
-	display: none;
 }
 
 .amazon .image {

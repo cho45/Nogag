@@ -2,11 +2,12 @@
 $ENV{PLACK_ENV} = 'development';
 use utf8;
 use strict;
-use warnings;
+use warnings FATAL => qw(all);
 use lib lib => glob 'modules/*/lib';
 
 use Nogag;
 use UNIVERSAL::require;
+use Encode;
 
 my $r = Nogag->new({});
 $r->dbh->begin_work;
