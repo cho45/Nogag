@@ -14,10 +14,19 @@
 	<body id="[% id %]">
 		<header id="global-header">
 			<h1 id="header"><a href="/">餡の雲</a></h1>
-			<form action="/" method="GET">
-				<p><input type="text" name="query" placeholder="Search"/></p>
+			<form action="/" method="GET" id="search-form">
+				<p>
+					<input type="text" name="query" placeholder="Search"/>
+				</p>
 			</form>
 		</header>
+
+		<nav id="global-navigation">
+			<ul>
+				<li><a href="/">トップ</a></li>
+				<li><a href="/archive">アーカイブ</a></li>
+			</ul>
+		</nav>
 
 		[% IF error %]
 		<p class="error">[% error %]</p>
@@ -108,7 +117,7 @@
 				[% END %]
 			</p>
 			<p>
-				<a href="mailto:cho45@lowreal.net">cho45@lowreal.net</a>
+				<a href="http://www.lowreal.net/">cho45@lowreal.net</a>
 			</p>
 		</footer>
 
