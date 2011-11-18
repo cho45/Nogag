@@ -160,13 +160,22 @@ route "/" => sub {
 			offset => ($page - 1) * config->param('entry_per_page'),
 		});
 	} else {
-		$entries = $r->dbh->select(q{
-			SELECT * FROM entries
-			ORDER BY `date` DESC, `path` ASC
+		my $dates = $r->dbh->select(q{
+			SELECT `date` FROM entries
+			GROUP BY `date`
+			ORDER BY `date` DESC
 			LIMIT :limit OFFSET :offset
 		}, {
 			limit  => config->param('entry_per_page'),
 			offset => ($page - 1) * config->param('entry_per_page'),
+		});
+
+		$entries = $r->dbh->select(q{
+			SELECT * FROM entries
+			WHERE `date` IN (:dates)
+			ORDER BY `date` DESC, `path` ASC
+		}, {
+			dates => [ map { $_->{date} } @$dates ]
 		});
 	}
 
