@@ -59,11 +59,11 @@
 				[% END %]
 
 				[% IF old_entry %]
-				<a href="/[% old_entry.path %]" rel="next">&#x25BC; [% old_entry.title || 'Old' %]</a>
+				<a href="/[% old_entry.path %]" rel="next">&#x25BC; [% (old_entry.title || '古') | trim(14) %]</a>
 				[% END %]
 
 				[% IF new_entry %]
-				<a href="/[% new_entry.path %]" rel="prev">&#x25B2; [% new_entry.title || 'New' %]</a>
+				<a href="/[% new_entry.path %]" rel="prev">&#x25B2; [% (new_entry.title || '新') | trim(14) %]</a>
 				[% END %]
 			</div>
 

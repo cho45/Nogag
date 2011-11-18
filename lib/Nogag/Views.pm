@@ -10,6 +10,7 @@ our @EXPORT = qw(html json redirect render email);
 use Text::Xslate qw(mark_raw);
 use JSON::XS;
 use Encode;
+use HTML::Trim;
 
 use Nogag::Config;
 
@@ -17,7 +18,15 @@ my $XSLATE = Text::Xslate->new(
 	syntax   => 'TTerse',
 	path     => [ config->root->subdir('templates') ],
 	cache    => 1,
-	function => { },
+	function => {
+		trim => sub {
+			my ($len) = @_;
+
+			sub {
+				HTML::Trim::vtrim(shift, $len, '…');
+			}
+		},
+	},
 );
 
 sub render {
