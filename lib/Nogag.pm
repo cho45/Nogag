@@ -1,16 +1,18 @@
 package Nogag;
 
+use v5.14;
 use utf8;
 use strict;
 use warnings;
 
 use Encode;
+use Time::Seconds;
 
 use Nogag::Base;
 use Nogag::Time;
 use Nogag::Model::Entry;
 
-use Time::Seconds;
+use Nogag::Formatter::Hatena;
 
 use parent qw(Nogag::Base);
 
@@ -35,9 +37,63 @@ route "/api/edit" => sub {
 	my ($r) = @_;
 	return $r->json({ error => 'require authentication' }) unless $r->has_auth;
 
-	$r->json(+{
-		foo => 'bar'
-	});
+	given ($r->req->method) {
+		when ('GET') {
+			$r->json(+{
+				html => $r->render('form.html'),
+			});
+		}
+
+		when ('POST') {
+			my $date = localtime;
+			my $now  = gmtime;
+
+			my $count = $r->dbh->select('SELECT count(*) FROM entries WHERE `date` = ?', { date => $date->strftime('%Y-%m-%d') })->[0]->{'count(*)'};
+			my $path  = $date->strftime('%Y/%m/%d/') . ($count + 1);
+
+			$r->dbh->update(q{
+				INSERT INTO entries
+					(
+						`title`,
+						`body`,
+						`formatted_body`,
+						`path`,
+						`format`,
+						`date`,
+						`created_at`,
+						`modified_at`
+					)
+					VALUES
+					(
+						:title,
+						:body,
+						:formatted_body,
+						:path,
+						:format,
+						:date,
+						:created_at,
+						:modified_at
+					)
+			}, {
+				title          => $r->req->string_param('title'),
+				body           => $r->req->string_param('body'),
+				formatted_body => Nogag::Formatter::Hatena->format($r->req->string_param('body')),
+				path           => $path,
+				format         => 'Hatena',
+				date           => $date->strftime('%Y-%m-%d'),
+				created_at     => $now,
+				modified_at    => $now,
+			});
+
+			$r->res->redirect("/$path");
+		}
+
+		default {
+			$r->json(+{
+				error => 'Invalid request method'
+			});
+		}
+	}
 };
 
 

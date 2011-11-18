@@ -20,7 +20,7 @@ my $XSLATE = Text::Xslate->new(
 	function => { },
 );
 
-sub html {
+sub render {
 	my ($r, $name, $vars) = @_;
 	$vars = {
 		%{ $r->stash },
@@ -29,8 +29,12 @@ sub html {
 	};
 
 	my $content = $XSLATE->render($name, $vars);
+}
+
+sub html {
+	my ($r, $name, $vars) = @_;
 	$r->res->content_type('text/html; charset=utf-8');
-	$r->res->content(encode_utf8 $content);
+	$r->res->content(encode_utf8 $r->render($name, $vars));
 }
 
 sub json {

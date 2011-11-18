@@ -28,11 +28,22 @@ Nogag = {
 	},
 
 	editEntry : function (article) {
-		var id = article.attr('data-id');
-		alert(id);
+		var id = article ? article.attr('data-id') : 'new';
+
+		$.ajax({
+			url : '/api/edit',
+			type : "get",
+			dataType : 'json',
+			data : {
+				id : id
+			},
+			success : function (res) {
+				$(res.html).prependTo('#content .hfeed');
+			}
+		});
 	},
 
 	newEntry : function () {
-		alert('');
+		this.editEntry();
 	}
 };

@@ -1,0 +1,21 @@
+<article class="hentry [% entry.tags.join(' ') %] [% IF is_first %]first[% END %]" id="post-[% entry.created_at.epoch %]" data-id="[% entry.id %]">
+	<header>
+		<h1><a href="/[% entry.path %]" class="bookmark" rel="bookmark">[% entry.title || '-' %]</a></h1>
+		<span class="metadata">
+			[% FOR tag IN entry.tags %]
+			<a href="/[% tag %]/">[% tag %]</a>
+			[% END %]
+			|
+			<time data-epoch="[% entry.created_at.epoch %]" datetime="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z" pubdate>[% entry.created_at.offset(9).strftime('%H:%M') %]</time>
+			[% IF entry.created_at != entry.modified_at %]
+			|
+			<time datetime="[% entry.modified_at.strftime('%Y-%m-%d') _ 'T' _ entry.modified_at.strftime('%H:%M:%S') %]Z">[% entry.modified_at.offset(9) %]</time>
+			[% END %]
+			|
+		</span>
+	</header>
+
+	<div class="content">
+		[% entry.formatted_body | raw %]
+	</div>
+</article>

@@ -1,0 +1,19 @@
+<article>
+	<form class="edit-form" action="/api/edit" method="post">
+		<header>
+			<h1>
+				<input type="text" name="title" value="[% entry.title %]"/>
+			</h1>
+		</header>
+		<div class="content">
+			<p>
+				<textarea name="body"></textarea>
+			</p>
+			<p>
+				<input type="hidden" name="id" value="[% entry.id %]"/>
+				<input type="hidden" name="sk" value="[% r.sk %]"/>
+				<input type="submit" value="公開"/>
+			</p>
+		</div>
+	</form>
+</article>
