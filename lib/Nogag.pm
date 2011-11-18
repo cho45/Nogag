@@ -7,6 +7,7 @@ use warnings;
 
 use Encode;
 use Time::Seconds;
+use HTML::Trim;
 
 use Nogag::Base;
 use Nogag::Time;
@@ -324,7 +325,11 @@ route '/{path:.+}' => sub {
 		$r->stash(entry => $entry);
 		$r->stash(old_entry => $old_entry);
 		$r->stash(new_entry => $new_entry);
-		$r->stash(title => $entry->{title} || $entry->created_at->offset(9)->strftime("%H:%M/%Y-%m-%d") );
+		$r->stash(title => $entry->{title} || do {
+			my $body = HTML::Trim::vtrim($entry->formatted_body, 50, '…');
+			$body =~ s/<[^>]+>//g;
+			$body;
+		});
 	}
 
 	$r->html('index.html');
