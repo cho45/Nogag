@@ -1,3 +1,5 @@
+@import url('http://fonts.googleapis.com/css?family=Mate+SC');
+
 
 /**
  * 960px solid layout
@@ -226,11 +228,15 @@ form.edit-form textarea {
 	margin: 20px 0;
 	padding: 3px 30px;
 	font-size: 100%;
+	font-family: 'Mate SC', serif;
 }
 
 .hfeed .date a {
 	color: #fff;
 	text-decoration: none;
+}
+
+.hfeed article header {
 }
 
 .hfeed article header h1 {
@@ -245,6 +251,7 @@ form.edit-form textarea {
 }
 
 .hfeed article header .metadata {
+	font-family: 'Mate SC', serif;
 	text-align: left;
 	padding: 3px 0;
 	margin: 0;

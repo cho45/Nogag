@@ -7,12 +7,15 @@ use lib glob 'modules/*/lib';
 use UNIVERSAL::require;
 use Path::Class;
 use File::Spec;
+use POSIX;
 
 use Plack::Builder;
 use Plack::Session::State::Cookie;
 use Plack::Session::Store::File;
 
 use Nogag;
+
+POSIX::setlocale(&POSIX::LC_ALL, "C");
 
 if (not -e config->param('db')) {
 	Nogag->setup_schema;

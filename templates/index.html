@@ -40,7 +40,7 @@
 			<div class="hfeed">
 				[% date = '' %]
 				[% FOR entry IN entries %]
-				[% d = entry.date.strftime("%Y-%m-%d") %]
+				[% d = entry.date.strftime("%a, %b %d. %Y") %]
 				[% is_first = (date != d) %]
 				[% date = d %]
 
