@@ -47,8 +47,5 @@ my $email = Email::MIME->create(
 	]
 );
 
-warn length $email->as_string;
-
-#my $sender = Email::Send->new({mailer => 'SMTP'});
-#$sender->mailer_args([Host => '192.168.0.19']);
-#$sender->send($email);
+my $sender = Email::Send->new({mailer => 'SMTP'});
+$sender->send($email);
