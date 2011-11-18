@@ -12,7 +12,11 @@ use Encode;
 my $r = Nogag->new({});
 $r->dbh->begin_work;
 
-my $rows = $r->dbh->select('SELECT * FROM entries');
+my $rows = $r->dbh->select(q{
+	SELECT * FROM entries
+	ORDER BY `date` DESC, `path` ASC
+	LIMIT 1000
+});
 for my $row (@$rows) {
 	my $formatter = "Nogag::Formatter::" . $row->{format};
 	$formatter->use;

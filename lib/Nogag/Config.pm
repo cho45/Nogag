@@ -25,5 +25,7 @@ config production => {
 	db => 'db/data.db',
 };
 
+config default => { parent('development') };
+
 1;
 __END__
