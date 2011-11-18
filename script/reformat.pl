@@ -15,7 +15,7 @@ $r->dbh->begin_work;
 my $rows = $r->dbh->select(q{
 	SELECT * FROM entries
 	ORDER BY `date` DESC, `path` ASC
-	LIMIT 1000
+	LIMIT 500
 });
 for my $row (@$rows) {
 	my $formatter = "Nogag::Formatter::" . $row->{format};

@@ -69,7 +69,7 @@ match qr{\[?f:id:([^:]+):(\d+)([jpeg]):image\]?} => sub {
     my ($self, $user, $id, $type) = @_;
 
     render(q{
-        <a href="[% link %]" class="hatena-fotolife"><img src="[% image %]" alt="photo" class="hatena-fotolife"></a>
+        <a href="[% image %]" class="hatena-fotolife"><img src="[% image %]" alt="photo" class="hatena-fotolife"></a>
     }, {
         link  => "http://f.hatena.ne.jp/$user/$id",
         image => sprintf("http://cdn-ak.f.st-hatena.com/images/fotolife/%s/%s/%s/%s.jpg", substr($user, 0, 1), $user, substr($id, 0, 8), $id),

@@ -173,7 +173,7 @@ body * {
 .pager {
 	font-size: 11px;
 	text-align: right;
-	margin: 20px 10px 20px;
+	margin: 20px 30px 20px;
 }
 
 .pager a:link ,
@@ -193,7 +193,6 @@ body * {
 	padding: 0px 30px;
 	_padding: 30px 30px;
 }
-
 
 .hfeed article {
 	background: #111;
@@ -279,8 +278,7 @@ body * {
 	padding: 30px;
 	font-size: 80%;
 	text-align: center;
-	background: #111;
-	width: 900px;
+	background: #000;
 }
 
 #global-footer p {
@@ -289,6 +287,10 @@ body * {
 
 #global-footer img {
 	border: none;
+}
+
+#global-footer .message {
+	color: #666;
 }
 
 .ad {
