@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html
+	data-auth="[% IF r.has_auth %]true[% END %]"
+	>
 	<head>
 		<title>[% title ? title _ " - " : "" %]餡の雲</title>
 		<meta charset="utf-8"/>
@@ -46,7 +48,7 @@
 				<div class="date"><a href="[% entry.date.strftime('/%Y/%m/%d/') %]">[% date %]</a></div>
 				[% END %]
 
-				<article class="hentry [% entry.tags.join(' ') %] [% IF is_first %]first[% END %]" id="post-[% entry.created_at.epoch %]">
+				<article class="hentry [% entry.tags.join(' ') %] [% IF is_first %]first[% END %]" id="post-[% entry.created_at.epoch %]" data-id="[% entry.id %]">
 					<header>
 						<h1><a href="/[% entry.path %]" class="bookmark" rel="bookmark">[% entry.title || '-' %]</a></h1>
 						<span class="metadata">
@@ -106,12 +108,7 @@
 
 		<footer id="global-footer">
 			<p>
-				[% count %] entries.
-				[% IF r.has_auth %]
-				<a href="">New Entry</a>
-				[% ELSE %]
-				<a href="/login">login</a>
-				[% END %]
+				[% count %]つのエントリ
 			</p>
 			<p>
 				<a href="http://www.lowreal.net/"><img src="http://www.lowreal.net/images/lowreal.net-logo.png" alt="cho45@lowreal.net"/></a>
@@ -119,8 +116,10 @@
 		</footer>
 
 		<script src="/js/daterelative.js"></script>
+		<script src="http://code.jquery.com/jquery-1.7.min.js"></script>
+		<script src="/js/nogag.js"></script>
 		<script type="text/javascript">
-			DateRelative.updateAll();
+			Nogag.init();
 		</script>
 	</body>
 </html>
