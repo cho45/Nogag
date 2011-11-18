@@ -11,6 +11,7 @@ CREATE TABLE entries (
 );
 CREATE INDEX index_date ON entries (`date`, `path`);
 CREATE INDEX index_path ON entries (`path`);
+CREATE INDEX index_created_at ON entries (`created_at`);
 
 CREATE TABLE options (
 	`id` INTEGER PRIMARY KEY,
