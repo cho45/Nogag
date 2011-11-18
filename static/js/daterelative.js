@@ -1,4 +1,4 @@
-function DateRelative () { this.init.apply(this, arguments) };
+function DateRelative () { this.init.apply(this, arguments) }
 DateRelative.prototype = {
     init : function (value) {
         this.value = value + 0;
@@ -32,9 +32,15 @@ DateRelative.prototype = {
             return this;
         }
         diff = Math.floor(diff / 24);
-        if (diff < 365) {
+        if (diff < 31) {
             this.number   = diff;
             this.unit     = 'day';
+            this.isFuture = future;
+            return this;
+        }
+        if (diff < 365) {
+            this.number   = Math.floor(diff / 30);
+            this.unit     = 'month';
             this.isFuture = future;
             return this;
         }
@@ -62,11 +68,12 @@ DateRelative.update = function (target) {
             'minute' : '分',
             'hour'   : '時',
             'day'    : '日',
+            'month'  : 'ヶ月',
             'year'   : '年'
-        }[dtrl.unit] + (dtrl.isFuture ? '後' : '前')
+        }[dtrl.unit] + (dtrl.isFuture ? '後' : '前');
     } else {
         format = dtrl.number + ' ' +
-                 dtrl.unit + (dtrl.number == 0 || dtrl.number > 1 ? 's ' : ' ') +
+                 dtrl.unit + (dtrl.number === 0 || dtrl.number > 1 ? 's ' : ' ') +
                  (dtrl.isFuture ? 'after' : 'ago');
     }
     target.innerHTML = format;
