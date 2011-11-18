@@ -62,20 +62,9 @@ DateRelative.update = function (target) {
 
     var locale = navigator.userAgent.split(/[();]\s*/)[4];
     var format;
-    if (/ja/.test(locale)) {
-        format = dtrl.number + {
-            'second' : '秒',
-            'minute' : '分',
-            'hour'   : '時',
-            'day'    : '日',
-            'month'  : 'ヶ月',
-            'year'   : '年'
-        }[dtrl.unit] + (dtrl.isFuture ? '後' : '前');
-    } else {
-        format = dtrl.number + ' ' +
-                 dtrl.unit + (dtrl.number === 0 || dtrl.number > 1 ? 's ' : ' ') +
-                 (dtrl.isFuture ? 'after' : 'ago');
-    }
+    format = dtrl.number + ' ' +
+             dtrl.unit + (dtrl.number === 0 || dtrl.number > 1 ? 's ' : ' ') +
+             (dtrl.isFuture ? 'after' : 'ago');
     target.innerHTML = format;
 };
 DateRelative.updateAll = function (parent) {
