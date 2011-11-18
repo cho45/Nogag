@@ -8,8 +8,10 @@
 			|
 			<time data-epoch="[% entry.created_at.epoch %]" datetime="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z" pubdate>[% entry.created_at.offset(9).strftime('%H:%M') %]</time>
 			[% IF entry.created_at != entry.modified_at %]
+			<!--
 			|
 			<time datetime="[% entry.modified_at.strftime('%Y-%m-%d') _ 'T' _ entry.modified_at.strftime('%H:%M:%S') %]Z">[% entry.modified_at.offset(9) %]</time>
+			-->
 			[% END %]
 			|
 		</span>

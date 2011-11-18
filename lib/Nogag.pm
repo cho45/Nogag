@@ -37,6 +37,23 @@ route "/api/edit" => sub {
 	my ($r) = @_;
 	return $r->json({ error => 'require authentication' }) unless $r->has_auth;
 
+	my $entry;
+	if (my $id = $r->req->param('id')) {
+		$entry = $r->dbh->select(q{
+			SELECT * FROM entries
+			WHERE id = :id
+		}, {
+			id => $id
+		})->[0];
+	} else {
+		$entry = {
+		};
+	}
+
+	Nogag::Model::Entry->bless($entry);
+
+	$r->stash(entry => $entry);
+
 	given ($r->req->method) {
 		when ('GET') {
 			$r->json(+{
@@ -45,47 +62,74 @@ route "/api/edit" => sub {
 		}
 
 		when ('POST') {
-			my $date = localtime;
-			my $now  = gmtime;
+			if ($entry->id) {
+				$r->dbh->update(q{
+					UPDATE entries
+					SET
+						title = :title,
+						body = :body,
+						modified_at = :modified_at,
+						formatted_body = :formatted_body
+					WHERE
+						id = :id
+				}, {
+					id             => $entry->id,
+					title          => $r->req->string_param('title'),
+					body           => $r->req->string_param('body'),
+					formatted_body => Nogag::Formatter::Hatena->format($r->req->string_param('body')),
+					modified_at    => gmtime.q(),
+				})
+			} else {
+				my $date = localtime;
+				my $now  = gmtime;
+				my $count = $r->dbh->select('SELECT count(*) FROM entries WHERE `date` = ?', { date => $date->strftime('%Y-%m-%d') })->[0]->{'count(*)'};
+				my $path  = $date->strftime('%Y/%m/%d/') . ($count + 1);
 
-			my $count = $r->dbh->select('SELECT count(*) FROM entries WHERE `date` = ?', { date => $date->strftime('%Y-%m-%d') })->[0]->{'count(*)'};
-			my $path  = $date->strftime('%Y/%m/%d/') . ($count + 1);
+				$r->dbh->update(q{
+					INSERT INTO entries
+						(
+							`title`,
+							`body`,
+							`formatted_body`,
+							`path`,
+							`format`,
+							`date`,
+							`created_at`,
+							`modified_at`
+						)
+						VALUES
+						(
+							:title,
+							:body,
+							:formatted_body,
+							:path,
+							:format,
+							:date,
+							:created_at,
+							:modified_at
+						)
+				}, {
+					title          => $r->req->string_param('title'),
+					body           => $r->req->string_param('body'),
+					formatted_body => Nogag::Formatter::Hatena->format($r->req->string_param('body')),
+					path           => $path,
+					format         => 'Hatena',
+					date           => $date->strftime('%Y-%m-%d'),
+					created_at     => $now,
+					modified_at    => $now,
+				});
 
-			$r->dbh->update(q{
-				INSERT INTO entries
-					(
-						`title`,
-						`body`,
-						`formatted_body`,
-						`path`,
-						`format`,
-						`date`,
-						`created_at`,
-						`modified_at`
-					)
-					VALUES
-					(
-						:title,
-						:body,
-						:formatted_body,
-						:path,
-						:format,
-						:date,
-						:created_at,
-						:modified_at
-					)
-			}, {
-				title          => $r->req->string_param('title'),
-				body           => $r->req->string_param('body'),
-				formatted_body => Nogag::Formatter::Hatena->format($r->req->string_param('body')),
-				path           => $path,
-				format         => 'Hatena',
-				date           => $date->strftime('%Y-%m-%d'),
-				created_at     => $now,
-				modified_at    => $now,
-			});
+				$entry = $r->dbh->select(q{
+					SELECT * FROM entries
+					WHERE id = :id
+				}, {
+					id => $r->dbh->sqlite_last_insert_rowid
+				})->[0];
 
-			$r->res->redirect("/$path");
+				Nogag::Model::Entry->bless($entry);
+			}
+
+			$r->res->redirect("/" . $entry->path);
 		}
 
 		default {

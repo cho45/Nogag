@@ -28,7 +28,7 @@ Nogag = {
 	},
 
 	editEntry : function (article) {
-		var id = article ? article.attr('data-id') : 'new';
+		var id = article ? article.attr('data-id') : '';
 
 		$.ajax({
 			url : '/api/edit',
@@ -38,7 +38,11 @@ Nogag = {
 				id : id
 			},
 			success : function (res) {
-				$(res.html).prependTo('#content .hfeed');
+				if (article) {
+					article.replaceWith(res.html);
+				} else {
+					$(res.html).prependTo('#content .hfeed');
+				}
 			}
 		});
 	},
