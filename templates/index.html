@@ -85,25 +85,23 @@
 			[% END %]
 
 			[% IF archive %]
-			<div id="archive">
-				<ul class="flatarchives">
+			<section id="archive">
 				[% FOR year IN archive %]
-				<li>
-					<span class="year">[% year.year %]年</span>
-					<span class="months">
+				<section class="year">
+					<h1>[% year.year %]年</h1>
+					<ol class="months">
 						[% FOR month IN year.months %]
 						[% IF month.count %]
-						<a class="month" href="[% month.link %]" title="[% month.count %]">[% month.month %]月</a>
+						<li class="month"><a href="[% month.link %]" title="[% month.count %]">[% month.month %]月</a></li>
 						[% ELSE %]
-						<a class="month">[% month.month %]月</a>
+						<li class="month"><a>[% month.month %]月</a></li>
 						[% END %]
 						[% END %]
-					</span>
-				</li>
+					</ol>
+				</section>
 				[% END %]
-				</ul>
 				<hr />
-			</div>
+			</section>
 			[% END %]
 		</div>
 

@@ -15,6 +15,10 @@ a:hover {
 	text-decoration: none;
 }
 
+cite {
+	font-style: normal;
+}
+
 hr {
 	clear: both;
 	border: none;
@@ -51,6 +55,14 @@ blockquote {
 	background: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20101128/20101128232736.png') no-repeat 0 0;
 	padding: 10px 0 0 1em;
 	margin: 1em 0;
+}
+
+figcaption {
+	font-size: 90%;
+}
+
+figure.quote figcaption {
+	text-align: right;
 }
 
 html {
@@ -290,56 +302,59 @@ body * {
 }
 
 #archive {
+	padding: 2em 20px 2em 30px;
+}
+
+#archive .year {
+	margin: 0;
 	padding: 2em 0;
-}
-
-ul.flatarchives {
-	list-style: none;
-	margin: 0 2em 0 0;
-}
-
-ul.flatarchives .year {
-	font-weight: bold;
-}
-
-ul.flatarchives li {
 	clear: both;
-	padding: 0.5em 0;
 }
 
-ul.flatarchives li .months {
+#archive .year h1 {
+	font-weight: bold;
+	font-size: 100%;
+	padding: 0;
+	margin: 0;
+}
+
+#archive .year .months {
 	display: block;
+	margin: 0;
+	padding: 0;
 }
 
-ul.flatarchives li .months .month {
+#archive .year .months .month {
 	display: block;
 	float: left;
 	width: 8.33333333%;
+	margin: 0;
+	padding: 0;
+}
+
+#archive .year .months .month a {
+	display: block;
 	text-align: center;
-	background: rgba(0, 0, 0, 0.5);
 	padding: 0.5em 0;
+	color: #efefef;
 }
 
-ul.flatarchives li .months span.month {
-	color: #999;
-	background: #efefef;
+#archive .year .months .month a:link {
+	background: #111;
 }
 
-ul.flatarchives li .months a.month:link {
+#archive .year .months .month:nth-child(even) a:link {
+	background: #0d0d0d;
+}
+
+#archive .year .months .month a:link ,
+#archive .year .months .month a:visited {
 	text-decoration: none;
 }
 
-ul.flatarchives li .months a.month:visited {
-	text-decoration: none;
-}
-
-ul.flatarchives li .months a.month:hover {
+#archive .year .months .month a:link:hover {
 	color: #fff;
-}
-
-ul.flatarchives li .months .count{
-	color: #666;
-	font-size: 70%;
+	background: #000 !important;
 }
 
 @media only screen and (max-width : 980px) {
