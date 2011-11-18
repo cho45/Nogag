@@ -15,6 +15,7 @@ common +{
 
 config development => {
 	db => 'db/development.db',
+	explain => 1,
 };
 
 config test => {

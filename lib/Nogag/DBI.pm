@@ -10,10 +10,18 @@ package
 	DBI::db;
 
 use SQL::NamedPlaceholder qw(bind_named);
+use Nogag::Config;
+use Data::Dumper;
 
 sub select {
 	my ($self, $sql, $bind) = @_;
 	($sql, $bind) = bind_named($sql, $bind || {});
+	if (config->param('explain')) {
+		warn Dumper [
+			$sql,
+			@{ $self->selectall_arrayref('EXPLAIN QUERY PLAN ' . $sql, { Slice => {} }, @$bind) }
+		];
+	}
 	$self->selectall_arrayref($sql, { Slice => {} }, @$bind);
 }
 
