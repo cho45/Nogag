@@ -1,5 +1,9 @@
 #!/bin/sh
 
+PLACK_ENV=development
+rm db/development.db
+sqlite3 db/development.db < db/schema.sql
+perl ./script/importer/kusophp.pl
 perl ./script/importer/tdiary.pl
 perl ./script/importer/blosxom.pl
 perl ./script/importer/taglibro.pl
