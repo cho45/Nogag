@@ -21,6 +21,20 @@ sub date {
 	Nogag::Time->from_db($_[0]->{date});
 }
 
+sub grade {
+	my ($self) = @_;
+	my $year = $self->date->add_months(-3)->strftime('%Y');
+	{
+		2002 => '高1',
+		2003 => '高2',
+		2004 => '高3',
+		2005 => '大1',
+		2006 => '大2',
+		2007 => '大3',
+		2008 => '大4',
+	}->{$year} || ''
+}
+
 sub created_at {
 	Nogag::Time->from_db($_[0]->{created_at});
 }
