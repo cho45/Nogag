@@ -152,7 +152,7 @@ route "/" => sub {
 
 	my $entries;
 
-	if (my $query = $r->req->string_param('query')) {
+	if ($r->has_auth && (my $query = $r->req->string_param('query'))) {
 		$entries = $r->dbh->select(q{
 			SELECT * FROM entries
 			WHERE title LIKE :query OR formatted_body LIKE :query
@@ -196,6 +196,8 @@ route "/" => sub {
 
 my $archive = sub {
 	my ($r) = @_;
+	return throw code => 403 unless $r->has_auth;
+
 	my $year  = $r->req->param('year');
 	my $month = $r->req->param('month');
 	my $day   = $r->req->param('day');

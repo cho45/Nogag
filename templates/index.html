@@ -16,11 +16,13 @@
 	<body id="[% id %]">
 		<header id="global-header">
 			<h1 id="header"><a href="/">餡の雲</a></h1>
+			[% IF r.has_auth %]
 			<form action="/" method="GET" id="search-form">
 				<p>
 					<input type="text" name="query" placeholder="Search"/>
 				</p>
 			</form>
+			[% END %]
 		</header>
 
 		<nav id="global-navigation">
