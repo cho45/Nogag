@@ -6,6 +6,10 @@ use warnings;
 
 use Text::Xatena;
 use Cache::MemoryCache;
+use LWP::UserAgent;
+
+my $ua = LWP::UserAgent->new;
+$ua->timeout(5);
 
 my $thx = Text::Xatena->new(
     templates => {
@@ -36,7 +40,10 @@ my $thx = Text::Xatena->new(
 
 sub format {
     my ($class, $string) = @_;
-    my $inline = Nogag::Formatter::Hatena::Inline->new(cache => Cache::MemoryCache->new);
+    my $inline = Nogag::Formatter::Hatena::Inline->new(
+        ua    => $ua,
+        cache => Cache::MemoryCache->new,
+    );
     $thx->format($string,
         inline => $inline
     );
