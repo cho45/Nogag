@@ -1,0 +1,7 @@
+#!/bin/sh
+
+perl ./script/importer/tdiary.pl
+perl ./script/importer/blosxom.pl
+perl ./script/importer/taglibro.pl
+perl ./script/importer/hatena-diary.pl
+
