@@ -54,8 +54,6 @@ for my $day (@{ $doc->findnodes('diary/day') }) {
 	}
 
 
-	my $count = $r->dbh->select('SELECT count(*) FROM entries WHERE `date` = ?', { date => $date })->[0]->{'count(*)'};
-
 	for my $section (@$sections) {
 #		use Data::Dumper;
 #		warn Dumper $section ;
@@ -63,7 +61,8 @@ for my $day (@{ $doc->findnodes('diary/day') }) {
 		my $time = Nogag::Time->gmtime($section->{epoch} + 0);
 		my $date = Nogag::Time->strptime($section->{date}, '%Y-%m-%d');
 
-		my $path = $date->strftime("%Y/%m/%d") . "/" . ($section->{number} + $count);
+		my $count = $r->dbh->select('SELECT count(*) FROM entries WHERE `date` = ?', { date => $date })->[0]->{'count(*)'};
+		my $path  = $date->strftime("%Y/%m/%d") . "/" . ($count + 1);
 		warn $path;
 
 		$r->dbh->update(q{

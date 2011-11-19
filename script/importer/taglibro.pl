@@ -20,7 +20,7 @@ my $dir = dir(shift @ARGV || "diary-2004-2009");
 my $r = Nogag->new({});
 $r->dbh->begin_work;
 
-for my $file (zglob "$dir/*.xml") {
+for my $file (sort { $a cmp $b } zglob "$dir/*.xml") {
 	next if $file =~ /wb/;
 	my $doc = XML::LibXML->load_xml( location => $file );
 	my $xpc = XML::LibXML::XPathContext->new($doc);
