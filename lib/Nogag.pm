@@ -120,17 +120,20 @@ route "/api/edit" => sub {
 					modified_at    => $now,
 				});
 
-				$entry = $r->dbh->select(q{
-					SELECT * FROM entries
-					WHERE id = :id
-				}, {
-					id => $r->dbh->sqlite_last_insert_rowid
-				})->[0];
-
-				Nogag::Model::Entry->bless($entry);
+				$entry->{id} = $r->dbh->sqlite_last_insert_rowid;
 			}
 
-			$r->res->redirect("/" . $entry->path);
+			$entry = $r->dbh->select(q{
+				SELECT * FROM entries
+				WHERE id = :id
+			}, {
+				id => $entry->id
+			})->[0];
+
+			Nogag::Model::Entry->bless($entry);
+
+			# $r->res->redirect("/" . $entry->path);
+			$r->res->redirect(scalar $r->req->param('location'));
 		}
 
 		default {

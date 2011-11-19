@@ -35,7 +35,8 @@ Nogag = {
 			type : "get",
 			dataType : 'json',
 			data : {
-				id : id
+				id : id,
+				location : location.href
 			},
 			success : function (res) {
 				if (article) {
