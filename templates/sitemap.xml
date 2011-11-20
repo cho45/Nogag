@@ -1,0 +1,8 @@
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+	<url><loc>[% r.absolute('/') %]</loc></url>
+	<url><loc>[% r.absolute('/archive') %]</loc></url>
+
+	[% FOR entry IN entries %]
+	<url><loc>[% r.absolute('/' _ entry.path) %]</loc></url>
+	[% END %]
+</urlset>
