@@ -205,11 +205,12 @@ route "/" => sub {
 
 my $archive = sub {
 	my ($r) = @_;
-	return throw code => 403 unless $r->has_auth;
 
 	my $year  = $r->req->param('year');
 	my $month = $r->req->param('month');
 	my $day   = $r->req->param('day');
+
+	return throw code => 403, message => 'Too old entries' if $year < localtime->year - 2 && !$r->has_auth;
 
 	my $start = Nogag::Time->gmtime([
 		0, 0, 0,
@@ -274,7 +275,7 @@ route '/archive' => sub {
 		};
 	}
 
-	$r->stash(archive => $years);
+	$r->stash(archive => [ reverse @$years ]);
 	$r->html('index.html');
 };
 
