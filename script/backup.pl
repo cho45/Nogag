@@ -32,7 +32,7 @@ my $email = Email::MIME->create(
 				content_type => 'text/plain',
 				charset      => 'iso-2022-jp',
 			},
-			body => config->param('db'),
+			body => config->param('db').q(),
 		),
 		Email::MIME->create(
 			attributes => {
@@ -42,10 +42,12 @@ my $email = Email::MIME->create(
 				name         => $name,
 			},
 
-			body => scalar file($compressed)->slurp,
+			body => \file($compressed)->slurp,
 		),
 	]
 );
 
 my $sender = Email::Send->new({mailer => 'SMTP'});
 $sender->send($email);
+
+unlink $compressed;
