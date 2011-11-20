@@ -42,7 +42,7 @@ my $email = Email::MIME->create(
 				name         => $name,
 			},
 
-			body => \file($compressed)->slurp,
+			body => scalar file($compressed)->slurp,
 		),
 	]
 );
