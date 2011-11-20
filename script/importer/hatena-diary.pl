@@ -13,7 +13,7 @@ use Nogag;
 use Nogag::Time;
 use Nogag::Formatter::Hatena;
 
-my $xml = file(shift @ARGV || "../cho45.xml");
+my $xml = file(shift @ARGV || "cho45.xml");
 my $user = $xml->basename;
 $user =~ s/\.xml$//;
 

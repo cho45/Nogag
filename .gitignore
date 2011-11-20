@@ -4,3 +4,5 @@ inc
 blib
 Makefile
 app.conf
+*.xml
+diary-*
