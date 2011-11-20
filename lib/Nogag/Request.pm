@@ -29,10 +29,15 @@ sub path_parameters {
 }
 
 sub number_param {
-	my ($self, $key) = @_;
+	my ($self, $key, $limit) = @_;
 	my $val = $self->param($key) // "";
 	if ($val =~ /^[\d.]+$/) {
-		$val + 0;
+		my $ret = $val + 0;
+		if ($ret <= $limit) {
+			$ret;
+		} else {
+			$limit;
+		}
 	} else {
 		undef;
 	}

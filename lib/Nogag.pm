@@ -152,7 +152,7 @@ route "/api/edit" => sub {
 route "/" => sub {
 	my ($r) = @_;
 
-	my $page = $r->req->number_param('page') || 1;
+	my $page = $r->req->number_param('page', 100) || 1;
 
 	my $entries;
 
@@ -194,10 +194,12 @@ route "/" => sub {
 	$r->stash(entries => $entries);
 	$r->stash(count => $count);
 	$r->stash(next_page => do {
-		my $uri = $r->req->uri->clone;
-		$uri->query_param_delete('page');
-		$uri->query_param_append('page' => $page + 1);
-		$uri->path_query;
+		if ($page < 100) {
+			my $uri = $r->req->uri->clone;
+			$uri->query_param_delete('page');
+			$uri->query_param_append('page' => $page + 1);
+			$uri->path_query;
+		}
 	});
 
 	$r->html('index.html');
@@ -287,7 +289,7 @@ route '/{path:.+}' => sub {
 	my $is_category = ($path =~ m{/$});
 
 	if ($is_category) {
-		my $page = $r->req->number_param('page') || 1;
+		my $page = $r->req->number_param('page', 100) || 1;
 		$path =~ s{/}{}g;
 
 		my $entries = $r->dbh->select(q{
@@ -308,10 +310,12 @@ route '/{path:.+}' => sub {
 		$r->stash(entries => $entries);
 		$r->stash(count => $count);
 		$r->stash(next_page => do {
-			my $uri = $r->req->uri->clone;
-			$uri->query_param_delete('page');
-			$uri->query_param_append('page' => $page + 1);
-			$uri->path_query;
+			if ($page < 100) {
+				my $uri = $r->req->uri->clone;
+				$uri->query_param_delete('page');
+				$uri->query_param_append('page' => $page + 1);
+				$uri->path_query;
+			}
 		});
 	} else {
 		my $entry = $r->dbh->select(q{
