@@ -20,9 +20,10 @@ use parent qw(Nogag::Base);
 
 our @EXPORT = qw(config throw);
 
+route "/" => \&index;
 route "/login" => \&login;
 route "/api/edit" => \&edit; 
-route "/" => \&index;
+route "/sitemap.xml" => \&sitemap; 
 
 # route '/{year:[0-9]{4}}/' => \&archive;
 route '/{year:[0-9]{4}}/{month:[0-9]{2}}/' => \&archive;
@@ -364,6 +365,18 @@ sub permalink {
 	}
 
 	$r->html('index.html');
+}
+
+sub sitemap {
+	my ($r) = @_;
+
+	my $entries = $r->dbh->select(q{
+		SELECT path FROM entries
+	});
+
+	$r->stash(entries => $entries);
+	$r->res->content_type('application/xml; charset=utf-8');
+	$r->res->content(encode_utf8 $r->render('sitemap.xml'));
 }
 
 1;
