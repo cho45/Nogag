@@ -14,16 +14,16 @@ common +{
 };
 
 config development => {
-	db => 'db/development.db',
+	db => root->file('db/development.db'),
 	explain => 1,
 };
 
 config test => {
-	db => 'db/test.db',
+	db => root->file('db/test.db'),
 };
 
 config production => {
-	db => 'db/data.db',
+	db => root->file('db/data.db'),
 };
 
 config default => { parent('development') };

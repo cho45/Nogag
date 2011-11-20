@@ -33,7 +33,7 @@ builder {
 			expires => undef,
 		),
 		store => Plack::Session::Store::File->new(
-			dir          => config->root->subdir('session').q(),
+			dir => config->root->subdir('session').q(),
 		);
 
 	sub {
