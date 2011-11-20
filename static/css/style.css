@@ -386,6 +386,16 @@ form.edit-form textarea {
 	background: #000 !important;
 }
 
+.adsense {
+	text-align: center;
+}
+
+.adsense ins {
+	background: none;
+	padding: 0;
+	margin: 0;
+}
+
 @media only screen and (max-width : 980px) {
 	body {
 		width: 100%;

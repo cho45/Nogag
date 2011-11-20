@@ -20,7 +20,17 @@ use parent qw(Nogag::Base);
 
 our @EXPORT = qw(config throw);
 
-route "/login" => sub {
+route "/login" => \&login;
+route "/api/edit" => \&edit; 
+route "/" => \&index;
+
+# route '/{year:[0-9]{4}}/' => \&archive;
+route '/{year:[0-9]{4}}/{month:[0-9]{2}}/' => \&archive;
+route '/{year:[0-9]{4}}/{month:[0-9]{2}}/{day:[0-9]{2}}/' => \&archive;
+route '/archive' => \&archive_index;
+route '/{path:.+}' => \&permalink;
+
+sub login {
 	my ($r) = @_;
 
 	if ($r->req->method eq 'POST') {
@@ -33,9 +43,9 @@ route "/login" => sub {
 	}
 
 	$r->html('login.html');
-};
+}
 
-route "/api/edit" => sub {
+sub edit {
 	my ($r) = @_;
 	return $r->json({ error => 'require authentication' }) unless $r->has_auth;
 
@@ -146,10 +156,9 @@ route "/api/edit" => sub {
 			});
 		}
 	}
-};
+}
 
-
-route "/" => sub {
+sub index {
 	my ($r) = @_;
 
 	my $page = $r->req->number_param('page', 100) || 1;
@@ -203,9 +212,9 @@ route "/" => sub {
 	});
 
 	$r->html('index.html');
-};
+}
 
-my $archive = sub {
+sub archive {
 	my ($r) = @_;
 
 	my $year  = $r->req->param('year');
@@ -242,11 +251,7 @@ my $archive = sub {
 	$r->html('index.html');
 };
 
-# route '/{year:[0-9]{4}}/' => $archive;
-route '/{year:[0-9]{4}}/{month:[0-9]{2}}/' => $archive;
-route '/{year:[0-9]{4}}/{month:[0-9]{2}}/{day:[0-9]{2}}/' => $archive;
-
-route '/archive' => sub {
+sub archive_index {
 	my ($r) = @_;
 
 	my $dates = $r->dbh->select(q{
@@ -279,9 +284,9 @@ route '/archive' => sub {
 
 	$r->stash(archive => [ reverse @$years ]);
 	$r->html('index.html');
-};
+}
 
-route '/{path:.+}' => sub {
+sub permalink {
 	my ($r) = @_;
 
 	my $path = $r->req->param('path');
@@ -347,16 +352,18 @@ route '/{path:.+}' => sub {
 
 		$r->stash(entries => [ $entry ]);
 		$r->stash(entry => $entry);
+		$r->stash(permalink => 1);
 		$r->stash(old_entry => $old_entry);
 		$r->stash(new_entry => $new_entry);
-		$r->stash(title => $entry->{title} || do {
-			my $body = HTML::Trim::vtrim($entry->formatted_body, 50, '…');
-			$body =~ s/<[^>]+>//g;
-			$body;
+		$r->stash(title => do {
+			my $title = $entry->{title} || HTML::Trim::vtrim($entry->formatted_body, 50, '…');
+			$title =~ s/<[^>]+>//g;
+			$title =~ s{^\s+|\s+$}{}g;
+			$title;
 		});
 	}
 
 	$r->html('index.html');
-};
+}
 
 1;

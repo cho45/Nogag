@@ -53,5 +53,12 @@ sub tags {
 	$self->title_tags->[1];
 }
 
+sub image {
+	my ($self) = @_;
+	my ($img)  = ($self->formatted_body =~ m{(<img[^>]+>)}) or return undef;
+	my ($src)  = ($img =~ m{src=['"]([^'">]+)['"]}) or return undef;
+	$src;
+}
+
 1;
 __END__

@@ -20,4 +20,12 @@
 	<div class="content">
 		[% entry.formatted_body | raw %]
 	</div>
+
+	[% IF permalink %]
+	<footer>
+		[% entry_uri = r.absolute('/' _ entry.path) %]
+		<a href="https://twitter.com/share" class="twitter-share-button" data-url="[%  entry_uri %]" data-text="[% entry.title %]" data-count="horizontal" data-via="cho45">Tweet</a><script type="text/javascript" src="//platform.twitter.com/widgets.js"></script>
+		<iframe src="http://www.facebook.com/plugins/like.php?href=[% entry_uri | uri %]&amp;layout=button_count&amp;show_faces=false&amp;width=70&amp;action=like&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100px; height:21px;" allowTransparency="true"></iframe>
+	</footer>
+	[% END %]
 </article>

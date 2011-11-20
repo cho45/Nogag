@@ -148,5 +148,12 @@ sub require_auth {
 	$r->has_auth or throw code => 302, message => 'Require authentication', location => '/login?redirect=' . uri_escape($r->req->uri);
 }
 
+sub absolute {
+	my ($r, $path) = @_;
+	my $uri = $r->req->uri->clone;
+	$uri->path_query($path);
+	"$uri";
+}
+
 1;
 __END__
