@@ -8,6 +8,7 @@ use warnings;
 use Encode;
 use Time::Seconds;
 use HTML::Trim;
+use URI::QueryParam;
 
 use Nogag::Base;
 use Nogag::Time;
@@ -63,6 +64,9 @@ route "/api/edit" => sub {
 		}
 
 		when ('POST') {
+			my $formatter = "Nogag::Formatter::" . ($entry->format || 'Hatena');
+			$formatter->use;
+
 			if ($entry->id) {
 				$r->dbh->update(q{
 					UPDATE entries
@@ -77,7 +81,7 @@ route "/api/edit" => sub {
 					id             => $entry->id,
 					title          => $r->req->string_param('title'),
 					body           => $r->req->string_param('body'),
-					formatted_body => Nogag::Formatter::Hatena->format($r->req->string_param('body')),
+					formatted_body => $formatter->format($r->req->string_param('body')),
 					modified_at    => gmtime.q(),
 				})
 			} else {
@@ -189,7 +193,12 @@ route "/" => sub {
 
 	$r->stash(entries => $entries);
 	$r->stash(count => $count);
-	$r->stash(page => $page);
+	$r->stash(next_page => do {
+		my $uri = $r->req->uri->clone;
+		$uri->query_param_delete('page');
+		$uri->query_param_append('page' => $page + 1);
+		$uri->path_query;
+	});
 
 	$r->html('index.html');
 };
@@ -297,7 +306,12 @@ route '/{path:.+}' => sub {
 
 		$r->stash(entries => $entries);
 		$r->stash(count => $count);
-		$r->stash(page => $page);
+		$r->stash(next_page => do {
+			my $uri = $r->req->uri->clone;
+			$uri->query_param_delete('page');
+			$uri->query_param_append('page' => $page + 1);
+			$uri->path_query;
+		});
 	} else {
 		my $entry = $r->dbh->select(q{
 			SELECT * FROM entries

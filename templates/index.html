@@ -56,8 +56,8 @@
 			</div>
 
 			<div class="pager">
-				[% IF page %]
-				<a href="?page=[% page + 1 %]" rel="next">&#x25BC; もっと古いエントリ</a>
+				[% IF next_page %]
+				<a href="[% next_page %]" rel="next">&#x25BC; もっと古いエントリ</a>
 				[% END %]
 
 				[% IF old_entry %]
