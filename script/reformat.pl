@@ -1,5 +1,4 @@
 #!/usr/bin/env perl
-$ENV{PLACK_ENV} = 'development';
 use utf8;
 use strict;
 use warnings FATAL => qw(all);

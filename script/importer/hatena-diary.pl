@@ -1,5 +1,4 @@
 #!/usr/bin/env perl
-$ENV{PLACK_ENV} = 'development';
 use v5.14;
 use utf8;
 use strict;
