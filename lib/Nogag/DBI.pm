@@ -17,8 +17,15 @@ sub select {
 	my ($self, $sql, $bind) = @_;
 	($sql, $bind) = bind_named($sql, $bind || {});
 	if (config->param('explain')) {
+		my $s = $sql;
+		$s =~ s{\s+}{ }g;
+		$s =~ s{^\s+|\s+$}{}g;
 		warn Dumper [
-			$sql,
+			[$s, @$bind ? $bind : ()],
+			join(':', (caller(0))[1], (caller(0))[2]),
+			map {
+				$_->{detail}
+			}
 			@{ $self->selectall_arrayref('EXPLAIN QUERY PLAN ' . $sql, { Slice => {} }, @$bind) }
 		];
 	}
