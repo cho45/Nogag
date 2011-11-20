@@ -25,7 +25,7 @@ sub parse_file ($) {
 		$meta->{$+{name}} = $+{value};
 	}
 
-	($meta, join('', @body));
+	($title, $meta, join('', @body));
 }
 
 
@@ -34,9 +34,10 @@ my $files = [
 		$a->{meta}->{creation_date} cmp $b->{meta}->{creation_date}
 	}
 	map {
-		my ($meta, $body) = parse_file($_);
+		my ($title, $meta, $body) = parse_file($_);
 		+{
 			meta       => $meta,
+			title      => $title,
 			body       => $body,
 			file       => $_,
 		}
