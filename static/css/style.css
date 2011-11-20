@@ -387,7 +387,10 @@ form.edit-form textarea {
 }
 
 .adsense {
+	background: #000;
 	text-align: center;
+	padding: 1em;
+	margin: 1em 0;
 }
 
 .adsense ins {
