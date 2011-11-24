@@ -14,6 +14,7 @@ use Plack::Session::State::Cookie;
 use Plack::Session::Store::File;
 
 use Nogag;
+use lib config->root->subdir('lib')->absolute.q();
 
 POSIX::setlocale(&POSIX::LC_ALL, "C");
 

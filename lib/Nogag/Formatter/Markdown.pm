@@ -7,7 +7,7 @@ use warnings;
 use Text::Markdown 'markdown';
 
 sub format {
-	markdown($_[1]);
+	markdown($_[1]->body);
 }
 
 1;

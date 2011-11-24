@@ -76,9 +76,11 @@ sub edit {
 
 		when ('POST') {
 			my $formatter = "Nogag::Formatter::" . ($entry->format || 'Hatena');
-			$formatter->use;
+			$formatter->use or die $@;
 
 			if ($entry->id) {
+				$entry->{body} = $r->req->string_param('body');
+
 				$r->dbh->update(q{
 					UPDATE entries
 					SET
@@ -92,7 +94,7 @@ sub edit {
 					id             => $entry->id,
 					title          => $r->req->string_param('title'),
 					body           => $r->req->string_param('body'),
-					formatted_body => $formatter->format($r->req->string_param('body')),
+					formatted_body => $formatter->format($entry),
 					modified_at    => gmtime.q(),
 				})
 			} else {
@@ -100,6 +102,9 @@ sub edit {
 				my $now  = gmtime;
 				my $count = $r->dbh->select('SELECT count(*) FROM entries WHERE `date` = ?', { date => $date->strftime('%Y-%m-%d') })->[0]->{'count(*)'};
 				my $path  = $date->strftime('%Y/%m/%d/') . ($count + 1);
+
+				$entry->{path} = $path;
+				$entry->{body} = $r->req->string_param('body');
 
 				$r->dbh->update(q{
 					INSERT INTO entries
@@ -127,7 +132,7 @@ sub edit {
 				}, {
 					title          => $r->req->string_param('title'),
 					body           => $r->req->string_param('body'),
-					formatted_body => Nogag::Formatter::Hatena->format($r->req->string_param('body')),
+					formatted_body => Nogag::Formatter::Hatena->format($entry),
 					path           => $path,
 					format         => 'Hatena',
 					date           => $date->strftime('%Y-%m-%d'),
@@ -204,7 +209,7 @@ sub index {
 	$r->stash(entries => $entries);
 	$r->stash(count => $count);
 	$r->stash(next_page => do {
-		if ($page < 100) {
+		if ($page < 100 && @$entries) {
 			my $uri = $r->req->uri->clone;
 			$uri->query_param_delete('page');
 			$uri->query_param_append('page' => $page + 1);
@@ -222,7 +227,7 @@ sub archive {
 	my $month = $r->req->param('month');
 	my $day   = $r->req->param('day');
 
-	return throw code => 403, message => 'Too old entries' if $year < localtime->year - 2 && !$r->has_auth;
+	# return throw code => 403, message => 'Too old entries' if $year < localtime->year - 2 && !$r->has_auth;
 
 	my $start = Nogag::Time->gmtime([
 		0, 0, 0,
@@ -316,7 +321,7 @@ sub permalink {
 		$r->stash(entries => $entries);
 		$r->stash(count => $count);
 		$r->stash(next_page => do {
-			if ($page < 100) {
+			if ($page < 100 && @$entries) {
 				my $uri = $r->req->uri->clone;
 				$uri->query_param_delete('page');
 				$uri->query_param_append('page' => $page + 1);
@@ -375,6 +380,7 @@ sub sitemap {
 	});
 
 	$r->stash(entries => $entries);
+	archive_index($r);
 	$r->res->content_type('application/xml; charset=utf-8');
 	$r->res->content(encode_utf8 $r->render('sitemap.xml'));
 }

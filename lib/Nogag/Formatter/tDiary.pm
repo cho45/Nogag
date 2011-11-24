@@ -6,7 +6,8 @@ use strict;
 use warnings;
 
 sub format {
-	my ($class, $string) = @_;
+	my ($class, $entry) = @_;
+	my $string = $entry->body;
 	$string =~ s{<%=([\s\S]+?)%>}{
 		$class->format_plugin($1);
 	}eg;

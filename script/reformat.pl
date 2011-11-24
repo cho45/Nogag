@@ -5,6 +5,7 @@ use warnings FATAL => qw(all);
 use lib lib => glob 'modules/*/lib';
 
 use Nogag;
+use Nogag::Model::Entry;
 use UNIVERSAL::require;
 use Encode;
 
@@ -14,15 +15,16 @@ $r->dbh->begin_work;
 my $rows = $r->dbh->select(q{
 	SELECT * FROM entries
 	ORDER BY `date` DESC, `path` ASC
-	LIMIT 500
 });
 for my $row (@$rows) {
-	my $formatter = "Nogag::Formatter::" . $row->{format};
+	Nogag::Model::Entry->bless($row);
+
+	my $formatter = "Nogag::Formatter::" . $row->format;
 	$formatter->use;
 
-	warn $row->{id};
+	warn $row->id;
 
-	my $formatted_body = $formatter->format($row->{body});
+	my $formatted_body = $formatter->format($row);
 
 	$r->dbh->update(q{
 		UPDATE entries

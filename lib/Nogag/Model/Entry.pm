@@ -14,8 +14,13 @@ sub bless {
 sub id             { $_[0]->{id} }
 sub body           { $_[0]->{body} }
 sub formatted_body { $_[0]->{formatted_body} }
-sub path           { $_[0]->{path} }
 sub format         { $_[0]->{format} }
+
+sub path {
+	my ($self, $prefix) = @_;
+	$prefix ||= '';
+	$prefix . $self->{path};
+}
 
 sub date {
 	Nogag::Time->from_db($_[0]->{date});

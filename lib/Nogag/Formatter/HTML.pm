@@ -4,6 +4,6 @@ use utf8;
 use strict;
 use warnings;
 
-sub format { $_[1] }
+sub format { $_[1]->body }
 
 1;

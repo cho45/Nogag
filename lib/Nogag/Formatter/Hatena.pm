@@ -39,12 +39,13 @@ my $thx = Text::Xatena->new(
 );
 
 sub format {
-    my ($class, $string) = @_;
+    my ($class, $entry) = @_;
     my $inline = Nogag::Formatter::Hatena::Inline->new(
         ua    => $ua,
         cache => Cache::MemoryCache->new,
+        entry => $entry,
     );
-    $thx->format($string,
+    $thx->format($entry->body,
         inline => $inline
     );
 }
@@ -76,9 +77,9 @@ match qr{\[?f:id:([^:]+):(\d+)([jpeg]):image\]?} => sub {
     my ($self, $user, $id, $type) = @_;
 
     render(q{
-        <a href="[% image %]" class="hatena-fotolife"><img src="[% image %]" alt="photo" class="hatena-fotolife"></a>
+        <a href="[% link %]" class="hatena-fotolife"><img src="[% image %]" alt="photo" class="hatena-fotolife"/></a>
     }, {
-        link  => "http://f.hatena.ne.jp/$user/$id",
+        link  => $self->{entry}->path('/'),
         image => sprintf("http://cdn-ak.f.st-hatena.com/images/fotolife/%s/%s/%s/%s.jpg", substr($user, 0, 1), $user, substr($id, 0, 8), $id),
     });
 };
@@ -122,7 +123,6 @@ match qr{\[?asin:([^:]+):detail\]?}=> sub {
                 <p class="title"><a href="[% link %]">[% title %]</a></p>
                 <p class="author">[% author %]</p>
             </figcaption>
-            <hr />
         </figure>
         <p>
     }, {

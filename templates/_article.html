@@ -1,6 +1,6 @@
 <article class="hentry [% entry.tags.join(' ') %] [% IF is_first %]first[% END %]" id="post-[% entry.created_at.epoch %]" data-id="[% entry.id %]">
 	<header>
-		<h1><a href="/[% entry.path %]" class="bookmark" rel="bookmark">[% entry.title || '-' %]</a></h1>
+		<h1><a href="/[% entry.path %]" class="bookmark" rel="bookmark">[% entry.title || '✖' %]</a></h1>
 		<span class="metadata">
 			[% FOR tag IN entry.tags %]
 			<a href="/[% tag %]/">[% tag %]</a>
@@ -23,9 +23,12 @@
 
 	[% IF permalink %]
 	<footer>
-		[% entry_uri = r.absolute('/' _ entry.path) %]
-		<a href="https://twitter.com/share" class="twitter-share-button" data-url="[%  entry_uri %]" data-text="[% entry.title %]" data-count="horizontal" data-via="cho45">Tweet</a><script type="text/javascript" src="//platform.twitter.com/widgets.js"></script>
-		<iframe src="http://www.facebook.com/plugins/like.php?href=[% entry_uri | uri %]&amp;layout=button_count&amp;show_faces=false&amp;width=70&amp;action=like&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100px; height:21px;" allowTransparency="true"></iframe>
+		<div class="social-buttons">
+			[% entry_uri = r.absolute('/' _ entry.path) %]
+			<a href="https://twitter.com/share" class="twitter-share-button" data-url="[%  entry_uri %]" data-text="[% entry.title %]" data-count="horizontal" data-via="cho45">Tweet</a><script type="text/javascript" src="//platform.twitter.com/widgets.js"></script>
+			<iframe src="http://www.facebook.com/plugins/like.php?href=[% entry_uri | uri %]&amp;layout=button_count&amp;show_faces=false&amp;width=70&amp;action=like&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100px; height:21px;" allowTransparency="true"></iframe>
+			<script type="text/javascript" src="http://apis.google.com/js/plusone.js"></script><g:plusone size="medium"></g:plusone>
+		</div>
 	</footer>
 	[% END %]
 </article>

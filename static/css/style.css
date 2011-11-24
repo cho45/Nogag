@@ -217,12 +217,14 @@ form.edit-form textarea {
 }
 
 .hfeed article {
+	clear: both;
 	background: #111;
 	padding: 5px 30px;
 	margin: 0 0 10px 0;
 }
 
 .hfeed .date {
+	clear: both;
 	display: block;
 	background: #2F3839;
 	margin: 20px 0;
@@ -287,6 +289,18 @@ form.edit-form textarea {
 .hfeed article.photo .metadata {
 }
 
+.hfeed article footer {
+}
+
+.hfeed article footer .social-buttons {
+	padding: 1em 0;
+	opacity: 0.9;
+}
+
+.hfeed article footer .social-buttons iframe {
+	vertical-align: middle;
+}
+
 .amazon {
 	margin: 0;
 	padding: 0;
@@ -298,6 +312,12 @@ form.edit-form textarea {
 }
 
 .amazon .detail {
+}
+
+.amazon:after {
+	display: block;
+	clear: left;
+	content: "";
 }
 
 #global-footer {
@@ -391,6 +411,7 @@ form.edit-form textarea {
 	text-align: center;
 	padding: 1em;
 	margin: 1em 0;
+	overflow: hidden;
 }
 
 .adsense ins {

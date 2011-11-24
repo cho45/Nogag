@@ -2,6 +2,14 @@
 	<url><loc>[% r.absolute('/') %]</loc></url>
 	<url><loc>[% r.absolute('/archive') %]</loc></url>
 
+	[% FOR year IN archive %]
+	[% FOR month IN year.months %]
+	[% IF month.count %]
+	<url><loc>[% r.absolute(month.link) %]</loc></url>
+	[% END %]
+	[% END %]
+	[% END %]
+
 	[% FOR entry IN entries %]
 	<url><loc>[% r.absolute('/' _ entry.path) %]</loc></url>
 	[% END %]

@@ -20,7 +20,6 @@
 		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 		<![endif]-->
 
-
 		<script type="text/javascript">
 			var _gaq = _gaq || [];
 			_gaq.push(['_setAccount', 'UA-7079167-5']);
@@ -33,7 +32,7 @@
 			})();
 		</script>
 	</head>
-	<body id="[% id %]">
+	<body>
 		<header id="global-header">
 			<h1 id="header"><a href="/">餡の雲</a></h1>
 			[% IF r.has_auth %]
@@ -60,23 +59,18 @@
 			[% IF entries %]
 
 			<div class="hfeed">
-				[% number = 0 %]
+				[% num  = 0  %]
 				[% date = '' %]
 				[% FOR entry IN entries %]
 				[% d = entry.date.strftime("%a, %b %e. %Y") %]
 				[% is_first = (date != d) %]
-				[% date = d %]
 
 				[% IF is_first %]
-				<div class="date"><a href="[% entry.date.strftime('/%Y/%m/%d/') %]">[% date %]</a></div>
-				[% END %]
-
-				[% number = number + 1 %]
-				[% INCLUDE "_article.html" WITH entry = entry %]
-
-				[% IF number == 1 %]
+				[% IF date && !num %]
+				[% num = 1 %]
 				<div class="adsense">
-					<script type="text/javascript"><!--
+					<script type="text/javascript">
+					<!--
 					google_ad_client = "ca-pub-4629424540171624";
 					/* lowreal.net餡の雲 */
 					google_ad_slot = "2606789716";
@@ -84,11 +78,19 @@
 					google_ad_height = 90;
 					//-->
 					</script>
-					<script type="text/javascript"
-					src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
-					</script>
+					<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"></script>
 				</div>
 				[% END %]
+
+				[% date = d %]
+				<div class="date"><a href="[% entry.date.strftime('/%Y/%m/%d/') %]">[% date %]</a></div>
+				[% END %]
+
+				[% INCLUDE "_article.html" WITH entry = entry %]
+
+				[% ELSE %]
+
+				<p>もうエントリはありません</p>
 
 				[% END %]
 			</div>
@@ -99,11 +101,15 @@
 				[% END %]
 
 				[% IF old_entry %]
-				<a href="/[% old_entry.path %]" rel="next">&#x25BC; [% (old_entry.title || '古') | trim(14) %]</a>
+				<a href="/[% old_entry.path %]" rel="next">&#x25C0; [% (old_entry.title || '古') | trim(14) %]</a>
+				[% END %]
+
+				[% IF entry %]
+				<a href="/[% entry.date.strftime('%Y/%m/%d/') %]">&#x25B2; この日のエントリ</a>
 				[% END %]
 
 				[% IF new_entry %]
-				<a href="/[% new_entry.path %]" rel="prev">&#x25B2; [% (new_entry.title || '新') | trim(14) %]</a>
+				<a href="/[% new_entry.path %]" rel="prev">[% (new_entry.title || '新') | trim(14) %] &#x25B6;</a>
 				[% END %]
 			</div>
 
@@ -132,7 +138,8 @@
 
 		<footer id="global-footer">
 			<div class="adsense">
-				<script type="text/javascript"><!--
+				<script type="text/javascript">
+				<!--
 				google_ad_client = "ca-pub-4629424540171624";
 				/* lowreal.net餡の雲 */
 				google_ad_slot = "2606789716";
@@ -140,9 +147,7 @@
 				google_ad_height = 90;
 				//-->
 				</script>
-				<script type="text/javascript"
-				src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
-				</script>
+				<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"></script>
 			</div>
 
 			<p>
@@ -152,6 +157,53 @@
 				<a href="http://www.lowreal.net/"><img src="http://www.lowreal.net/images/lowreal.net-logo.png" alt="cho45@lowreal.net"/></a>
 			</p>
 		</footer>
+
+
+		<!--script type="text/javascript" src="http://s.hatena.ne.jp/js/HatenaStar.js"></script>
+		<script type="text/javascript">
+			Hatena.Star.Token = '7743b0e60f0e3b267f9723d3a5cf96981a59e4f3';
+
+			Hatena.Star.SiteConfig = {
+				entryNodes: {
+					'article.hentry': {
+						uri: 'a.bookmark',
+						title: 'h1',
+						container: 'h1'
+					}
+				}
+			};
+		</script>
+		<style type="text/css">
+			.hatena-star-add-button-image {
+				background-image: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20101127/20101127010806.gif');
+			}
+
+			.hatena-star-star-image {
+				background-image: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20101127/20101127010252.gif');
+			}
+
+			.hatena-star-green-star-image {
+				background-image: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20100115/20100115025631.gif');
+			}
+
+			.hatena-star-red-star-image {
+				background-image: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20100115/20100115025800.gif');
+			}
+
+			.hatena-star-blue-star-image {
+				background-image: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20100115/20100115025902.gif');
+			}
+
+			.hatena-star-comment-container {
+				display: none;
+			}
+
+			.hatena-star-star-container {
+				display: inline-block;
+				vertical-align: middle;
+				padding: 0 10px 5px 10px;
+			}
+		</style-->
 
 		<script src="/js/daterelative.js"></script>
 		<script src="http://code.jquery.com/jquery-1.7.min.js"></script>
