@@ -68,18 +68,7 @@
 				[% IF is_first %]
 				[% IF date && !num %]
 				[% num = 1 %]
-				<div class="adsense">
-					<script type="text/javascript">
-					<!--
-					google_ad_client = "ca-pub-4629424540171624";
-					/* lowreal.net餡の雲 */
-					google_ad_slot = "2606789716";
-					google_ad_width = 728;
-					google_ad_height = 90;
-					//-->
-					</script>
-					<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"></script>
-				</div>
+				[% INCLUDE "_adsense.html" %]
 				[% END %]
 
 				[% date = d %]
@@ -137,19 +126,7 @@
 		</div>
 
 		<footer id="global-footer">
-			<div class="adsense">
-				<script type="text/javascript">
-				<!--
-				google_ad_client = "ca-pub-4629424540171624";
-				/* lowreal.net餡の雲 */
-				google_ad_slot = "2606789716";
-				google_ad_width = 728;
-				google_ad_height = 90;
-				//-->
-				</script>
-				<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"></script>
-			</div>
-
+			[% INCLUDE "_adsense.html" %]
 			<p>
 				[% count %]
 			</p>

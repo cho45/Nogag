@@ -242,6 +242,7 @@ form.edit-form textarea {
 }
 
 .hfeed article header h1 {
+	height: 30px;
 	text-align: left;
 	padding: 3px 0;
 	margin: 0;
@@ -493,5 +494,36 @@ form.edit-form textarea {
 		margin: 0;
 		padding: 10px 0;
 		width: 100%;
+	}
+
+	.pager {
+		margin: 0;
+		padding: 10px;
+	}
+
+	.pager a:link ,
+	.pager a:visited ,
+	.pager a:hover {
+		display: inline-block;
+		padding: 10px 0;
+		text-align: center;
+		width: 100%;
+		margin: 5px 0;
+		background: #333;
+		text-decoration: none;
+		color: #fff;
+	}
+
+	.adsense {
+		width: 100%;
+		background: #000;
+		text-align: center;
+		padding: 1em 10px;
+		margin: 1em 0;
+		overflow: hidden;
+	}
+
+	.adsense iframe {
+		margin: auto;
 	}
 }

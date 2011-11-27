@@ -155,5 +155,12 @@ sub absolute {
 	"$uri";
 }
 
+sub is_smartphone {
+	my ($r) = @_;
+	$r->{_is_smartphone} //= do {
+		$r->req->user_agent =~ /Android|iPhone|iPod/;
+	};
+}
+
 1;
 __END__
