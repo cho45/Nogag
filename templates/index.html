@@ -4,17 +4,36 @@
 	>
 	<head>
 		<title>[% title ? title _ " - " : "" %]餡の雲</title>
+		<meta name="description" content="写真・文章による、ある人間の人生の記録"/>
 		<meta charset="utf-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 		<link rel="stylesheet" type="text/css" href="/css/style.css" media="screen,tv"/>
 		<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"/>
-		
+
 		<meta property="og:title" content="[% title ? title _ " - " : "" %]餡の雲"/>
 		<meta property="og:type" content="[% permalink ? 'article' : 'blog' %]"/>
 		<meta property="og:url" content="[% permalink ?  r.absolute('/' _ entry.path) : r.absolute('/') %]"/>
 		[% IF entry.image %]
 		<meta property="og:image" content="[% entry.image %]"/>
 		[% END %]
+
+		<!--
+		<rdf:RDF
+			xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+			xmlns:dc="http://purl.org/dc/elements/1.1/"
+			xmlns:foaf="http://xmlns.com/foaf/0.1/">
+
+			<rdf:Description rdf:about="[% permalink ?  r.absolute('/' _ entry.path) : r.absolute('/') %]">
+				<foaf:maker rdf:parseType="Resource">
+					<foaf:holdsAccount>
+						<foaf:OnlineAccount foaf:accountName="cho45">
+							<foaf:accountServiceHomepage rdf:resource="http://www.hatena.ne.jp/"/>
+						</foaf:OnlineAccount>
+					</foaf:holdsAccount>
+				</foaf:maker>
+			</rdf:Description>
+		</rdf:RDF>
+		-->
 
 		<!--[if lt IE 9]>
 		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -50,10 +69,6 @@
 				<li><a href="/archive">アーカイブ</a></li>
 			</ul>
 		</nav>
-
-		[% IF error %]
-		<p class="error">[% error %]</p>
-		[% END %]
 
 		<div id="content">
 			[% IF entries %]
@@ -102,7 +117,7 @@
 				[% END %]
 			</div>
 
-			[% END %]
+			[% END # IF entries %]
 
 			[% IF archive %]
 			<section id="archive">
@@ -122,7 +137,29 @@
 				[% END %]
 				<hr />
 			</section>
-			[% END %]
+			[% END # IF archive %]
+
+			[% IF error %]
+			<div class="hfeed">
+				<article class="hentry">
+					<header>
+						<h1><a href="/">[% error.code %]: [% error.message %]</a></h1>
+					</header>
+					<div class="content">
+						[% IF error.code == 404 %]
+						<script type="text/javascript">
+							var GOOG_FIXURL_LANG = 'ja';
+							var GOOG_FIXURL_SITE = 'http://lowreal.net/'
+						</script>
+						<script type="text/javascript" src="http://linkhelp.clients.google.com/tbproxy/lh/wm/fixurl.js">
+						</script>
+						[% ELSE %]
+						<p>[% error.code %]: [% error.message %]</p>
+						[% END %]
+					</div>
+				</article>
+			</div>
+			[% END # IF error %]
 		</div>
 
 		<footer id="global-footer">

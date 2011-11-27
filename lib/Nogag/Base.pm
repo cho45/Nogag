@@ -82,8 +82,9 @@ sub run {
 			$r->res->code($e->{code});
 			$r->res->header('X-Message' => $e->{message}) if $e->{message};
 			$r->res->header('Location' => $e->{location}) if $e->{location};
-			$r->res->content_type('text/plain');
-			$r->res->content($e->{message});
+			$r->stash(error => $e);
+			$r->stash(title => sprintf('Error %s', $e->{code}));
+			$r->html('index.html');
 		} else {
 			die $e;
 		}

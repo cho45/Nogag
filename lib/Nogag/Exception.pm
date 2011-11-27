@@ -14,5 +14,7 @@ sub new {
     bless \%opts, $class;
 }
 
+sub code { $_[0]->{code} }
+sub message { $_[0]->{message} }
 
 1;
