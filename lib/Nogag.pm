@@ -22,8 +22,9 @@ our @EXPORT = qw(config throw);
 
 route "/" => \&index;
 route "/login" => \&login;
-route "/api/edit" => \&edit; 
-route "/sitemap.xml" => \&sitemap; 
+route "/api/edit" => \&edit;
+route "/sitemap.xml" => \&sitemap;
+route "/feed" => \&feed;
 
 # route '/{year:[0-9]{4}}/' => \&archive;
 route '/{year:[0-9]{4}}/{month:[0-9]{2}}/' => \&archive;
@@ -383,6 +384,25 @@ sub sitemap {
 	archive_index($r);
 	$r->res->content_type('application/xml; charset=utf-8');
 	$r->res->content(encode_utf8 $r->render('sitemap.xml'));
+}
+
+sub feed {
+	my ($r) = @_;
+
+	my $entries = $r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE title LIKE "%[photo]%"
+		ORDER BY `date` DESC, `path` ASC
+		LIMIT :limit
+	}, {
+		limit => 7,
+	});
+
+	Nogag::Model::Entry->bless($_) for @$entries;
+
+	$r->stash(entries => $entries);
+	$r->res->content_type('application/atom+xml; charset=utf-8');
+	$r->res->content(encode_utf8 $r->render('feed.xml'));
 }
 
 1;

@@ -14,6 +14,11 @@ sub cdate {
 	$self->strftime('%Y-%m-%d %H:%M:%S');
 }
 
+sub iso8601 {
+	my ($self) = @_;
+	$self->strftime('%Y-%m-%dT%H:%M:%SZ');
+}
+
 sub from_db {
 	my ($class, $db) = @_;
 	$class->strptime($db, '%Y-%m-%d %H:%M:%S') || $class->strptime($db, '%Y-%m-%d');
