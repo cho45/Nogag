@@ -25,6 +25,7 @@ route "/login" => \&login;
 route "/api/edit" => \&edit;
 route "/sitemap.xml" => \&sitemap;
 route "/feed" => \&feed;
+route "/robots.txt" => \&robots_txt;
 
 # route '/{year:[0-9]{4}}/' => \&archive;
 route '/{year:[0-9]{4}}/{month:[0-9]{2}}/' => \&archive;
@@ -403,6 +404,12 @@ sub feed {
 	$r->stash(entries => $entries);
 	$r->res->content_type('application/atom+xml; charset=utf-8');
 	$r->res->content(encode_utf8 $r->render('feed.xml'));
+}
+
+sub robots_txt {
+	my ($r) = @_;
+	$r->res->content_type('text/plain');
+	$r->res->content('Sitemap: ' . $r->absolute('/sitemap.xml'));
 }
 
 1;
