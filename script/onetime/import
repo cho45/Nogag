@@ -1,9 +1,17 @@
 #!/bin/sh
 
-PLACK_ENV=development
-#rm db/development.db
-#sqlite3 db/development.db < db/schema.sql
-sqlite3 db/development.db 'DELETE FROM entries WHERE created_at < "2011-11-08 00:00:00"'
+export PLACK_ENV=production
+
+if [ "$PLACK_ENV" = "development" ]; then
+	#rm db/development.db
+	#sqlite3 db/development.db < db/schema.sql
+	sqlite3 db/development.db 'DELETE FROM entries WHERE created_at < "2011-11-08 00:00:00"'
+fi
+
+if [ "$PLACK_ENV" = "production" ]; then
+	sqlite3 db/data.db 'DELETE FROM entries WHERE created_at < "2011-11-08 00:00:00"'
+fi
+
 perl ./script/importer/kusophp.pl
 perl ./script/importer/tdiary.pl
 perl ./script/importer/blosxom.pl

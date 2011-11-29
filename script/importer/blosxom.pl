@@ -13,6 +13,7 @@ use Encode;
 use Nogag;
 use Nogag::Time;
 use Nogag::Formatter::Markdown;
+use Nogag::Model::Entry;
 
 my $dir = dir(shift @ARGV || "diary-2006-2009");
 
@@ -82,12 +83,12 @@ for my $file (@$files) {
 	}, {
 		title          => decode_utf8($file->{title} || ''),
 		body           => decode_utf8($file->{body}),
-		formatted_body => Nogag::Formatter::Markdown->format(decode_utf8($file->{body})),
+		formatted_body => Nogag::Formatter::Markdown->format(Nogag::Model::Entry->bless({ path => $path, body => decode_utf8($file->{body}) })),
 		path           => $path,
 		date           => $date->strftime('%Y-%m-%d'),
 		created_at     => $time,
 		modified_at    => $time,
-	});
+	}),
 }
 
 $r->dbh->commit;

@@ -177,7 +177,7 @@ sub index {
 		$entries = $r->dbh->select(q{
 			SELECT * FROM entries
 			WHERE title LIKE :query OR formatted_body LIKE :query
-			ORDER BY `date` DESC, `path` ASC
+			ORDER BY `date` DESC, `created_at` ASC
 			LIMIT :limit OFFSET :offset
 		}, {
 			query  => "%$query%",
@@ -198,7 +198,7 @@ sub index {
 		$entries = $r->dbh->select(q{
 			SELECT * FROM entries
 			WHERE `date` IN (:dates)
-			ORDER BY `date` DESC, `path` ASC
+			ORDER BY `date` DESC, `created_at` ASC
 		}, {
 			dates => [ map { $_->{date} } @$dates ]
 		});
@@ -246,7 +246,7 @@ sub archive {
 	my $entries = $r->dbh->select(q{
 		SELECT * FROM entries
 		WHERE :start <= date AND date < :end
-		ORDER BY path
+		ORDER BY created_at
 	}, {
 		start => $start->strftime("%Y-%m-%d"),
 		end   => $end->strftime("%Y-%m-%d"),
@@ -308,7 +308,7 @@ sub permalink {
 		my $entries = $r->dbh->select(q{
 			SELECT * FROM entries
 			WHERE title LIKE :query OR formatted_body LIKE :query
-			ORDER BY `date` DESC, `path` ASC
+			ORDER BY `date` DESC, `created_at` ASC
 			LIMIT :limit OFFSET :offset
 		}, {
 			query  => "%[$path]%",
@@ -393,7 +393,7 @@ sub feed {
 	my $entries = $r->dbh->select(q{
 		SELECT * FROM entries
 		WHERE title LIKE "%[photo]%"
-		ORDER BY `date` DESC, `path` ASC
+		ORDER BY `date` DESC, `created_at` ASC
 		LIMIT :limit
 	}, {
 		limit => 7,

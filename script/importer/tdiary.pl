@@ -12,6 +12,7 @@ use XML::LibXML;
 use Nogag;
 use Nogag::Time;
 use Nogag::Formatter::Markdown;
+use Nogag::Model::Entry;
 
 my $dir = dir(shift @ARGV || "diary-2003-2004");
 
@@ -53,7 +54,7 @@ sub insert {
 	}, {
 		title          => $hash->{title} || '',
 		body           => $hash->{body},
-		formatted_body => $formatter->format($hash->{body}),
+		formatted_body => $formatter->format(Nogag::Model::Entry->bless({ path => $path, body => $hash->{body} })),
 		path           => $path,
 		format         => $hash->{format},
 		date           => $hash->{date}->strftime('%Y-%m-%d'),

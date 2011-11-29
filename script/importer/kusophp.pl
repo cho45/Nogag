@@ -13,6 +13,7 @@ use HTML::TreeBuilder::XPath;
 use Nogag;
 use Nogag::Time;
 use Nogag::Formatter::Markdown;
+use Nogag::Model::Entry;
 
 my $dir = dir(shift @ARGV || "diary-2002-2003");
 
@@ -25,8 +26,8 @@ sub insert {
 	my $formatter = "Nogag::Formatter::" . $hash->{format};
 	$formatter->use;
 
-	my $count = $r->dbh->select('SELECT count(*) FROM entries WHERE `date` = ?', { date => $hash->{date} })->[0]->{'count(*)'};
-	my $path  = $hash->{date}->strftime("%Y/%m/%d") . "/" . ($count + 1);
+	my $count = $r->dbh->select('SELECT count(*) FROM entries WHERE `date` = ?', { date => $hash->{date}->strftime('%Y-%m-%d') })->[0]->{'count(*)'} + 1;
+	my $path  = $hash->{date}->strftime("%Y/%m/%d") . "/" . $count;
 	warn $path;
 
 	$r->dbh->update(q{
@@ -55,7 +56,7 @@ sub insert {
 	}, {
 		title          => $hash->{title} || '',
 		body           => $hash->{body},
-		formatted_body => $formatter->format($hash->{body}),
+		formatted_body => $formatter->format(Nogag::Model::Entry->bless({ path => $path, body => $hash->{body} })),
 		path           => $path,
 		format         => $hash->{format},
 		date           => $hash->{date}->strftime('%Y-%m-%d'),

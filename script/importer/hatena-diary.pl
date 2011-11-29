@@ -10,6 +10,7 @@ use XML::LibXML;
 
 use Nogag;
 use Nogag::Time;
+use Nogag::Model::Entry;
 use Nogag::Formatter::Hatena;
 
 my $xml = file(shift @ARGV || "cho45.xml");
@@ -60,8 +61,8 @@ for my $day (@{ $doc->findnodes('diary/day') }) {
 		my $time = Nogag::Time->gmtime($section->{epoch} + 0);
 		my $date = Nogag::Time->strptime($section->{date}, '%Y-%m-%d');
 
-		my $count = $r->dbh->select('SELECT count(*) FROM entries WHERE `date` = ?', { date => $date })->[0]->{'count(*)'};
-		my $path  = $date->strftime("%Y/%m/%d") . "/" . ($count + 1);
+		my $count = $r->dbh->select('SELECT count(*) FROM entries WHERE `date` = ?', { date => $date->strftime('%Y-%m-%d') })->[0]->{'count(*)'} + 1;
+		my $path  = $date->strftime("%Y/%m/%d") . "/" . $count;
 		warn $path;
 
 		$r->dbh->update(q{
@@ -90,7 +91,7 @@ for my $day (@{ $doc->findnodes('diary/day') }) {
 		}, {
 			title          => $section->{title} || '',
 			body           => $section->{body},
-			formatted_body => Nogag::Formatter::Hatena->format($section->{body}),
+			formatted_body => Nogag::Formatter::Hatena->format(Nogag::Model::Entry->bless({ path => $path, body => $section->{body} })),
 			path           => $path,
 			date           => $date->strftime('%Y-%m-%d'),
 			created_at     => $time,

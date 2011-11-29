@@ -14,6 +14,7 @@ use XML::LibXML;
 use Nogag;
 use Nogag::Time;
 use Nogag::Formatter::Markdown;
+use Nogag::Model::Entry;
 
 my $dir = dir(shift @ARGV || "diary-2004-2009");
 
