@@ -3,7 +3,7 @@
 body {
 	color: #333;
 	background: #fff;
-	font-size: 12pt;
+	font-size: 11pt;
 	font-family: serif;
 	line-height: 1.99;
 }
@@ -21,6 +21,10 @@ a.hatena-fotolife {
 	padding: 1em 0;
 	display: block;
 	page-break-inside: avoid;
+}
+
+img {
+	max-width: 100%;
 }
 
 hr {
@@ -62,7 +66,7 @@ hr {
 }
 
 .hfeed article {
-	padding: 3em 0;
+	padding: 1em 0 1em 0;
 }
 
 .hfeed article header h1 {
@@ -80,6 +84,10 @@ hr {
 	margin: 0;
 	font-size: 80%;
 	color: #999;
+}
+
+.hfeed article header .metadata time {
+	display: none;
 }
 
 .hfeed article .content {
