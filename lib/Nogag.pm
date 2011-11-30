@@ -392,11 +392,13 @@ sub feed {
 
 	my $entries = $r->dbh->select(q{
 		SELECT * FROM entries
-		WHERE title LIKE "%[photo]%"
+		WHERE
+			title LIKE "%[photo]%" OR
+			formatted_body LIKE "%nuso-22%"
 		ORDER BY `date` DESC, `created_at` ASC
 		LIMIT :limit
 	}, {
-		limit => 7,
+		limit => 50,
 	});
 
 	Nogag::Model::Entry->bless($_) for @$entries;

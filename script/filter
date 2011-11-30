@@ -1,0 +1,47 @@
+#!/usr/bin/env perl
+
+use v5.14;
+use strict;
+use warnings;
+use utf8;
+use Term::ANSIColor;
+use HTTP::BrowserDetect;
+use Net::DNS;
+
+my $dns = Net::DNS::Resolver->new;
+sub ptr ($) {
+	my $addr = shift;
+	if (my $query = $dns->search($addr, 'PTR')) {
+		for my $rr ($query->answer) {
+			if ($rr->type eq "PTR") {
+				return $rr->ptrdname;
+			}
+		}
+	}
+}
+
+while (<>) {
+	chomp;
+	my %data = map { split /\s*:\s*/, $_, 2 } split /\t/;
+
+	my $ua = HTTP::BrowserDetect->new($data{ua});
+	$ua->{tests}->{ROBOT} ||= ($data{ua} =~ m{Plagger|Mediapartners-Google|Reeder|RSS|BOT|robot|DELCO READER|NATSU-MICAN|Antenna/});
+
+	$data{browser} = colored($data{ua}, $ua->robot ? 'blue' : 'cyan');
+	$data{taken}  *= 1000;
+	$data{s}       = colored($data{s}, 'magenta');
+	$data{host}    = ptr($data{addr}) || $data{addr};
+	$data{time}    = substr($data{time}, 12, 8);
+
+	given ($data{status}) {
+		when (/^2/) { $data{status} = colored $data{status}, 'green' }
+		when (/^3/) { $data{status} = colored $data{status}, 'yellow' }
+		when (/^4/) { $data{status} = colored $data{status}, 'red' }
+		when (/^5/) { $data{status} = colored $data{status}, 'red' }
+	}
+
+print <<EOS
+$data{time} $data{req} $data{status} ($data{taken} msec) $data{msg} $data{browser} $data{s} $data{host}
+EOS
+}
+
