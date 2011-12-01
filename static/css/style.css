@@ -59,6 +59,17 @@ blockquote {
 	margin: 1em 0;
 }
 
+nav,
+header,
+footer,
+figure,
+figcaption,
+section,
+article {
+	display: block;
+}
+
+
 figcaption {
 	font-size: 90%;
 }

@@ -85,6 +85,10 @@ sub request {
 	$res;
 }
 
+sub path ($) {
+	"http://lowreal.net:" . $proxy->port . shift;
+}
+
 subtest backend => sub {
 	request(GET => 'http://lowreal.net/')->{do}->(sub {
 		ok $_->{env}->{HTTP_X_FORWARDED_FOR};
@@ -100,72 +104,116 @@ subtest redirect => sub {
 
 	request(GET => 'http://lowreal.net/logs/latest')->{do}->(sub {
 		ok !$_->{env};
-		like $_->header('Location'), qr'http://lowreal.net:\d+/';
+		is $_->code, 301;
+		is $_->header('Location'), path('/');
 	});
 
 	request(GET => 'http://lowreal.net/logs/latest.rdf')->{do}->(sub {
 		ok !$_->{env};
-		like $_->header('Location'), qr'http://lowreal.net:\d+/feed';
+		is $_->code, 301;
+		is $_->header('Location'), path('/feed');
 	});
 
 	request(GET => 'http://lowreal.net/logs/latest.atom')->{do}->(sub {
 		ok !$_->{env};
-		like $_->header('Location'), qr'http://lowreal.net:\d+/feed';
+		is $_->code, 301;
+		is $_->header('Location'), path('/feed');
 	});
 
 	request(GET => 'http://lowreal.net/blog/index.rdf')->{do}->(sub {
 		ok !$_->{env};
-		like $_->header('Location'), qr'http://lowreal.net:\d+/feed';
+		is $_->code, 301;
+		is $_->header('Location'), path('/feed');
+	});
+
+	request(GET => 'http://lowreal.net/blog/index.atom')->{do}->(sub {
+		ok !$_->{env};
+		is $_->code, 301;
+		is $_->header('Location'), path('/feed');
 	});
 
 	request(GET => 'http://lowreal.net/logs/2004/10/11.rdf')->{do}->(sub {
 		ok !$_->{env};
-		like $_->header('Location'), qr'http://lowreal.net:\d+/feed';
+		is $_->code, 301;
+		is $_->header('Location'), path('/feed');
 	});
 
 	request(GET => 'http://lowreal.net/logs/2004/10/11.atom')->{do}->(sub {
 		ok !$_->{env};
-		like $_->header('Location'), qr'http://lowreal.net:\d+/feed';
+		is $_->code, 301;
+		is $_->header('Location'), path('/feed');
 	});
 
 	request(GET => 'http://lowreal.net/logs/2004/10/11.html')->{do}->(sub {
 		ok !$_->{env};
-		like $_->header('Location'), qr'http://lowreal.net:\d+/2004/10/11/';
+		is $_->code, 301;
+		is $_->header('Location'), path('/2004/10/11');
 	});
 
 	request(GET => 'http://lowreal.net/logs/2004/10/11')->{do}->(sub {
 		ok !$_->{env};
-		like $_->header('Location'), qr'http://lowreal.net:\d+/2004/10/11/';
+		is $_->code, 301;
+		is $_->header('Location'), path('/2004/10/11');
 	});
 
 	request(GET => 'http://lowreal.net/logs/2004/10/11/')->{do}->(sub {
 		ok !$_->{env};
-		like $_->header('Location'), qr'http://lowreal.net:\d+/2004/10/11/';
+		is $_->code, 301;
+		is $_->header('Location'), path('/2004/10/11/');
 	});
 
 	request(GET => 'http://lowreal.net/logs/2004/10/11/1.html')->{do}->(sub {
 		ok !$_->{env};
-		like $_->header('Location'), qr'http://lowreal.net:\d+/2004/10/11/1';
+		is $_->code, 301;
+		is $_->header('Location'), path('/2004/10/11/1');
+	});
+
+	request(GET => 'http://lowreal.net/logs/2004/10/11/1')->{do}->(sub {
+		ok !$_->{env};
+		is $_->code, 301;
+		is $_->header('Location'), path('/2004/10/11/1');
 	});
 
 	request(GET => 'http://lowreal.net/blog/2004/10/11/1')->{do}->(sub {
 		ok !$_->{env};
-		like $_->header('Location'), qr'http://lowreal.net:\d+/2004/10/11/1';
+		is $_->code, 301;
+		is $_->header('Location'), path('/2004/10/11/1');
 	});
 
 	request(GET => 'http://lowreal.net/blog/2004/10/11/')->{do}->(sub {
 		ok !$_->{env};
-		like $_->header('Location'), qr'http://lowreal.net:\d+/2004/10/11/';
+		is $_->code, 301;
+		is $_->header('Location'), path('/2004/10/11/');
 	});
 
 	request(GET => 'http://lowreal.net/2004/10/11')->{do}->(sub {
 		ok !$_->{env};
-		like $_->header('Location'), qr'http://lowreal.net:\d+/2004/10/11/';
+		is $_->code, 301;
+		is $_->header('Location'), path('/2004/10/11/');
 	});
 
 	request(GET => 'http://lowreal.net/2004/10')->{do}->(sub {
 		ok !$_->{env};
-		like $_->header('Location'), qr'http://lowreal.net:\d+/2004/10/';
+		is $_->code, 301;
+		is $_->header('Location'), path('/2004/10/');
+	});
+
+	request(GET => 'http://lowreal.net/2004/')->{do}->(sub {
+		ok !$_->{env};
+		is $_->code, 302;
+		is $_->header('Location'), path('/');
+	});
+
+	request(GET => 'http://lowreal.net/view-img/2006/mabinogi_2006_04_30_001.jpg')->{do}->(sub {
+		ok !$_->{env};
+		is $_->code, 301;
+		is $_->header('Location'), path('/2006/mabinogi_2006_04_30_001.jpg');
+	});
+
+	request(GET => 'http://lowreal.net/photo')->{do}->(sub {
+		ok !$_->{env};
+		is $_->code, 301;
+		is $_->header('Location'), path('/photo/');
 	});
 };
 
@@ -201,6 +249,11 @@ subtest files => sub {
 	});
 
 	request(GET => 'http://lowreal.net/2005/colors-canvas.xhtml')->{do}->(sub {
+		ok !$_->{env};
+		is $_->code, '200';
+	});
+
+	request(GET => 'http://lowreal.net/2006/0423-tsun.jpg')->{do}->(sub {
 		ok !$_->{env};
 		is $_->code, '200';
 	});

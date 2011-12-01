@@ -4,7 +4,9 @@
 	>
 	<head>
 		<title>[% title ? title _ " - " : "" %]餡の雲</title>
-		<meta name="description" content="写真・文章による、ある人間の人生の記録"/>
+		[% IF r.req.uri.path == '/' %]
+		<meta name="description" content="写真・文章による、ある普通の人間の人生の記録"/>
+		[% END %]
 		<meta charset="utf-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 		<link rel="stylesheet" type="text/css" href="/css/style.css" media="screen,tv"/>

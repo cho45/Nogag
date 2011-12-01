@@ -1,0 +1,6 @@
+Sitemap: [% r.absolute('/sitemap.xml') %]
+Sitemap: [% r.absolute('/mobilesitemap.xml') %]
+
+User-agent: *
+Allow: /
+

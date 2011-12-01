@@ -20,6 +20,26 @@ my $base = 'http://lowreal.net';
 }
 
 {
+	my $uri = URI->new('http://www.google.com/webmasters/sitemaps/ping');
+	$uri->query_form(sitemap => "$base/mobilesitemap.xml");
+	my $res = $ua->get($uri);
+	unless ($res->is_success) {
+		use Data::Dumper;
+		warn Dumper $res ;
+	}
+}
+
+{
+	my $uri = URI->new('http://www.google.com/webmasters/sitemaps/ping');
+	$uri->query_form(sitemap => "$base/files/sitemap.xml");
+	my $res = $ua->get($uri);
+	unless ($res->is_success) {
+		use Data::Dumper;
+		warn Dumper $res ;
+	}
+}
+
+{
 	my $uri = URI->new('http://blogsearch.google.co.jp/ping');
 	$uri->query_form(
 		name       => "",

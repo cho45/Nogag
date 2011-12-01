@@ -24,6 +24,7 @@ route "/" => \&index;
 route "/login" => \&login;
 route "/api/edit" => \&edit;
 route "/sitemap.xml" => \&sitemap;
+route "/mobilesitemap.xml" => \&mobilesitemap;
 route "/feed" => \&feed;
 route "/robots.txt" => \&robots_txt;
 
@@ -208,6 +209,7 @@ sub index {
 
 	my $count = $r->dbh->value('SELECT count(*) FROM entries');
 
+	@$entries or $r->res->status(404);
 	$r->stash(entries => $entries);
 	$r->stash(count => $count);
 	$r->stash(next_page => do {
@@ -254,13 +256,18 @@ sub archive {
 
 	Nogag::Model::Entry->bless($_) for @$entries;
 
+	my $title = defined $day   ? sprintf('%d年%d月%d日の日記', $year, $month, $day):
+	            defined $month ? sprintf('%d年%d月の日記', $year, $month):
+	            sprintf('%d年の日記', $year);
+
+	$r->stash(title => $title);
 	$r->stash(entries => $entries);
 
 	$r->html('index.html');
 };
 
 sub archive_index {
-	my ($r) = @_;
+	my ($r, %opts) = @_;
 
 	my $dates = $r->dbh->select(q{
 		SELECT
@@ -290,8 +297,9 @@ sub archive_index {
 		};
 	}
 
+	$r->stash(title => 'アーカイブ');
 	$r->stash(archive => [ reverse @$years ]);
-	$r->html('index.html');
+	$r->html('index.html') unless $opts{stash};
 }
 
 sub permalink {
@@ -299,7 +307,7 @@ sub permalink {
 
 	my $path = $r->req->param('path');
 
-	my $is_category = ($path =~ m{/$});
+	my $is_category = ($path =~ m{^[^/]+/$});
 
 	if ($is_category) {
 		my $page = $r->req->number_param('page', 100) || 1;
@@ -320,6 +328,7 @@ sub permalink {
 
 		my $count = $r->dbh->value('SELECT count(*) FROM entries');
 
+		@$entries or $r->res->status(404);
 		$r->stash(entries => $entries);
 		$r->stash(count => $count);
 		$r->stash(next_page => do {
@@ -382,10 +391,25 @@ sub sitemap {
 	});
 
 	$r->stash(entries => $entries);
-	archive_index($r);
+	archive_index($r, stash => 1);
 	$r->res->content_type('application/xml; charset=utf-8');
 	$r->res->content(encode_utf8 $r->render('sitemap.xml'));
 }
+
+sub mobilesitemap {
+	my ($r) = @_;
+
+	my $entries = $r->dbh->select(q{
+		SELECT path FROM entries
+	});
+
+	$r->stash(entries => $entries);
+	$r->stash(mobile => 1);
+	archive_index($r, stash => 1);
+	$r->res->content_type('application/xml; charset=utf-8');
+	$r->res->content(encode_utf8 $r->render('mobilesitemap.xml'));
+}
+
 
 sub feed {
 	my ($r) = @_;
@@ -411,7 +435,7 @@ sub feed {
 sub robots_txt {
 	my ($r) = @_;
 	$r->res->content_type('text/plain');
-	$r->res->content('Sitemap: ' . $r->absolute('/sitemap.xml'));
+	$r->res->content(encode_utf8 $r->render('robots.txt'));
 }
 
 1;
