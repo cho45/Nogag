@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html
 	data-auth="[% IF r.has_auth %]true[% END %]"
+	itemscope itemtype="[% permalink ? 'http://schema.org/Article' : 'http://schema.org/Blog' %]"
 	>
 	<head>
 		<title>[% title ? title _ " - " : "" %]餡の雲</title>
@@ -12,6 +13,12 @@
 		<link rel="stylesheet" type="text/css" href="/css/style.css" media="screen,tv"/>
 		<link rel="stylesheet" type="text/css" href="/css/print.css" media="print"/>
 		<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"/>
+
+		<meta itemprop="name" content="[% title ? title _ " - " : "" %]餡の雲"/>
+		<meta itemprop="description" content=""/>
+		[% IF entry.image %]
+		<meta itemprop="image" content="[% entry.image %]"/>
+		[% END %]
 
 		<meta property="og:title" content="[% title ? title _ " - " : "" %]餡の雲"/>
 		<meta property="og:type" content="[% permalink ? 'article' : 'blog' %]"/>
@@ -76,6 +83,16 @@
 		</nav>
 
 		<div id="content">
+			[% IF category %]
+			<header id="category-header">
+				<h1>Category [% category %].</h1>
+				[% SWITCH category %]
+				[% CASE 'photo' %]
+				<h2>Logs and expression by photographs / 写真による記録と表現</h2>
+				[% END %]
+			</header>
+			[% END %]
+
 			[% IF entries %]
 
 			<div class="hfeed">
@@ -224,11 +241,15 @@
 			}
 		</style>
 
+		<script src="//code.jquery.com/jquery-1.7.min.js"></script>
+
 		<script src="/js/daterelative.js"></script>
-		<script src="http://code.jquery.com/jquery-1.7.min.js"></script>
 		<script src="/js/nogag.js"></script>
 		<script type="text/javascript">
 			Nogag.init();
 		</script>
+
+		<script type="text/javascript" src="http://platform.tumblr.com/v1/share.js"></script>
+
 	</body>
 </html>

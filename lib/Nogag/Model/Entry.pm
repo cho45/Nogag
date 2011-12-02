@@ -16,6 +16,13 @@ sub body           { $_[0]->{body} }
 sub formatted_body { $_[0]->{formatted_body} }
 sub format         { $_[0]->{format} }
 
+sub formatted_body_text {
+	my ($self) = @_;
+	my $text = $self->formatted_body;
+	$text =~ s{<[^>]+?>}{}g;
+	$text;
+}
+
 sub path {
 	my ($self, $prefix) = @_;
 	$prefix ||= '';

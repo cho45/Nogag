@@ -257,6 +257,16 @@ subtest files => sub {
 		ok !$_->{env};
 		is $_->code, '200';
 	});
+
+	request(GET => 'http://lowreal.net/lib/PlotKit/PlotKit_Packed.js')->{do}->(sub {
+		ok !$_->{env};
+		is $_->code, '404';
+	});
+
+	request(GET => 'http://lowreal.net/', [ Cookie => 's=403c1bc00ea043548f2275d538e1d26b422ca95c' ])->{do}->(sub {
+		ok !$_->{env};
+		is $_->code, '403';
+	});
 };
 
 done_testing;

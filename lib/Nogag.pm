@@ -307,11 +307,12 @@ sub permalink {
 
 	my $path = $r->req->param('path');
 
-	my $is_category = ($path =~ m{^[^/]+/$});
+	my $is_category = ($path =~ m{^([^/]+)/$});
 
 	if ($is_category) {
+		my $name = $1;
+
 		my $page = $r->req->number_param('page', 100) || 1;
-		$path =~ s{/}{}g;
 
 		my $entries = $r->dbh->select(q{
 			SELECT * FROM entries
@@ -319,7 +320,7 @@ sub permalink {
 			ORDER BY `date` DESC, `created_at` ASC
 			LIMIT :limit OFFSET :offset
 		}, {
-			query  => "%[$path]%",
+			query  => "%[$name]%",
 			limit  => config->param('entry_per_page'),
 			offset => ($page - 1) * config->param('entry_per_page'),
 		});
@@ -329,6 +330,8 @@ sub permalink {
 		my $count = $r->dbh->value('SELECT count(*) FROM entries');
 
 		@$entries or $r->res->status(404);
+		$r->stash(category => $name);
+		$r->stash(title => sprintf('%s カテゴリー', ucfirst $name));
 		$r->stash(entries => $entries);
 		$r->stash(count => $count);
 		$r->stash(next_page => do {
