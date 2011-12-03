@@ -27,6 +27,7 @@ route "/sitemap.xml" => \&sitemap;
 route "/mobilesitemap.xml" => \&mobilesitemap;
 route "/feed" => \&feed;
 route "/robots.txt" => \&robots_txt;
+route "/api/kousei" => "Nogag::API kousei";
 
 # route '/{year:[0-9]{4}}/' => \&archive;
 route '/{year:[0-9]{4}}/{month:[0-9]{2}}/' => \&archive;

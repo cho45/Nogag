@@ -99,6 +99,23 @@ body * {
 }
 
 form.edit-form {
+	position: relative;
+}
+
+form.edit-form .toolbar {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	font-size: 80%;
+}
+
+form.edit-form .toolbar button {
+	font-size: 10px;
+	padding: 3px 10px;
+	margin: 0;
+	border: 1px solid #333;
+	background: #333;
+	color: #fff;
 }
 
 form.edit-form input[type=text] {
@@ -308,7 +325,7 @@ form.edit-form textarea {
 	display: block;
 	top: 0;
 	right: 0;
-	opacity: 0.15;
+	opacity: 0.3;
 }
 
 .hfeed article header .share:hover {

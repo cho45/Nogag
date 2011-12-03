@@ -1,7 +1,8 @@
 # vim:set ft=perl
 +{
-	password      => 'xxxxxx',
-	amazon_tag    => 'nuso-22',
-	amazon_key    => '',
-	amazon_secret => '',
+	password       => 'xxxxxx',
+	amazon_tag     => 'nuso-22',
+	amazon_key     => '',
+	amazon_secret  => '',
+	yahoo_jp_appid => '',
 };

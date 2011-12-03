@@ -16,6 +16,7 @@
 			[% END %]
 			|
 		</span>
+		[% IF 0 %]
 		<span class="share">
 			[% IF entry.image %]
 			<a href="http://www.tumblr.com/share/photo?source=[% entry.image | uri %]&caption=[% '餡の雲' | uri %]&clickthru=[% entry_uri | uri %]"
@@ -27,6 +28,7 @@
 				title="Share on Tumblr">Share on Tumblr</a>
 			[% END %]
 		</span>
+		[% END %]
 	</header>
 
 	<div class="content">
