@@ -7,6 +7,10 @@ Nogag = {
 	init : function () {
 		DateRelative.updateAll();
 
+		$('article.hentry').each(function () {
+			Nogag.initEntry($(this));
+		});
+
 		if (Nogag.data('auth')) {
 			$('<li><a href="">新しいエントリ</a></li>').
 				click(function () {
@@ -14,21 +18,21 @@ Nogag = {
 					return false;
 				}).
 				prependTo('#global-navigation ul');
+		}
+	},
 
-			$('article.hentry').each(function () {
-				var $this = $(this);
-				$('<a href="">編集</a>').
-					click(function () {
-						Nogag.editEntry($this);
-						return false;
-					}).
-					appendTo($this.find('.metadata'));
-			});
+	initEntry : function (entry) {
+		if (Nogag.data('auth')) {
+			$('<a href="">編集</a>').
+				click(function () {
+					Nogag.editEntry(entry);
+					return false;
+				}).
+				appendTo(entry.find('.metadata'));
 		}
 	},
 
 	editEntry : function (article) {
-		var self = this;
 		var id = article ? article.attr('data-id') : '';
 
 		$.ajax({
@@ -46,7 +50,7 @@ Nogag = {
 				} else {
 					container.prependTo('#content .hfeed');
 				}
-				self.initEditForm(container);
+				Nogag.initEditForm(container, article);
 			}
 		});
 	},
@@ -55,9 +59,8 @@ Nogag = {
 		this.editEntry();
 	},
 
-	initEditForm : function (container) {
-		var self = this;
-
+	initEditForm : function (container, article) {
+		var form  = container.find('form');
 		var title = container.find('input[name=title]');
 		var body  = container.find('textarea[name=body]');
 
@@ -92,6 +95,22 @@ Nogag = {
 			var key = keyString(e);
 			if (key == 'RET') actions.kousei();
 		});
+
+		if (article) {
+			form.submit(function () {
+				$.ajax({
+					url: form.attr('action'),
+					type : "POST",
+					data : form.serializeArray(),
+					success : function (data, status, xhr) {
+						var newElement = $(data).find('article[data-id=' + article.attr('data-id') + ']');
+						container.replaceWith(newElement);
+						Nogag.initEntry(newElement);
+					}
+				});
+				return false;
+			});
+		}
 
 		body.focus();
 	}
