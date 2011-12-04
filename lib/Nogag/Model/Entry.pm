@@ -60,6 +60,11 @@ sub title {
 	$self->title_tags->[0];
 }
 
+sub raw_title {
+	my ($self) = @_;
+	$self->{title}
+}
+
 sub tags {
 	my ($self) = @_;
 	$self->title_tags->[1];

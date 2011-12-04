@@ -32,6 +32,54 @@ img {
 	border: none;
 }
 
+pre {
+	font-size: 80%;
+	overflow: auto;
+	line-height: 1.33;
+	background: #000;
+	padding: 1em;
+}
+
+q {
+	color: #999;
+}
+
+pre .string {
+	color: #E98800;
+}
+
+pre .keyword\.operator {
+	color: #A39E64;
+}
+
+pre .constant {
+	color: #E98800;
+}
+
+pre .numeric {
+	color: #E98800;
+}
+
+pre .function {
+	color: #588E60;
+}
+
+pre .comment {
+	color: #666C68;
+}
+
+pre .variable {
+	color: #648BD2;
+}
+
+pre .entity\.other\.attribute-name {
+	color: #648BD2;
+}
+
+pre .meta\.tag {
+	color: #588E60;
+}
+
 input ,
 textarea {
 	background: #333;
@@ -339,6 +387,21 @@ form.edit-form textarea {
 	overflow: hidden;
 	background: url('/images/share-on-tumblr.png') top left no-repeat transparent;
 	text-indent: -9999px;
+}
+
+.hfeed article header .metadata .author {
+	display: none;
+}
+
+.hfeed article .content {
+}
+
+.hfeed article .content a:link {
+	color: #a0bfc2;
+}
+
+.hfeed article .content a:visited {
+	color: #85a1a4;
 }
 
 .hfeed article a.hatena-fotolife ,

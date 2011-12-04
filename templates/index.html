@@ -13,6 +13,11 @@
 		<link rel="stylesheet" type="text/css" href="/css/style.css" media="screen,tv"/>
 		<link rel="stylesheet" type="text/css" href="/css/print.css" media="print"/>
 		<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"/>
+		<link rel="meta" type="application/rdf+xml" title="FOAF" href="http://lowreal.net/cho45/foaf.rdf"/>
+		<link rev="made" href="mailto:cho45@lowreal.net"/>
+		<link rel="author" href="http://www.lowreal.net/"/>
+
+		<link rel="alternate" media="handheld" href="[% r.req.uri.path_query %]"/>
 
 		<meta itemprop="name" content="[% title ? title _ " - " : "" %]餡の雲"/>
 		<meta itemprop="description" content=""/>
@@ -191,6 +196,7 @@
 			</p>
 			<p>
 				<a href="http://www.lowreal.net/"><img src="http://www.lowreal.net/images/lowreal.net-logo.png" alt="cho45@lowreal.net"/></a>
+				by <a href="mailto:cho45@lowreal.net">Satoh, Hiroh</a>
 			</p>
 		</footer>
 
@@ -242,7 +248,7 @@
 		</style>
 
 		<script src="//code.jquery.com/jquery-1.7.min.js"></script>
-
+		<script src="/js/jsdeferred.js"></script>
 		<script src="/js/keyString.js"></script>
 		<script src="/js/daterelative.js"></script>
 		<script src="/js/nogag.js"></script>

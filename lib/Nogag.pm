@@ -381,7 +381,7 @@ sub permalink {
 			$title =~ s/<[^>]+>//g;
 			$title =~ s{^\s+|\s+$}{}g;
 			$title;
-		});
+		} . $entry->date->strftime(" | %a, %b %e. %Y"));
 	}
 
 	$r->html('index.html');
@@ -422,6 +422,7 @@ sub feed {
 		SELECT * FROM entries
 		WHERE
 			title LIKE "%[photo]%" OR
+			title LIKE "%[tech]%" OR
 			formatted_body LIKE "%nuso-22%"
 		ORDER BY `date` DESC, `created_at` ASC
 		LIMIT :limit
