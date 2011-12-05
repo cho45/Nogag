@@ -1,14 +1,26 @@
 [% entry_uri = r.absolute('/' _ entry.path) %]
-<article class="hentry [% entry.tags.join(' ') %] [% IF is_first %]first[% END %]" id="post-[% entry.created_at.epoch %]" data-id="[% entry.id %]">
+<article
+	id="post-[% entry.created_at.epoch %]"
+	class="[% entry.tags.join(' ') %] [% IF is_first %]first[% END %]"
+	data-id="[% entry.id %]"
+	[% UNLESS permalink %]
+	itemprop="blogPosts"
+	itemscope itemtype="http://schema.org/BlogPosting"
+	[% END %]
+	>
 	<header>
-		<h1><a href="/[% entry.path %]" class="bookmark entry-title" rel="bookmark">[% entry.title || '✖' %]</a></h1>
+		<h1 itemprop="name"><a href="/[% entry.path %]" class="bookmark" rel="bookmark" itemprop="url">[% entry.title || '✖' %]</a></h1>
 		<span class="metadata">
+			[% IF entry.image %]
+			<meta itemprop="image" content="[% entry.image %]"/>
+			[% END %]
+
 			[% FOR tag IN entry.tags %]
-			<a href="/[% tag %]/">[% tag %]</a>
+			<a href="/[% tag %]/"><span itemprop="keywords">[% tag %]</span></a>
 			[% END %]
 			|
-			<time data-epoch="[% entry.created_at.epoch %]" datetime="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z" pubdate>
-				<abbr class="updated" title="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z">[% entry.created_at.offset(9).strftime('%H:%M') %]</abbr>
+			<time data-epoch="[% entry.created_at.epoch %]" datetime="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z" pubdate itemprop="datePublished">
+				[% entry.created_at.offset(9).strftime('%H:%M') %]
 			</time>
 			[% IF entry.created_at != entry.modified_at %]
 			<!--
@@ -17,7 +29,6 @@
 			-->
 			[% END %]
 			|
-			<span class="vcard author"><a class="url fn" href="http://www.lowreal.net/">cho45</a></span>
 		</span>
 		[% IF 0 %]
 		<span class="share">
@@ -34,8 +45,8 @@
 		[% END %]
 	</header>
 
-	<div class="content entry-content">
-		[% entry.formatted_body | raw %]
+	<div class="content" itemprop="articleBody">
+		[% entry.formatted_body(permalink) | raw %]
 	</div>
 
 	[% IF permalink %]
@@ -46,5 +57,6 @@
 			<script type="text/javascript" src="http://apis.google.com/js/plusone.js"></script><div class="g-plusone" data-size="medium"></div>
 		</div>
 	</footer>
+	[% INCLUDE "_adsense.html" %]
 	[% END %]
 </article>

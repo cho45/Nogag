@@ -261,6 +261,9 @@ sub archive {
 	            defined $month ? sprintf('%d年%d月の日記', $year, $month):
 	            sprintf('%d年の日記', $year);
 
+	$r->stash(year => $year);
+	$r->stash(month => $month);
+	$r->stash(day => $day);
 	$r->stash(title => $title);
 	$r->stash(entries => $entries);
 

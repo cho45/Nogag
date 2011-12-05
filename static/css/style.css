@@ -37,7 +37,6 @@ pre {
 	overflow: auto;
 	line-height: 1.33;
 	background: #000;
-	padding: 1em;
 }
 
 q {
@@ -131,7 +130,6 @@ html {
 	color: #efefef;
 	margin: 0;
 	padding: 0;
-	line-height: 1.66;
 }
 
 body {
@@ -140,6 +138,7 @@ body {
 	margin: 0 auto;
 	padding: 20px 0 0;
 	background: #1a1a1a;
+	line-height: 1.99;
 }
 
 body * {
@@ -250,7 +249,7 @@ form.edit-form textarea {
 	text-align: center;
 	border-style: solid;
 	border-width: 0 0 1px 0;
-	border-color: #000;
+	border-color: #111;
 }
 
 #global-navigation ul li a:link ,
@@ -308,54 +307,60 @@ form.edit-form textarea {
 	color: #666;
 }
 
-.hfeed {
+.entries {
 	margin: 30px 0;
 	padding: 0px 30px;
 	_padding: 30px 30px;
 }
 
-.hfeed article {
+.entries article {
 	clear: both;
 	background: #111;
 	padding: 5px 30px;
 	margin: 0 0 10px 0;
 }
 
-.hfeed .date {
-	clear: both;
+.entries .date {
 	display: block;
-	background: #2F3839;
+	clear: both;
+	font-family: 'Mate SC', serif;
+	font-size: 100%;
 	margin: 20px 0;
 	padding: 3px 30px;
-	font-size: 100%;
-	font-family: 'Mate SC', serif;
+	background: #2F3839;
+	background: -webkit-linear-gradient(top, #2F3839 0%, #242b2b 100%);
+	background: -moz-linear-gradient(top, #2F3839 0%, #242b2b 100%);
+	background: -o-linear-gradient(top, #2F3839 0%, #242b2b 100%);
+	background: -ms-linear-gradient(top, #2F3839 0%, #242b2b 100%);
+	background: linear-gradient(top, #2F3839 0%, #242b2b 100%);
 }
 
-.hfeed .date a {
+.entries .date a {
 	color: #fff;
 	text-decoration: none;
 }
 
-.hfeed article {
+.entries article {
 	position: relative;
 }
 
-.hfeed article header {
+.entries article header {
 }
 
-.hfeed article header h1 {
+.entries article header h1 {
 	height: 30px;
+	line-height: 30px;
 	text-align: left;
 	padding: 3px 0;
 	margin: 0;
 	font-size: 100%;
 }
 
-.hfeed article header h1 a {
+.entries article header h1 a {
 	text-decoration: none;
 }
 
-.hfeed article header .metadata {
+.entries article header .metadata {
 	font-family: 'Mate SC', serif;
 	text-align: left;
 	padding: 3px 0;
@@ -364,11 +369,11 @@ form.edit-form textarea {
 	color: #999;
 }
 
-.hfeed article header .metadata a {
+.entries article header .metadata a {
 	text-decoration: none;
 }
 
-.hfeed article header .share {
+.entries article header .share {
 	position: absolute;
 	display: block;
 	top: 0;
@@ -376,11 +381,11 @@ form.edit-form textarea {
 	opacity: 0.3;
 }
 
-.hfeed article header .share:hover {
+.entries article header .share:hover {
 	opacity: 0.9;
 }
 
-.hfeed article header .share a {
+.entries article header .share a {
 	display: inline-block;
 	width: 100px;
 	height: 16px;
@@ -389,30 +394,53 @@ form.edit-form textarea {
 	text-indent: -9999px;
 }
 
-.hfeed article header .metadata .author {
+.entries article header .metadata .author {
 	display: none;
 }
 
-.hfeed article .content {
+.entries article .content {
 }
 
-.hfeed article .content a:link {
+.entries article .content a:link {
 	color: #a0bfc2;
+	text-decoration: none;
 }
 
-.hfeed article .content a:visited {
+.entries article .content a:visited {
 	color: #85a1a4;
+	text-decoration: none;
 }
 
-.hfeed article a.hatena-fotolife ,
-.hfeed article p.photo {
+.entries article .content a:hover {
+	text-decoration: underline;
+}
+
+.entries article .content a.seemore:link {
+	text-decoration: underline;
+}
+
+.entries article .content a.seemore:visited {
+	text-decoration: underline;
+}
+
+.entries article .content a.seemore:hover {
+	text-decoration: none;
+}
+
+.entries article pre.code {
+	margin: 20px -30px;
+	padding: 20px 30px;
+}
+
+.entries article a.hatena-fotolife ,
+.entries article p.photo {
 	display: block;
 	margin: 0 -30px;;
 	border: none;
 	text-align: center;
 }
 
-.hfeed article a.hatena-fotolife img {
+.entries article a.hatena-fotolife img {
 	display: block;
 	max-width: 900px;
 	max-height: 700px;
@@ -420,24 +448,30 @@ form.edit-form textarea {
 	border: none;
 }
 
-.hfeed article.photo {
+.entries article.photo {
 	background: #000;
 	padding-bottom: 0;
 }
 
-.hfeed article.photo .metadata {
+.entries article.photo .metadata {
 }
 
-.hfeed article footer {
+.entries article footer {
 }
 
-.hfeed article footer .social-buttons {
+.entries article footer .social-buttons {
 	padding: 1em 0;
 	opacity: 0.9;
+	text-align: right;
 }
 
-.hfeed article footer .social-buttons iframe {
+.entries article footer .social-buttons iframe {
 	vertical-align: middle;
+}
+
+.entries article .adsense {
+	margin: 0 -30px;
+	padding: 10px 30px;
 }
 
 .amazon {
@@ -601,29 +635,33 @@ form.edit-form textarea {
 		margin: 0;
 	}
 
-	.hfeed {
+	.entries {
 		margin: 0;
 		padding: 0;
 	}
 
 
-	.hfeed .date {
+	.entries .date {
 		padding: 3px 12px;
 	}
 
-	.hfeed article {
+	.entries article {
 		padding: 5px 10px;
 	}
 
-	.hfeed article a.hatena-fotolife ,
-	.hfeed article p.photo {
+	.entries article pre.code {
+		margin: 0 -10px;
+	}
+
+	.entries article a.hatena-fotolife ,
+	.entries article p.photo {
 		display: block;
 		margin: 0 -10px;
 		border: none;
 		text-align: center;
 	}
 
-	.hfeed article a.hatena-fotolife img {
+	.entries article a.hatena-fotolife img {
 		max-width: 100%;
 		margin: 0;
 	}

@@ -13,7 +13,23 @@ sub bless {
 
 sub id             { $_[0]->{id} }
 sub body           { $_[0]->{body} }
-sub formatted_body { $_[0]->{formatted_body} }
+sub formatted_body {
+	my ($self, $expand) = @_;
+	if ($expand) {
+		$self->{formatted_body}
+	} else {
+		my $path = $self->path('/');
+		my $title = $self->title || '';
+
+		my $formatted_body = $self->{formatted_body};
+		$formatted_body =~ s{
+			<!-- \s seemore \s -->
+			.+?
+			<!-- \s /seemore \s -->
+		}{<a href="$path" class="seemore">&raquo; $title の続きを読む</a>}xs;
+		$formatted_body;
+	}
+}
 sub format         { $_[0]->{format} }
 
 sub formatted_body_text {

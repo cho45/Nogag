@@ -29,7 +29,7 @@ Nogag = {
 	init : function () {
 		DateRelative.updateAll();
 
-		$('article.hentry').each(function () {
+		$('article').each(function () {
 			Nogag.initEntry($(this));
 		});
 
@@ -72,7 +72,7 @@ Nogag = {
 				if (article) {
 					article.replaceWith(container);
 				} else {
-					container.prependTo('#content .hfeed');
+					container.prependTo('#content .entries');
 				}
 				Nogag.initEditForm(container, article);
 			}
@@ -80,7 +80,7 @@ Nogag = {
 	},
 
 	newEntry : function () {
-		this.editEntry();
+		Nogag.editEntry();
 	},
 
 	initEditForm : function (container, article) {

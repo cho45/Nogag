@@ -35,6 +35,13 @@ my $thx = Text::Xatena->new(
             ? }
             </figure>
         ],
+        'SeeMore' => q[
+            <!-- seemore -->
+            <section class="seemore">
+                {{= $content }}
+            </section>
+            <!-- /seemore -->
+        ]
     },
 );
 
@@ -87,8 +94,8 @@ match qr{\[?f:id:([^:]+):(\d+)([jpeg]):image\]?} => sub {
 };
 
 
-match qr{\[?asin:([^:]+):detail\]?}=> sub {
-    my ($self, $asin) = @_;
+match qr{\[?asin:([^:]+):detail\]?(\s*[.\d]+)?}=> sub {
+    my ($self, $asin, $rating) = @_;
 
     my $uri = URI::Amazon::APA->new('http://webservices.amazon.co.jp/onca/xml');
     $uri->query_form(
@@ -117,13 +124,22 @@ match qr{\[?asin:([^:]+):detail\]?}=> sub {
 
     render(q{
         </p>
-        <figure class="amazon">
+        <figure class="amazon" itemscope itemtype="http://schema.org/Review">
             <div class="image">
-                <a href="[% link %]"><img src="[% image %]" alt="[% title %] - [% author %]"/></a>
+                <a href="[% link %]"><img src="[% image %]" alt="[% title %] - [% author %]" itemprop="image"/></a>
             </div>
             <figcaption class="detail">
-                <p class="title"><a href="[% link %]">[% title %]</a></p>
+                <p class="title" itemprop="itemReviewed" itemscope itemtype="http://schema.org/Product">
+                    <a href="[% link %]" itemprop="url"><span itemprop="name">[% title %]</span></a>
+                </p>
                 <p class="author">[% author %]</p>
+                <p class="rating" data-rating="[% rating %]" itemprop="reviewRating" itemscope itemtype="http://schema.org/Rating">
+                    &#9733;
+                    <meta itemprop="worstRating" content="1.0"/>
+                    <span itemprop="ratingValue">[% rating %]</span>
+                    /
+                    <span itemprop="bestRating">5.0</span>
+                </p>
             </figcaption>
         </figure>
         <p>
@@ -132,6 +148,7 @@ match qr{\[?asin:([^:]+):detail\]?}=> sub {
         title  => $xpc->findvalue('a:ItemAttributes/a:Title', $node),
         image  => $xpc->findvalue('a:MediumImage/a:URL', $node),
         link   => $xpc->findvalue('a:DetailPageURL', $node),
+        rating => sprintf("%.1f", $rating || 3),
     });
 };
 

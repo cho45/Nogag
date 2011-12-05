@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html
 	data-auth="[% IF r.has_auth %]true[% END %]"
-	itemscope itemtype="[% permalink ? 'http://schema.org/Article' : 'http://schema.org/Blog' %]"
+	itemscope itemtype="[% permalink ? 'http://schema.org/BlogPosting' : 'http://schema.org/Blog' %]"
 	>
 	<head>
 		<title>[% title ? title _ " - " : "" %]餡の雲</title>
@@ -13,16 +13,13 @@
 		<link rel="stylesheet" type="text/css" href="/css/style.css" media="screen,tv"/>
 		<link rel="stylesheet" type="text/css" href="/css/print.css" media="print"/>
 		<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"/>
-		<link rel="meta" type="application/rdf+xml" title="FOAF" href="http://lowreal.net/cho45/foaf.rdf"/>
-		<link rev="made" href="mailto:cho45@lowreal.net"/>
 		<link rel="author" href="http://www.lowreal.net/"/>
 
 		<link rel="alternate" media="handheld" href="[% r.req.uri.path_query %]"/>
 
+		[% UNLESS permalink %]
 		<meta itemprop="name" content="[% title ? title _ " - " : "" %]餡の雲"/>
-		<meta itemprop="description" content=""/>
-		[% IF entry.image %]
-		<meta itemprop="image" content="[% entry.image %]"/>
+		<meta itemprop="description" content="写真・文章による、ある普通の人間の人生の記録"/>
 		[% END %]
 
 		<meta property="og:title" content="[% title ? title _ " - " : "" %]餡の雲"/>
@@ -55,6 +52,52 @@
 		<!--[if lt IE 9]>
 		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 		<![endif]-->
+
+		<script type="text/javascript" src="http://s.hatena.ne.jp/js/HatenaStar.js"></script>
+		<script type="text/javascript">
+			Hatena.Star.Token = '7743b0e60f0e3b267f9723d3a5cf96981a59e4f3';
+
+			Hatena.Star.SiteConfig = {
+				entryNodes: {
+					'article.hentry': {
+						uri: 'a.bookmark',
+						title: 'h1',
+						container: 'h1'
+					}
+				}
+			};
+		</script>
+		<style type="text/css">
+			.hatena-star-add-button-image {
+				background-image: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20101127/20101127010806.gif');
+			}
+
+			.hatena-star-star-image {
+				background-image: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20101127/20101127010252.gif');
+			}
+
+			.hatena-star-green-star-image {
+				background-image: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20100115/20100115025631.gif');
+			}
+
+			.hatena-star-red-star-image {
+				background-image: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20100115/20100115025800.gif');
+			}
+
+			.hatena-star-blue-star-image {
+				background-image: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20100115/20100115025902.gif');
+			}
+
+			.hatena-star-comment-container {
+				display: none;
+			}
+
+			.hatena-star-star-container {
+				display: inline-block;
+				vertical-align: middle;
+				padding: 0 10px 5px 10px;
+			}
+		</style>
 
 		<script type="text/javascript">
 			var _gaq = _gaq || [];
@@ -99,8 +142,7 @@
 			[% END %]
 
 			[% IF entries %]
-
-			<div class="hfeed">
+			<div class="entries">
 				[% num  = 0  %]
 				[% date = '' %]
 				[% FOR entry IN entries %]
@@ -167,8 +209,8 @@
 			[% END # IF archive %]
 
 			[% IF error %]
-			<div class="hfeed">
-				<article class="hentry">
+			<div class="entries">
+				<article>
 					<header>
 						<h1><a href="/">[% error.code %]: [% error.message %]</a></h1>
 					</header>
@@ -200,52 +242,6 @@
 			</p>
 		</footer>
 
-
-		<script type="text/javascript" src="http://s.hatena.ne.jp/js/HatenaStar.js"></script>
-		<script type="text/javascript">
-			Hatena.Star.Token = '7743b0e60f0e3b267f9723d3a5cf96981a59e4f3';
-
-			Hatena.Star.SiteConfig = {
-				entryNodes: {
-					'article.hentry': {
-						uri: 'a.bookmark',
-						title: 'h1',
-						container: 'h1'
-					}
-				}
-			};
-		</script>
-		<style type="text/css">
-			.hatena-star-add-button-image {
-				background-image: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20101127/20101127010806.gif');
-			}
-
-			.hatena-star-star-image {
-				background-image: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20101127/20101127010252.gif');
-			}
-
-			.hatena-star-green-star-image {
-				background-image: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20100115/20100115025631.gif');
-			}
-
-			.hatena-star-red-star-image {
-				background-image: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20100115/20100115025800.gif');
-			}
-
-			.hatena-star-blue-star-image {
-				background-image: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20100115/20100115025902.gif');
-			}
-
-			.hatena-star-comment-container {
-				display: none;
-			}
-
-			.hatena-star-star-container {
-				display: inline-block;
-				vertical-align: middle;
-				padding: 0 10px 5px 10px;
-			}
-		</style>
 
 		<script src="//code.jquery.com/jquery-1.7.min.js"></script>
 		<script src="/js/jsdeferred.js"></script>
