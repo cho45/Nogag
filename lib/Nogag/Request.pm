@@ -49,4 +49,10 @@ sub string_param {
 	decode_utf8 $val;
 }
 
+sub if_none_match {
+	my ($self, $etag) = @_;
+	my $match = $self->header('If-None-Match') || '';
+	$match ne $etag;
+}
+
 1;

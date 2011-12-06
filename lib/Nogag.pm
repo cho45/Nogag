@@ -9,6 +9,7 @@ use Encode;
 use Time::Seconds;
 use HTML::Trim;
 use URI::QueryParam;
+use Digest::MD5 qw(md5_hex);
 
 use Nogag::Base;
 use Nogag::Time;
@@ -211,6 +212,15 @@ sub index {
 	my $count = $r->dbh->value('SELECT count(*) FROM entries');
 
 	@$entries or $r->res->status(404);
+
+
+	if (@$entries) {
+		my $etag = md5_hex(join("\n", $entries->[0]->modified_at->epoch, -s $r->config->root->file('templates/index.html')));
+		$r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
+		$r->res->header('ETag' => $etag);
+		$r->res->header('Last-Modified' => $entries->[0]->modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
+	}
+
 	$r->stash(entries => $entries);
 	$r->stash(count => $count);
 	$r->stash(next_page => do {
@@ -256,6 +266,13 @@ sub archive {
 	});
 
 	Nogag::Model::Entry->bless($_) for @$entries;
+
+	if (@$entries) {
+		my $etag = md5_hex(join("\n", $entries->[0]->modified_at->epoch, -s $r->config->root->file('templates/index.html')));
+		$r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
+		$r->res->header('ETag' => $etag);
+		$r->res->header('Last-Modified' => $entries->[0]->modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
+	}
 
 	my $title = defined $day   ? sprintf('%d年%d月%d日の日記', $year, $month, $day):
 	            defined $month ? sprintf('%d年%d月の日記', $year, $month):
@@ -320,7 +337,7 @@ sub permalink {
 
 		my $entries = $r->dbh->select(q{
 			SELECT * FROM entries
-			WHERE title LIKE :query OR formatted_body LIKE :query
+			WHERE title LIKE :query
 			ORDER BY `date` DESC, `created_at` ASC
 			LIMIT :limit OFFSET :offset
 		}, {
@@ -334,6 +351,11 @@ sub permalink {
 		my $count = $r->dbh->value('SELECT count(*) FROM entries');
 
 		@$entries or $r->res->status(404);
+
+		if (@$entries) {
+			$r->res->header('Last-Modified' => $entries->[0]->modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
+		}
+
 		$r->stash(category => $name);
 		$r->stash(title => sprintf('%s カテゴリー', ucfirst $name));
 		$r->stash(entries => $entries);
@@ -354,6 +376,14 @@ sub permalink {
 			path => $path,
 		})->[0] or throw code => 404, message => 'Not Found';
 
+		Nogag::Model::Entry->bless($entry);
+
+		my $etag = md5_hex(join("\n", $entry->modified_at->epoch, -s $r->config->root->file('templates/index.html')));
+		$r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
+		$r->res->header('ETag' => $etag);
+
+		$r->res->header('Last-Modified' => $entry->modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
+
 		my $old_entry = $r->dbh->select(q{
 			SELECT * FROM entries
 			WHERE created_at < :created_at
@@ -371,8 +401,6 @@ sub permalink {
 		}, {
 			created_at => $entry->{created_at}
 		})->[0];
-
-		Nogag::Model::Entry->bless($entry);
 
 		$r->stash(entries => [ $entry ]);
 		$r->stash(entry => $entry);

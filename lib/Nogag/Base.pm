@@ -86,7 +86,10 @@ sub run {
 			$r->stash(title => sprintf('Error %s', $e->{code}));
 			$r->html('index.html');
 		} else {
-			die $e;
+			$r->res->code($e->{code});
+			$r->res->header('X-Message' => "$e");
+			$r->res->header('Content-Type', 'text/plain');
+			$r->res->content('500');
 		}
 	}
 

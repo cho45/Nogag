@@ -43,6 +43,10 @@ q {
 	color: #999;
 }
 
+p {
+	margin: 1.5em 0;
+}
+
 pre .string {
 	color: #E98800;
 }
@@ -138,7 +142,7 @@ body {
 	margin: 0 auto;
 	padding: 20px 0 0;
 	background: #1a1a1a;
-	line-height: 1.99;
+	line-height: 1.88;
 }
 
 body * {
