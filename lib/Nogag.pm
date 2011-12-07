@@ -213,12 +213,12 @@ sub index {
 
 	@$entries or $r->res->status(404);
 
-
 	if (@$entries) {
-		my $etag = md5_hex(join("\n", $entries->[0]->modified_at->epoch, -s $r->config->root->file('templates/index.html')));
+		my $modified_at = [ sort { $b->modified_at <=> $a->modified_at } @$entries]->[0]->modified_at;
+		my $etag = md5_hex(join("\n", $modified_at->epoch, -s $r->config->root->file('templates/index.html')));
 		$r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
 		$r->res->header('ETag' => $etag);
-		$r->res->header('Last-Modified' => $entries->[0]->modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
+		$r->res->header('Last-Modified' => $modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
 	}
 
 	$r->stash(entries => $entries);
@@ -268,10 +268,11 @@ sub archive {
 	Nogag::Model::Entry->bless($_) for @$entries;
 
 	if (@$entries) {
-		my $etag = md5_hex(join("\n", $entries->[0]->modified_at->epoch, -s $r->config->root->file('templates/index.html')));
+		my $modified_at = [ sort { $b->modified_at <=> $a->modified_at } @$entries]->[0]->modified_at;
+		my $etag = md5_hex(join("\n", $modified_at->epoch, -s $r->config->root->file('templates/index.html')));
 		$r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
 		$r->res->header('ETag' => $etag);
-		$r->res->header('Last-Modified' => $entries->[0]->modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
+		$r->res->header('Last-Modified' => $modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
 	}
 
 	my $title = defined $day   ? sprintf('%d年%d月%d日の日記', $year, $month, $day):
@@ -353,7 +354,11 @@ sub permalink {
 		@$entries or $r->res->status(404);
 
 		if (@$entries) {
-			$r->res->header('Last-Modified' => $entries->[0]->modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
+			my $modified_at = [ sort { $b->modified_at <=> $a->modified_at } @$entries]->[0]->modified_at;
+			my $etag = md5_hex(join("\n", $modified_at->epoch, -s $r->config->root->file('templates/index.html')));
+			$r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
+			$r->res->header('ETag' => $etag);
+			$r->res->header('Last-Modified' => $modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
 		}
 
 		$r->stash(category => $name);

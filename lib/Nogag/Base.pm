@@ -98,6 +98,10 @@ sub run {
 	$r;
 }
 
+sub config_param {
+	config->param($_[1]);
+}
+
 sub req { $_[0]->{req} }
 sub res { $_[0]->{res} }
 

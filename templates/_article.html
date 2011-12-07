@@ -33,7 +33,7 @@
 		[% IF 0 %]
 		<span class="share">
 			[% IF entry.image %]
-			<a href="http://www.tumblr.com/share/photo?source=[% entry.image | uri %]&caption=[% '餡の雲' | uri %]&clickthru=[% entry_uri | uri %]"
+			<a href="http://www.tumblr.com/share/photo?source=[% entry.image | uri %]&caption=[% r.config_param('sitename') | uri %]&clickthru=[% entry_uri | uri %]"
 				title="Share on Tumblr">Share on Tumblr</a>
 			[% ELSE %]
 			<!--a href="http://www.tumblr.com/share/link?url=[% entry_uri | uri %]&name=[% entry.formatted_body_text | uri %]"

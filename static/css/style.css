@@ -47,14 +47,22 @@ p {
 	margin: 1.5em 0;
 }
 
+pre .identifier {
+}
+
 pre .string {
 	color: #E98800;
+}
+
+pre .keyword {
+	color: #A39E64;
 }
 
 pre .keyword\.operator {
 	color: #A39E64;
 }
 
+pre .constant\.numeric,
 pre .constant {
 	color: #E98800;
 }
@@ -63,6 +71,7 @@ pre .numeric {
 	color: #E98800;
 }
 
+pre .support\.function,
 pre .function {
 	color: #588E60;
 }
@@ -99,13 +108,13 @@ a.keyword {
 ins {
 	display: block;
 	text-decoration: none;
-	background: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20101128/20101128232735.png') no-repeat 0 0;
+	background: url('http://cdn-ak.f.st-hatena.com/images/fotolife/c/cho45/20101128/20101128232735.png') no-repeat 0 0;
 	padding: 10px 0 0 1em;
 	margin: 1em 0;
 }
 
 blockquote {
-	background: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20101128/20101128232736.png') no-repeat 0 0;
+	background: url('http://cdn-ak.f.st-hatena.com/images/fotolife/c/cho45/20101128/20101128232736.png') no-repeat 0 0;
 	padding: 10px 0 0 1em;
 	margin: 1em 0;
 }
@@ -193,7 +202,7 @@ form.edit-form textarea {
 	height: 100px;
 	margin: 0 auto -20px;
 	padding: 12px 20px 0 244px;
-	background: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20101128/20101128051218.png?1290888746') no-repeat 30px 16px transparent;
+	background: url('http://cdn-ak.f.st-hatena.com/images/fotolife/c/cho45/20111207/20111207201035.png') no-repeat 30px 16px transparent;
 	_width: 960px;
 	_margin: 0 auto 0;
 }
@@ -609,7 +618,7 @@ form.edit-form textarea {
 		width: 100%;
 		padding: 0;
 		margin: 0;
-		background: url('http://img.f.hatena.ne.jp/images/fotolife/c/cho45/20101128/20101128051218.png?1290888746') no-repeat 10px 26px transparent;
+		background: url('http://cdn-ak.f.st-hatena.com/images/fotolife/c/cho45/20101128/20101128051218.png') no-repeat 10px 26px transparent;
 	}
 
 	#global-header h1 {
@@ -694,6 +703,7 @@ form.edit-form textarea {
 		color: #fff;
 	}
 
+	.entries article .adsense ,
 	.adsense {
 		width: 320px;
 		background: #000;

@@ -8,6 +8,7 @@ use UNIVERSAL::require;
 use Path::Class;
 use File::Spec;
 use POSIX;
+use Cache::Null;
 
 use Plack::Builder;
 use Plack::Session::State::Cookie;
@@ -26,6 +27,29 @@ builder {
 	enable "Plack::Middleware::Static",
 		path => qr{^/(images|js|css)/},
 		root => config->root->subdir('static');
+
+
+	enable "Plack::Middleware::StaticShared",
+		cache => Cache::Null->new,
+		base => config->root->subdir('static'),
+		binds => [
+			{
+				prefix       => '/.shared.js',
+				content_type => 'text/javascript; charset=utf-8',
+			},
+			{
+				prefix       => '/.shared.css',
+				content_type => 'text/css; charset=utf-8',
+				filter       => sub {
+					s{\s+}{ }g;
+					$_;
+				}
+			},
+		],
+		verifier => sub {
+			my ($version, $prefix) = @_;
+			$version =~ /^[0-9a-z]+$/
+		};
 
 	enable "Plack::Middleware::ReverseProxy";
 	enable "Plack::Middleware::Session",

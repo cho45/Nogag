@@ -267,6 +267,11 @@ subtest files => sub {
 		ok !$_->{env};
 		is $_->code, '403';
 	});
+
+#	request(GET => 'http://lowreal.net/', [ 'User-Agent' => 'Mozilla/5.0 (compatible; Yahoo Pipes 2.0; +http://developer.yahoo.com/yql/provider) Gecko/20090729 Firefox/3.5.2'])->{do}->(sub {
+#		ok !$_->{env};
+#		is $_->code, '403';
+#	});
 };
 
 done_testing;

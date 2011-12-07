@@ -8,8 +8,11 @@ use Path::Class;
 use constant root => dir(".")->absolute;
 
 common +{
-	appname => 'nogag',
+	appname        => 'nogag',
+	sitename       => '氾濫原',
 	entry_per_page => 7,
+	static_shared  => 0,
+	version        => scalar time,
 	load("app.conf"),
 };
 
@@ -23,6 +26,7 @@ config test => {
 };
 
 config production => {
+	static_shared => 1,
 	db => root->file('db/data.db'),
 };
 

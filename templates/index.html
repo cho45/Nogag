@@ -4,7 +4,7 @@
 	itemscope itemtype="[% permalink ? 'http://schema.org/BlogPosting' : 'http://schema.org/Blog' %]"
 	>
 	<head>
-		<title>[% title ? title _ " - " : "" %]餡の雲</title>
+		<title>[% title ? title _ " - " : "" %][% r.config_param('sitename') %]</title>
 		[% IF r.req.uri.path == '/' %]
 		<meta name="description" content="写真・文章による、ある普通の人間の人生の記録"/>
 		[% END %]
@@ -18,11 +18,11 @@
 		<link rel="alternate" media="handheld" href="[% r.req.uri.path_query %]"/>
 
 		[% UNLESS permalink %]
-		<meta itemprop="name" content="[% title ? title _ " - " : "" %]餡の雲"/>
+		<meta itemprop="name" content="[% title ? title _ " - " : "" %][% r.config_param('sitename') %]"/>
 		<meta itemprop="description" content="写真・文章による、ある普通の人間の人生の記録"/>
 		[% END %]
 
-		<meta property="og:title" content="[% title ? title _ " - " : "" %]餡の雲"/>
+		<meta property="og:title" content="[% title ? title _ " - " : "" %][% r.config_param('sitename') %]"/>
 		<meta property="og:type" content="[% permalink ? 'article' : 'blog' %]"/>
 		<meta property="og:url" content="[% permalink ?  r.absolute('/' _ entry.path) : r.absolute('/') %]"/>
 		[% IF entry.image %]
@@ -59,7 +59,7 @@
 
 			Hatena.Star.SiteConfig = {
 				entryNodes: {
-					'article.hentry': {
+					'article': {
 						uri: 'a.bookmark',
 						title: 'h1',
 						container: 'h1'
@@ -113,7 +113,7 @@
 	</head>
 	<body>
 		<header id="global-header">
-			<h1 id="header"><a href="/">餡の雲</a></h1>
+			<h1 id="header"><a href="/">[% r.config_param('sitename') %]</a></h1>
 			[% IF r.has_auth %]
 			<form action="/" method="GET" id="search-form">
 				<p>
@@ -237,18 +237,29 @@
 				[% count %]
 			</p>
 			<p>
-				<a href="http://www.lowreal.net/"><img src="http://www.lowreal.net/images/lowreal.net-logo.png" alt="cho45@lowreal.net"/></a>
+				<a href="http://www.lowreal.net/"><img src="http://www.lowreal.net/images/lowreal.net-logo.png" alt="www.lowreal.net"/></a>
 				<br />
 				by <a href="mailto:cho45@lowreal.net">Satoh, Hiroh</a>
 			</p>
 		</footer>
 
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 
-		<script src="//code.jquery.com/jquery-1.7.min.js"></script>
-		<script src="/js/jsdeferred.js"></script>
-		<script src="/js/keyString.js"></script>
-		<script src="/js/daterelative.js"></script>
-		<script src="/js/nogag.js"></script>
+		[% js = [
+			"/js/jsdeferred.js",
+			"/js/keyString.js",
+			"/js/daterelative.js",
+			"/js/nogag.js",
+		] %]
+
+		[% IF r.config_param('static_shared') %]
+		<script type="text/javascript" src="/.shared.js:[% r.config_param('version') %]:[% js.join(',') %]"></script>
+		[% ELSE %]
+		[% FOR j IN js %] 
+		<script type="text/javascript" src="[% j %]?[% r.config_param('version') %]"></script>
+		[% END %]
+		[% END %]
+
 		<script type="text/javascript">
 			Nogag.init();
 		</script>
