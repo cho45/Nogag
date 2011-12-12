@@ -7,6 +7,9 @@ use utf8;
 use Term::ANSIColor;
 use HTTP::BrowserDetect;
 use Net::DNS;
+use opts;
+
+opts my $all => 'Bool';
 
 my $dns = Net::DNS::Resolver->new;
 sub ptr ($) {
@@ -25,7 +28,14 @@ while (<>) {
 	my %data = map { split /\s*:\s*/, $_, 2 } split /\t/;
 
 	my $ua = HTTP::BrowserDetect->new($data{ua});
-	$ua->{tests}->{ROBOT} ||= ($data{ua} =~ m{Plagger|Mediapartners-Google|Reeder|RSS|BOT|robot|DELCO READER|NATSU-MICAN|Antenna/});
+	$ua->{tests}->{ROBOT} ||= ($data{ua} =~ m{Plagger|Mediapartners-Google|Reeder|RSS|BOT|robot|DELCO READER|NATSU-MICAN|Antenna|Hatena Ring/});
+	$ua->{tests}->{ROBOT} ||= ($data{ua} =~ m{^-?$});
+
+	unless ($all) {
+		next if $ua->robot;
+		next if $data{req} =~ m{\.(png|jpe?g|gif|css|js|ico|rdf)\s};
+		next if $data{req} =~ m{/feed\s};
+	}
 
 	$data{browser} = colored($data{ua}, $ua->robot ? 'blue' : 'cyan');
 	$data{taken}  *= 1000;

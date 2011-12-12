@@ -1,4 +1,4 @@
-@import url('http://fonts.googleapis.com/css?family=Mate+SC');
+@media print {
 
 body {
 	color: #333;
@@ -127,4 +127,6 @@ hr {
 	display: block;
 	clear: left;
 	content: "";
+}
+
 }

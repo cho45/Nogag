@@ -29,6 +29,7 @@ route "/mobilesitemap.xml" => \&mobilesitemap;
 route "/feed" => \&feed;
 route "/robots.txt" => \&robots_txt;
 route "/api/kousei" => "Nogag::API kousei";
+route "/test" => \&test;
 
 # route '/{year:[0-9]{4}}/' => \&archive;
 route '/{year:[0-9]{4}}/{month:[0-9]{2}}/' => \&archive;
@@ -477,6 +478,12 @@ sub robots_txt {
 	my ($r) = @_;
 	$r->res->content_type('text/plain');
 	$r->res->content(encode_utf8 $r->render('robots.txt'));
+}
+
+sub test {
+	my ($r) = @_;
+	$r->stash(test => 1);
+	$r->res->content(encode_utf8 $r->render('index.html'));
 }
 
 1;

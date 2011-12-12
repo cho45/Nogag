@@ -192,6 +192,12 @@ subtest redirect => sub {
 		is $_->header('Location'), path('/2004/10/11/');
 	});
 
+	request(GET => 'http://lowreal.net/blog/2006/12/03/1.html')->{do}->(sub {
+		ok !$_->{env};
+		is $_->code, 301;
+		is $_->header('Location'), path('/2006/12/03/1');
+	});
+
 	request(GET => 'http://lowreal.net/2004/10')->{do}->(sub {
 		ok !$_->{env};
 		is $_->code, 301;
@@ -214,6 +220,12 @@ subtest redirect => sub {
 		ok !$_->{env};
 		is $_->code, 301;
 		is $_->header('Location'), path('/photo/');
+	});
+
+	request(GET => 'http://lowreal.net/auth/login.rb/Flickr?return_path=/logs/2004/05/01/5/')->{do}->(sub {
+		ok !$_->{env};
+		is $_->code, 301;
+		is $_->header('Location'), path('/logs/2004/05/01/5/');
 	});
 };
 
@@ -248,7 +260,13 @@ subtest files => sub {
 		is $_->code, '200';
 	});
 
-	request(GET => 'http://lowreal.net/2005/colors-canvas.xhtml')->{do}->(sub {
+	request(GET => 'http://lowreal.net/2005/colors-canvas')->{do}->(sub {
+		ok !$_->{env};
+		is $_->code, '301';
+		is $_->header('Location'), path('/2005/colors-canvas.html');
+	});
+
+	request(GET => 'http://lowreal.net/2005/colors-canvas.html')->{do}->(sub {
 		ok !$_->{env};
 		is $_->code, '200';
 	});
@@ -260,7 +278,7 @@ subtest files => sub {
 
 	request(GET => 'http://lowreal.net/lib/PlotKit/PlotKit_Packed.js')->{do}->(sub {
 		ok !$_->{env};
-		is $_->code, '404';
+		is $_->code, '200';
 	});
 
 	request(GET => 'http://lowreal.net/', [ Cookie => 's=403c1bc00ea043548f2275d538e1d26b422ca95c' ])->{do}->(sub {
