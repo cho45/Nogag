@@ -89,6 +89,7 @@ Nogag.Editor = {
 			preview.find('img').attr('src', image).end().show();
 			var itpage = Math.ceil( (it.index + 1) / 24);
 			if (itpage != page) {
+				page = itpage;
 				loadPage(itpage);
 			}
 		}
