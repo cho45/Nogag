@@ -6,93 +6,12 @@ Nogag.Editor = {
 	},
 
 	test : function () {
-		var parent  = $('#images');
-		var list    = $('#images-items');
-		var preview = $('#images-preview');
-		var actions = $('#images-actions');
-
-		var template = list.find('.item');
-
-		preview.click(function () {
-			preview.hide();
+		Nogag.Editor.Picasa.get().next(function (syntax) {
+			alert(syntax);
+		}).
+		error(function (e) {
+			alert(e);
 		});
-
-		var page = 1;
-		var limit = 24;
-		actions.
-			find('.left').
-				click(function () {
-					if (preview.is(':visible')) {
-						Nogag.Editor.Picasa.get(+preview.attr('data-index') - 1).next(showPreview).error(function (e) {
-							alert(e);
-						});
-					} else {
-						if (page > 1) loadPage(--page);
-					}
-				}).
-			end().
-			find('.right').
-				click(function () {
-					if (preview.is(':visible')) {
-						Nogag.Editor.Picasa.get(+preview.attr('data-index') + 1).next(showPreview).error(function (e) {
-							alert(e);
-						});
-					} else {
-						loadPage(++page);
-					}
-				}).
-			end();
-		loadPage(page);
-
-		function loadPage (page) {
-			actions.find('.page').text('Load: ' + page);
-			list.empty();
-			return loop(limit, function (n) {
-				var index = (page - 1) * limit + n;
-				return Nogag.Editor.Picasa.get(index).next(function (it) {
-					if (!it) return;
-					var thumbnail = it.media$group.media$thumbnail[0].url;
-
-					var link = $.grep(it.link, function (_) { return _.rel == 'alternate' && _.type == 'text/html'; })[0].href;
-
-					var item = template.clone();
-					item.
-						find('img.thumbnail').
-							attr({
-								alt : it.title.$t,
-								src : thumbnail
-							}).
-							click(function () {
-								showPreview(it);
-							}).
-						end().
-						find('a.link').
-							attr({
-								title : it.title.$t,
-								href  : link
-							}).
-						end().
-						appendTo(list);
-				});
-			}).
-			next(function () {
-				actions.find('.page').text('Page: ' + page);
-			}).
-			error(function (e) {
-				alert(e);
-			});
-		}
-
-		function showPreview (it) {
-			var image     = it.content.src;
-			preview.attr('data-index', it.index);
-			preview.find('img').attr('src', image).end().show();
-			var itpage = Math.ceil( (it.index + 1) / 24);
-			if (itpage != page) {
-				page = itpage;
-				loadPage(itpage);
-			}
-		}
 	},
 
 	editEntry : function (article) {
@@ -180,6 +99,116 @@ Nogag.Editor = {
 };
 
 Nogag.Editor.Picasa = {
+	page : 1,
+	limit : 24,
+	init : function () {
+		var self = this;
+		if (self.parent) return;
+		self.parent  = $('#images');
+		self.list    = $('#images-items');
+		self.preview = $('#images-preview');
+		self.actions = $('#images-actions');
+		self.template = self.list.find('.item');
+
+		self.preview.click(function () {
+			self.preview.hide();
+		});
+
+		self.actions.
+			find('.left').
+				click(function () {
+					if (self.preview.is(':visible')) {
+						Nogag.Editor.Picasa.Items.get(+self.preview.attr('data-index') - 1).
+						next(function (it) {
+							self.showPreview(it);
+						}).
+						error(function (e) {
+							alert(e);
+						});
+					} else {
+						if (self.page > 1) self.loadPage(--self.page);
+					}
+				}).
+			end().
+			find('.right').
+				click(function () {
+					if (self.preview.is(':visible')) {
+						Nogag.Editor.Picasa.Items.get(+self.preview.attr('data-index') + 1).
+						next(function (it) {
+							self.showPreview(it);
+						}).
+						error(function (e) {
+							alert(e);
+						});
+					} else {
+						self.loadPage(++self.page);
+					}
+				}).
+			end();
+
+		self.loadPage(self.page);
+	},
+
+	get : function () {
+		var self = this;
+		self.init();
+		return new Deferred();
+	},
+
+	showPreview : function (it) {
+		var self = this;
+		var image     = it.content.src;
+		self.preview.attr('data-index', it.index);
+		self.preview.find('img').attr('src', image).end().show();
+		var page = Math.ceil( (it.index + 1) / 24);
+		if (page != self.page) {
+			self.page = page;
+			self.loadPage(self.page);
+		}
+	},
+
+	loadPage : function (page) {
+		var self = this;
+		self.actions.find('.page').text('Load: ' + self.page);
+		self.list.empty();
+		return loop(self.limit, function (n) {
+			var index = (self.page - 1) * self.limit + n;
+			return Nogag.Editor.Picasa.Items.get(index).next(function (it) {
+				if (!it) return;
+				var thumbnail = it.media$group.media$thumbnail[0].url;
+
+				var link = $.grep(it.link, function (_) { return _.rel == 'alternate' && _.type == 'text/html'; })[0].href;
+
+				var item = self.template.clone();
+				item.
+					find('img.thumbnail').
+						attr({
+							alt : it.title.$t,
+							src : thumbnail
+						}).
+						click(function () {
+							self.showPreview(it);
+						}).
+					end().
+					find('a.link').
+						attr({
+							title : it.title.$t,
+							href  : link
+						}).
+					end().
+					appendTo(self.list);
+			});
+		}).
+		next(function () {
+			self.actions.find('.page').text('Page: ' + self.page);
+		}).
+		error(function (e) {
+			alert(e);
+		});
+	}
+};
+
+Nogag.Editor.Picasa.Items = {
 	get : function (n, end) {
 		var self = this;
 		if (end) {
