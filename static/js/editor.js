@@ -51,7 +51,6 @@ Nogag.Editor = {
 				var index = (page - 1) * limit + n;
 				return Nogag.Editor.Picasa.get(index).next(function (it) {
 					if (!it) return;
-					it.index = index;
 					var thumbnail = it.media$group.media$thumbnail[0].url;
 
 					var link = $.grep(it.link, function (_) { return _.rel == 'alternate' && _.type == 'text/html'; })[0].href;
@@ -88,6 +87,10 @@ Nogag.Editor = {
 			var image     = it.content.src;
 			preview.attr('data-index', it.index);
 			preview.find('img').attr('src', image).end().show();
+			var itpage = Math.ceil( (it.index + 1) / 24);
+			if (itpage != page) {
+				loadPage(itpage);
+			}
 		}
 	},
 
@@ -215,7 +218,11 @@ Nogag.Editor.Picasa = {
 			},
 			success : function (res) {
 				if (!res.feed.entry.length) self._done = true;
+				var i = self._data.length;
 				self._data = self._data.concat(res.feed.entry);
+				for (var it; (it = self._data[i]); i++) {
+					it.index = i;
+				}
 				ret.call();
 			},
 			error : function (e) {
