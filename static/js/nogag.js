@@ -22,6 +22,8 @@ function dependon (check, src) {
 }
 
 Nogag = {
+	isTouch : /Android|iPhone|iPod|DSi/.test(navigator.userAgent),
+
 	data : function (key) {
 		return document.documentElement.getAttribute('data-' + key);
 	},
@@ -31,6 +33,24 @@ Nogag = {
 
 		$('article').each(function () {
 			Nogag.initEntry($(this));
+		});
+
+		$('a.picasa').colorbox({
+			fixed       : true,
+			rel         : 'picasa',
+			photo       : true,
+			returnFocus : false,
+			loop        : false,
+			maxWidth    : '95%',
+			maxHeight   : '95%',
+			title       : function () {
+				return '<a href="' + $(this).attr('href') + '" target="_blank" class="symbol">D</a>';
+			},
+			href        : function () {
+				// 'http://lh3.ggpht.com/-2HEEdNCVIRQ/Tt-ewB6vY8I/AAAAAAAABbs/eyTknRFTB-k/s900/IMG_9578-1920.jpg'
+				var src = $(this).find('img').attr('src');
+				return src.replace('/s900/', '/s1920/');
+			}
 		});
 
 		if (Nogag.data('auth')) {

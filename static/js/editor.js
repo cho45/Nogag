@@ -47,6 +47,16 @@ Nogag.Editor = {
 		var body  = container.find('textarea[name=body]');
 
 		var actions = {
+			photo : function () {
+				Nogag.Editor.Picasa.get().next(function (syntax) {
+					body.val( body.val() + "\n" + syntax);
+					title.val('[photo]');
+				}).
+				error(function (e) {
+					alert(e);
+				});
+			},
+
 			kousei : function () {
 				$.ajax({
 					url: "/api/kousei",
@@ -115,6 +125,22 @@ Nogag.Editor.Picasa = {
 		});
 
 		self.actions.
+			find('.paste').
+				click(function () {
+					if (self.preview.is(':visible')) {
+						Nogag.Editor.Picasa.Items.get(+self.preview.attr('data-index')).
+						next(function (it) {
+							self.preview.hide();
+							self.parent.hide();
+							$.colorbox.close();
+							self.deferred.call(it.syntax);
+						}).
+						error(function (e) {
+							self.deferred.fail(e);
+						});
+					}
+				}).
+			end().
 			find('.left').
 				click(function () {
 					if (self.preview.is(':visible')) {
@@ -123,7 +149,7 @@ Nogag.Editor.Picasa = {
 							self.showPreview(it);
 						}).
 						error(function (e) {
-							alert(e);
+							self.deferred.fail(e);
 						});
 					} else {
 						if (self.page > 1) self.loadPage(--self.page);
@@ -138,7 +164,7 @@ Nogag.Editor.Picasa = {
 							self.showPreview(it);
 						}).
 						error(function (e) {
-							alert(e);
+							self.deferred.fail(e);
 						});
 					} else {
 						self.loadPage(++self.page);
@@ -152,7 +178,13 @@ Nogag.Editor.Picasa = {
 	get : function () {
 		var self = this;
 		self.init();
-		return new Deferred();
+
+		self.deferred = new Deferred();
+		$.colorbox({
+			inline: true,
+			href : self.parent.show()
+		});
+		return self.deferred;
 	},
 
 	showPreview : function (it) {
@@ -175,16 +207,13 @@ Nogag.Editor.Picasa = {
 			var index = (self.page - 1) * self.limit + n;
 			return Nogag.Editor.Picasa.Items.get(index).next(function (it) {
 				if (!it) return;
-				var thumbnail = it.media$group.media$thumbnail[0].url;
-
-				var link = $.grep(it.link, function (_) { return _.rel == 'alternate' && _.type == 'text/html'; })[0].href;
 
 				var item = self.template.clone();
 				item.
 					find('img.thumbnail').
 						attr({
-							alt : it.title.$t,
-							src : thumbnail
+							alt : it.title,
+							src : it.thumbnail
 						}).
 						click(function () {
 							self.showPreview(it);
@@ -192,8 +221,8 @@ Nogag.Editor.Picasa = {
 					end().
 					find('a.link').
 						attr({
-							title : it.title.$t,
-							href  : link
+							title : it.title,
+							href  : it.link
 						}).
 					end().
 					appendTo(self.list);
@@ -237,7 +266,7 @@ Nogag.Editor.Picasa.Items = {
 
 		var ret = new Deferred();
 		$.ajax({
-			url : 'http://picasaweb.google.com/data/feed/base/user/cho101101?alt=json&kind=photo&hl=ja&callback=?',
+			url : 'http://picasaweb.google.com/data/feed/base/user/cho101101?alt=json&kind=photo&hl=ja&access=public&callback=?',
 			dataType: 'jsonp',
 			data : {
 				'fields'      : 'entry(title,link,content,media:group)',
@@ -251,7 +280,12 @@ Nogag.Editor.Picasa.Items = {
 				var i = self._data.length;
 				self._data = self._data.concat(res.feed.entry);
 				for (var it; (it = self._data[i]); i++) {
-					it.index = i;
+					it.index     = i;
+					it.title     = it.title.$t;
+					it.thumbnail = it.media$group.media$thumbnail[0].url;
+					it.link      = $.grep(it.link, function (_) { return _.rel == 'http://schemas.google.com/photos/2007#canonical' && _.type == 'text/html'; })[0].href;
+					it.image     = it.content.src;
+					it.syntax    = $('#images-template').text().replace(/\{\{(\w+)\}\}/g, function (_, name) { return it[name] }).replace(/\s+/g, ' ');
 				}
 				ret.call();
 			},

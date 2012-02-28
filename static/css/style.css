@@ -447,6 +447,7 @@ form.edit-form textarea {
 }
 
 .entries article a.hatena-fotolife ,
+.entries article a.picasa ,
 .entries article p.photo {
 	display: block;
 	margin: 0 -30px;;
@@ -454,7 +455,8 @@ form.edit-form textarea {
 	text-align: center;
 }
 
-.entries article a.hatena-fotolife img {
+.entries article a.hatena-fotolife img ,
+.entries article a.picasa img {
 	display: block;
 	max-width: 900px;
 	max-height: 700px;
@@ -502,6 +504,31 @@ form.edit-form textarea {
 }
 
 .amazon:after {
+	display: block;
+	clear: left;
+	content: "";
+}
+
+figure.http {
+	margin: 0;
+	padding: 0;
+}
+
+figure.http .image {
+	float: left;
+	margin: 0 1em 0 0;
+}
+
+figure.http .image img {
+	max-width: 128px;
+	max-height: 128px;
+}
+
+figure.http .detail {
+	color: #666;
+}
+
+figure.http:after {
 	display: block;
 	clear: left;
 	content: "";
@@ -612,7 +639,7 @@ form.edit-form textarea {
 		width: 100%;
 		padding: 0;
 		margin: 0;
-		font-size: 13px;
+		font-size: 13pt;
 	}
 
 	#global-header {
@@ -661,6 +688,7 @@ form.edit-form textarea {
 
 	.entries article {
 		padding: 5px 10px;
+		overflow: hidden;
 	}
 
 	.entries article pre.code {
@@ -668,6 +696,7 @@ form.edit-form textarea {
 	}
 
 	.entries article a.hatena-fotolife ,
+	.entries article a.picasa ,
 	.entries article p.photo {
 		display: block;
 		margin: 0 -10px;
@@ -675,7 +704,8 @@ form.edit-form textarea {
 		text-align: center;
 	}
 
-	.entries article a.hatena-fotolife img {
+	.entries article a.hatena-fotolife img ,
+	.entries article a.picasa img {
 		max-width: 100%;
 		margin: 0;
 	}

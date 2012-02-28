@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/home/cho45/perl5/perlbrew/perls/perl-5.14.2/bin/perl
 
 use utf8;
 use strict;
@@ -8,9 +8,8 @@ use lib lib => "$ENV{HOME}/project/Text-Xatena/lib";
 
 
 use Nogag::Formatter::Hatena;
+use Nogag::Model::Entry;
 
-warn Nogag::Formatter::Hatena->format(q{
->http://www.aozora.gr.jp/cards/000035/files/275_13903.html:title>
-aaa
-<<
-});
+warn Nogag::Formatter::Hatena->format(Nogag::Model::Entry->bless({ body => q{
+	[asin:B0068U8XIM:detail]
+} }));

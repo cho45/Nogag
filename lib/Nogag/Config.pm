@@ -9,7 +9,7 @@ use constant root => dir(".")->absolute;
 
 common +{
 	appname        => 'nogag',
-	sitename       => '氾濫原',
+	sitename       => '氾濫原 [HANRANGEN]',
 	entry_per_page => 7,
 	static_shared  => 0,
 	version        => scalar time,

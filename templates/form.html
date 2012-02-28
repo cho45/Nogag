@@ -8,6 +8,7 @@
 		<div class="content">
 			<div class="toolbar">
 				<button data-action="kousei" tabindex="-1">校正</button>
+				<button data-action="photo" tabindex="-1" class="symbol">I</button>
 			</div>
 			<p>
 				<textarea name="body">[% entry.body %]</textarea>
@@ -20,4 +21,19 @@
 			</p>
 		</div>
 	</form>
+
+	<style type="text/css">
+		@font-face { 
+			font-family: 'WebSymbolsRegular';
+			src: url('/images/fonts/websymbols-regular-webfont.eot');
+			src: url('/images/fonts/websymbols-regular-webfont.eot?#iefix') format('embedded-opentype'),
+				 url('/images/fonts/websymbols-regular-webfont.woff') format('woff'),
+				 url('/images/fonts/websymbols-regular-webfont.ttf') format('truetype'),
+				 url('/images/fonts/websymbols-regular-webfont.svg#WebSymbolsRegular') format('svg');
+		}
+
+		.symbol {
+			font-family: 'WebSymbolsRegular';
+		}
+	</style>
 </article>

@@ -21,18 +21,14 @@ my $thx = Text::Xatena->new(
         ],
         'Blockquote' => q[
             <figure class="quote">
-            ? if ($cite) {
-                <blockquote cite="{{= $cite }}">
+                <blockquote {{ if ($cite) { }}cite="{{= $cite }}"{{ } }}>
                     {{= $content }}
                 </blockquote>
+                {{ if ($title) { }}
                 <figcaption>
                     <cite>{{= $title }}</cite>
                 </figcaption>
-            ? } else {
-                <blockquote>
-                    {{= $content }}
-                </blockquote>
-            ? }
+                {{ } }}
             </figure>
         ],
         'SeeMore' => q[
@@ -62,6 +58,12 @@ package
 
 use Text::Xatena::Inline::Aggressive -Base;
 
+sub match ($$) { ## no critic
+    my ($regexp, $block) = @_;
+    my $pkg = caller(0);
+    unshift @{ $pkg->inlines }, { regexp => $regexp, block => $block };
+}
+
 use URI::Escape;
 use URI::Amazon::APA;
 use LWP::UserAgent;
@@ -78,6 +80,39 @@ sub render ($$) {
     my $str = $xslate->render_string(shift, shift);
     $str =~ s/\s+/ /g;
     $str;
+}
+
+use Data::OpenGraph;
+use HTML::Microdata;
+sub metadata_of ($) {
+    my ($uri) = @_;
+
+    my $res = $ua->get($uri);
+
+    my $ret = {};
+
+    my $og = Data::OpenGraph->parse_string($res->decoded_content);
+    $ret->{title}       = $og->property('title');
+    $ret->{image}       = $og->property('image');
+    $ret->{description} = $og->property('description');
+
+    my $microdata = HTML::Microdata->extract($res->decoded_content, base => $uri);
+    my $item = $microdata->items->[0];
+    if ($item) {
+        $ret->{title}       = $item->{properties}->{name}->[0];
+        $ret->{image}       = $item->{properties}->{image}->[0];
+        $ret->{description} = $item->{properties}->{description}->[0];
+    }
+
+    if (!$ret->{title}) {
+        ($ret->{title}) = ($res->decoded_content =~ qr|<title[^>]*>([^<]*)</title>|i);
+    }
+    if (!$ret->{description}) {
+        my ($description) = ($res->decoded_content =~ qr|<meta([^>]+name=['"]description['"][^>]*)>|i);
+        ($ret->{description}) = ($description =~ qr|content=['"](.+?)['"]|);
+    }
+
+    $ret;
 }
 
 match qr{\[?f:id:([^:]+):(\d+)([jpeg]):image\]?} => sub {
@@ -113,13 +148,12 @@ match qr{\[?asin:([^:]+):detail\]?(\s*[.\d]+)?}=> sub {
         secret => config->param('amazon_secret'),
     );
 
-    my $ua = LWP::UserAgent->new;
-    my $res  = $ua->get($uri);
+    my $res  = $self->ua->get($uri);
     $res->is_success or die $res->content;
 
     my $doc = XML::LibXML->load_xml( string => $res->content );
     my $xpc = XML::LibXML::XPathContext->new($doc);
-    $xpc->registerNs('a', 'http://webservices.amazon.com/AWSECommerceService/2010-09-01');
+    $xpc->registerNs('a', 'http://webservices.amazon.com/AWSECommerceService/2011-08-01');
     my $node = $xpc->findnodes('/a:ItemLookupResponse/a:Items/a:Item')->[0];
 
     render(q{
@@ -149,6 +183,30 @@ match qr{\[?asin:([^:]+):detail\]?(\s*[.\d]+)?}=> sub {
         image  => $xpc->findvalue('a:MediumImage/a:URL', $node),
         link   => $xpc->findvalue('a:DetailPageURL', $node),
         rating => sprintf("%.1f", $rating || 3),
+    });
+};
+
+match qr{figure:(https?://\S+)}=> sub {
+    my ($self, $http) = @_;
+    my $res = metadata_of($http);
+
+    render(q{
+        </p>
+        <figure class="http" itemscope itemtype="http://schema.org/WebPage">
+            <div class="image">
+                <a href="[% link %]"><img src="[% image %]" alt="[% title %]" itemprop="image"/></a>
+            </div>
+            <figcaption class="detail">
+                <p class="title">
+                    <a href="[% link %]" itemprop="url"><span itemprop="name">[% title %]</span></a>
+                </p>
+                <p class="description" itemprop="description">[% description %]</p>
+            </figcaption>
+        </figure>
+        <p>
+    }, +{
+        %$res,
+        link => $http,
     });
 };
 

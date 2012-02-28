@@ -9,10 +9,11 @@
 		<meta name="description" content="写真・文章による、ある普通の人間の人生の記録"/>
 		[% END %]
 		<meta charset="utf-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi"/>
 		<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"/>
 		<link rel="author" href="http://www.lowreal.net/"/>
 		<link rel="alternate" media="handheld" href="[% r.req.uri.path_query %]"/>
+		<link rel="alternate" type="application/rss+xml" title="Feed" href="/feed"/>
 
 		[% UNLESS permalink %]
 		<meta itemprop="name" content="[% title ? title _ " - " : "" %][% r.config_param('sitename') %]"/>
@@ -32,6 +33,7 @@
 		[% css = [
 			"/css/style.css",
 			"/css/print.css",
+			"/css/colorbox.css",
 		] %]
 		[% IF r.config_param('static_shared') %]
 		<link rel="stylesheet" type="text/css" href="/.shared.css:[% r.config_param('version') %]:[% css.join(',') %]"/>
@@ -259,6 +261,7 @@
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 
 		[% js = [
+			"/js/jquery.colorbox-min.js",
 			"/js/jsdeferred.js",
 			"/js/keyString.js",
 			"/js/daterelative.js",
@@ -274,7 +277,10 @@
 		[% END %]
 
 		[% IF r.has_auth %]
+		<!-- HAS AUTH -->
+		[% INCLUDE "_images.html" %]
 		<script type="text/javascript" src="/js/editor.js?[% r.config_param('version') %]"></script>
+		<!-- /HAS AUTH -->
 		[% END %]
 
 		<script type="text/javascript">

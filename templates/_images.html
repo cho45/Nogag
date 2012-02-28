@@ -1,0 +1,123 @@
+<div id="images">
+	<div id="images-items">
+		<div class="item">
+			<img width="140" height="140" class="thumbnail"/>
+			<a class="link symbol" target="_blank">D</a>
+		</div>
+	</div>
+
+	<div id="images-preview">
+		<img src="http://lh4.ggpht.com/-FKUmRs1sw6A/Tt-ezjDG9_I/AAAAAAAABbs/YJyCAJY1kfU/s900/IMG_9586-1920.jpg"/>
+	</div>
+
+	<div id="images-actions">
+		<span class="page">1</span>
+		<a href="javascript:void(0)" class="symbol left">&lt;</a>
+		<a href="javascript:void(0)" class="symbol paste">A</a>
+		<a href="javascript:void(0)" class="symbol right">&gt;</a>
+	</div>
+
+	<script type="application/x-template" id="images-template">
+		<span itemscope itemtype="http://schema.org/Photograph">
+			<a href="{{link}}" class="picasa" itemprop="url"><img src="{{image}}" alt="photo" itemprop="image"/></a>
+		</span>
+	</script>
+</div>
+
+<style type="text/css">
+	#images {
+		display: none;
+		position: relative;
+		top: 10px;
+		margin: 0 30px;
+		padding: 0;
+		height: 700px;
+		width: 900px;
+		
+		background: #000;
+	}
+
+	#images-items {
+		position: absolute;
+		top: 36px;
+		width: 912px;
+		height: 600px;
+		margin: 0 0 0 -6px;
+	}
+
+	#images-items .item {
+		display: inline-block;
+		position: relative;
+		margin: 6px;
+		padding: 0;
+		box-shadow: 0 0 5px #000;
+		height: 140px;
+		width: 140px;
+	}
+
+	#images-items .item .link {
+		display: inline-block;
+		position: absolute;
+		right: 5px;
+		bottom: 5px;
+		font-size: 10px;
+		width: 10px;
+		height: 10px;
+		line-height: 10px;
+		color: #fff;
+		text-shadow: 0 0 2px #000;
+		text-decoration: none;
+		opacity: 0.5;
+	}
+
+	#images-preview {
+		display: none;
+		position: absolute;
+		top: 36px;
+		background: #000;
+		width: 900px;
+		box-shadow: 0 0 5px #000;
+		text-align: center;
+	}
+
+	#images-preview img {
+		max-width: 900px;
+		max-height: 600px;
+	}
+
+	#images-actions {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		padding: 0;
+		margin: 0;
+		height: 36px;
+	}
+
+	#images-actions a {
+		display: inline-block;
+		font-size: 16px;
+		width: 16px;
+		height: 16px;
+		line-height: 16px;
+		margin: 0;
+		padding: 10px;
+		color: #fff;
+		text-align: center;
+		text-decoration: none;
+		text-shadow: 0 0 2px #000;
+		opacity: 0.8;
+	}
+
+	#images-actions .paste {
+	}
+
+	#images .left {
+	}
+
+	#images .right {
+	}
+
+</style>
+

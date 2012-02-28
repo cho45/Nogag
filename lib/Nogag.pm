@@ -428,7 +428,7 @@ sub sitemap {
 	my ($r) = @_;
 
 	my $entries = $r->dbh->select(q{
-		SELECT path FROM entries
+		SELECT path, strftime('%Y-%m-%dT%H:%M:%SZ', modified_at) as lastmod FROM entries ORDER BY `date` DESC
 	});
 
 	$r->stash(entries => $entries);
@@ -441,7 +441,7 @@ sub mobilesitemap {
 	my ($r) = @_;
 
 	my $entries = $r->dbh->select(q{
-		SELECT path FROM entries
+		SELECT path, strftime('%Y-%m-%dT%H:%M:%SZ', modified_at) as lastmod FROM entries ORDER BY `date` DESC
 	});
 
 	$r->stash(entries => $entries);
