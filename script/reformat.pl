@@ -12,17 +12,31 @@ use Encode;
 my $r = Nogag->new({});
 $r->dbh->begin_work;
 
-my $rows = $r->dbh->select(q{
-	SELECT * FROM entries
-	ORDER BY `date` DESC, `path` ASC
-});
+my $target = shift @ARGV or die;
+
+my $rows = $target eq ':all' ?
+	$r->dbh->select(q{
+		SELECT * FROM entries
+		ORDER BY `date` DESC, `path` ASC
+	}):
+	$r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE path LIKE :target
+	}, {
+		target => "$target%"
+	});
+
+
+printf "%d rows, ok?", scalar @$rows;
+<>;
+
 for my $row (@$rows) {
 	Nogag::Model::Entry->bless($row);
 
 	my $formatter = "Nogag::Formatter::" . $row->format;
 	$formatter->use;
 
-	warn $row->id;
+	printf "id:%d, path:%s = %s\n", $row->id, $row->path, $formatter;
 
 	my $formatted_body = $formatter->format($row);
 

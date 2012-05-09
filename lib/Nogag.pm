@@ -374,6 +374,11 @@ sub permalink {
 				$uri->path_query;
 			}
 		});
+
+		my $tmpl = config->root->subdir('templates/category')->file("$name.html");
+		if (-e $tmpl) {
+			return $r->html($tmpl);
+		}
 	} else {
 		my $entry = $r->dbh->select(q{
 			SELECT * FROM entries

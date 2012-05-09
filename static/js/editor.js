@@ -268,6 +268,7 @@ Nogag.Editor.Picasa.Items = {
 		$.ajax({
 			url : 'http://picasaweb.google.com/data/feed/base/user/cho101101?alt=json&kind=photo&hl=ja&access=public&callback=?',
 			dataType: 'jsonp',
+			cache : false,
 			data : {
 				'fields'      : 'entry(title,link,content,media:group)',
 				'start-index' : self._data.length + 1,

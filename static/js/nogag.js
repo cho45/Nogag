@@ -49,7 +49,7 @@ Nogag = {
 			href        : function () {
 				// 'http://lh3.ggpht.com/-2HEEdNCVIRQ/Tt-ewB6vY8I/AAAAAAAABbs/eyTknRFTB-k/s900/IMG_9578-1920.jpg'
 				var src = $(this).find('img').attr('src');
-				return src.replace('/s900/', '/s1920/');
+				return src.replace('/s900/', '/s2048/');
 			}
 		});
 

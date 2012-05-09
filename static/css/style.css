@@ -416,12 +416,12 @@ form.edit-form textarea {
 }
 
 .entries article .content a:link {
-	color: #a0bfc2;
+	color: #6dd3dd;
 	text-decoration: none;
 }
 
 .entries article .content a:visited {
-	color: #85a1a4;
+	color: #a0bfc2;
 	text-decoration: none;
 }
 
