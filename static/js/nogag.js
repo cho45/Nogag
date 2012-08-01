@@ -46,7 +46,8 @@ Nogag = {
 				width       : window.screen.width,
 				height      : window.screen.height,
 				title       : function () {
-					return '<a href="' + $(this).attr('href') + '" target="_blank" class="symbol">D</a>';
+					// return '<a href="' + $(this).attr('href') + '" target="_blank" class="symbol">D</a>';
+					return '';
 				},
 				onOpen : function () {
 					var target = document.getElementById('colorbox');

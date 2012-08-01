@@ -85,7 +85,6 @@
 }
 
 #cboxContent {
-	margin-top: 20px;
 	overflow: visible;
 }
 
@@ -100,7 +99,7 @@
 
 #cboxLoadedContent {
 	background: #000;
-	padding: 0 10px 10px 10px;
+	padding: 0;
 }
 
 #cboxLoadingGraphic {
@@ -136,11 +135,12 @@
 #cboxPrevious,
 #cboxNext,
 #cboxClose {
+	z-index: 9999;
 	text-indent: -9999px;
 	width: 20px;
 	height: 20px;
 	position: absolute;
-	top: -20px;
+	top: 0;
 	background: url(/images/controls.png) no-repeat 0 0;
 }
 
