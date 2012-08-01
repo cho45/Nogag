@@ -9,10 +9,14 @@ use Path::Class;
 use File::Spec;
 use POSIX;
 use Cache::Null;
+use Data::MessagePack;
 
 use Plack::Builder;
 use Plack::Session::State::Cookie;
 use Plack::Session::Store::File;
+
+my $MessagePack = Data::MessagePack->new;
+$MessagePack->canonical;
 
 use Nogag;
 use lib config->root->subdir('lib')->absolute.q();
@@ -55,10 +59,23 @@ builder {
 	enable "Plack::Middleware::Session",
 		state => Plack::Session::State::Cookie->new(
 			session_key => 's',
-			expires => undef,
+			expires => 60 * 60 * 24 * 365,
 		),
 		store => Plack::Session::Store::File->new(
 			dir => config->root->subdir('session').q(),
+			serializer   => sub {
+				my ($session, $file) = @_;
+				return unless %$session;
+				my $fh = file($file)->openw;
+				print $fh $MessagePack->pack($session);
+				close $fh;
+			},
+			deserializer => sub {
+				my ($file) = @_;
+				eval {
+					$MessagePack->unpack(scalar file($file)->slurp)
+				} || +{}
+			},
 		);
 
 	sub {

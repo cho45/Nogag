@@ -43,12 +43,13 @@ sub login {
 	if ($r->req->method eq 'POST') {
 		if ($r->req->param('password') eq config->param('password')) {
 			$r->session->set('auth' => 1);
-			throw code => 302, location => '/';
+			throw code => 302, location => '/?' . scalar time;
 		} else {
 			$r->stash('error' => 'Invalid Password');
 		}
 	}
 
+	$r->session->set('login' => 1); # ensure create session
 	$r->html('login.html');
 }
 

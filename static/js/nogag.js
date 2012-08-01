@@ -35,23 +35,82 @@ Nogag = {
 			Nogag.initEntry($(this));
 		});
 
-		$('a.picasa').colorbox({
-			fixed       : true,
-			rel         : 'picasa',
-			photo       : true,
-			returnFocus : false,
-			loop        : false,
-			maxWidth    : '95%',
-			maxHeight   : '95%',
-			title       : function () {
-				return '<a href="' + $(this).attr('href') + '" target="_blank" class="symbol">D</a>';
-			},
-			href        : function () {
-				// 'http://lh3.ggpht.com/-2HEEdNCVIRQ/Tt-ewB6vY8I/AAAAAAAABbs/eyTknRFTB-k/s900/IMG_9578-1920.jpg'
+		var requestFullScreen = document.body.requestFullScreen || document.body.mozRequestFullScreen || document.body.webkitRequestFullScreen;
+		if (requestFullScreen) {
+			var foo = $('a.picasa').colorbox({
+				fixed       : true,
+				rel         : 'picasa',
+				photo       : true,
+				returnFocus : false,
+				loop        : false,
+				width       : window.screen.width,
+				height      : window.screen.height,
+				title       : function () {
+					return '<a href="' + $(this).attr('href') + '" target="_blank" class="symbol">D</a>';
+				},
+				onOpen : function () {
+					var target = document.getElementById('colorbox');
+					if (target.requestFullScreen) {
+						target.requestFullScreen();
+					} else
+					if (target.mozRequestFullScreen) {
+						target.mozRequestFullScreen();
+					} else
+					if (target.webkitRequestFullScreen) {
+						target.webkitRequestFullScreen();
+					}
+
+					document.addEventListener("fullscreenchange", function () {
+						if (document.fullscreenElement) {
+							$.colorbox.resize();
+						} else {
+							document.removeEventListener("fullscreenchange", arguments.callee);
+							$.colorbox.close();
+						}
+					}, false);
+					document.addEventListener("mozfullscreenchange", function () {
+						if (document.mozFullScreenElement) {
+							$.colorbox.resize();
+						} else {
+							document.removeEventListener("mozfullscreenchange", arguments.callee);
+							$.colorbox.close();
+						}
+					}, false);
+					document.addEventListener("webkitfullscreenchange", function () {
+						if (document.webkitFullscreenElement) {
+							$.colorbox.resize();
+						} else {
+							document.removeEventListener("webkitfullscreenchange", arguments.callee);
+							$.colorbox.close();
+						}
+					}, false);
+				},
+				onComplete : function () {
+					$.colorbox.resize();
+				},
+				onClosed : function () {
+					if (document.exitFullscreen) {
+						document.exitFullscreen();
+					} else 
+					if (document.mozCancelFullScreen) {
+						document.mozCancelFullScreen();
+					} else
+					if (document.webkitCancelFullScreen) {
+						document.webkitCancelFullScreen();
+					}
+				},
+				href        : function () {
+					// 'http://lh3.ggpht.com/-2HEEdNCVIRQ/Tt-ewB6vY8I/AAAAAAAABbs/eyTknRFTB-k/s900/IMG_9578-1920.jpg'
+					var src = $(this).find('img').attr('src');
+					return src.replace('/s900/', '/s2048/');
+				}
+			});
+		} else {
+			$('a.picasa').each(function () {
 				var src = $(this).find('img').attr('src');
-				return src.replace('/s900/', '/s2048/');
-			}
-		});
+				$(this).attr('href', src.replace('/s900/', '/s2048/'));
+			});
+		}
 
 		if (Nogag.data('auth')) {
 			Nogag.Editor.init();
