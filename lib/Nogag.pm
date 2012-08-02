@@ -41,11 +41,13 @@ sub login {
 	my ($r) = @_;
 
 	if ($r->req->method eq 'POST') {
-		if ($r->req->param('password') eq config->param('password')) {
+		my $username = $r->req->param('username') // '';
+		my $password = $r->req->param('password') // '';
+		if ($username eq config->param('username') && $password eq config->param('password')) {
 			$r->session->set('auth' => 1);
 			throw code => 302, location => '/?' . scalar time;
 		} else {
-			$r->stash('error' => 'Invalid Password');
+			$r->stash('error' => 'Invalid Username or Password');
 		}
 	}
 

@@ -1,10 +1,40 @@
-<form action="" method="post">
-	<p>
-		<label>
-			Password:
-			<input type="password" name="password"/>
-		</label>
-		<input type="hidden" name="sk" value="[% r.sk %]"/>
-		<input type="submit" value="Login"/>
-	</p>
-</form>
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<title>login</title>
+		<link href="/css/bootstrap/css/bootstrap.css" rel="stylesheet"/>
+		<link href="/css/bootstrap/css/bootstrap-responsive.css" rel="stylesheet"/>
+	</head>
+	<body>
+		<div class="container">
+			<div class="page-header">
+				<h1>Login</h1>
+			</div>
+			<form action="" method="post" class="form-horizontal">
+				[% IF error %]
+				<div class="alert alert-error">
+					[% error %]
+				</div>
+				[% END %]
+				<div class="control-group">
+					<label class="control-label" for="username">Username</label>
+					<div class="controls">
+						<input type="text" class="input-xlarge" id="username" name="username" value="[% r.req.param('username') %]"/>
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label" for="password">Password</label>
+					<div class="controls">
+						<input type="password" class="input-xlarge" id="password" name="password" value="[% r.req.param('password') %]"/>
+					</div>
+				</div>
+				<div class="form-actions">
+					<input type="hidden" name="sk" value="[% r.sk %]"/>
+					<input type="submit" value="Login" class="btn btn-primary"/>
+				</div>
+			</form>
+		</div>
+	</body>
+</html>

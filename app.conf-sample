@@ -1,5 +1,6 @@
 # vim:set ft=perl
 +{
+	username       => 'xxxxxx',
 	password       => 'xxxxxx',
 	amazon_tag     => 'nuso-22',
 	amazon_key     => '',
