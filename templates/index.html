@@ -244,6 +244,21 @@
 			<a rel="me" href="https://plus.google.com/114431815111528304586?rel=author"><img src="http://www.google.com/images/icons/ui/gprofile_button-16.png" width="16" height="16" alt="Google+"/></a>
 		</footer>
 
+		<script type="text/javascript" src="http://s.hatena.ne.jp/js/HatenaStar.js"></script>
+		<script type="text/javascript">
+			Hatena.Star.Token = '7743b0e60f0e3b267f9723d3a5cf96981a59e4f3';
+
+			Hatena.Star.SiteConfig = {
+				entryNodes: {
+					'article': {
+						uri: 'a.bookmark',
+						title: 'h1',
+						container: 'h1'
+					}
+				}
+			};
+		</script>
+
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 
 		[% js = [
@@ -274,19 +289,5 @@
 		</script>
 
 		<script type="text/javascript" src="http://platform.tumblr.com/v1/share.js"></script>
-		<script type="text/javascript" src="http://s.hatena.ne.jp/js/HatenaStar.js"></script>
-		<script type="text/javascript">
-			Hatena.Star.Token = '7743b0e60f0e3b267f9723d3a5cf96981a59e4f3';
-
-			Hatena.Star.SiteConfig = {
-				entryNodes: {
-					'article': {
-						uri: 'a.bookmark',
-						title: 'h1',
-						container: 'h1'
-					}
-				}
-			};
-		</script>
 	</body>
 </html>

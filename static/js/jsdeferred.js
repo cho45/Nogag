@@ -1,42 +1,435 @@
-/*
+// JSDeferred 0.4.0 Copyright (c) 2007 cho45 ( www.lowreal.net )
+// See http://github.com/cho45/jsdeferred
+function Deferred () { return (this instanceof Deferred) ? this.init() : new Deferred() }
+Deferred.ok = function (x) { return x };
+Deferred.ng = function (x) { throw  x };
+Deferred.prototype = {
+	
+	_id : 0xe38286e381ae,
 
- JSDeferred Copyright (c) 2007 cho45 ( www.lowreal.net )
+	
+	init : function () {
+		this._next    = null;
+		this.callback = {
+			ok: Deferred.ok,
+			ng: Deferred.ng
+		};
+		return this;
+	},
 
- http://github.com/cho45/jsdeferred
+	
+	next  : function (fun) { return this._post("ok", fun) },
 
- License:: MIT
+	
+	error : function (fun) { return this._post("ng", fun) },
 
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
+	
+	call  : function (val) { return this._fire("ok", val) },
 
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
+	
+	fail  : function (err) { return this._fire("ng", err) },
 
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
-*/
-function Deferred(){return this instanceof Deferred?this.init():new Deferred}Deferred.ok=function(a){return a};Deferred.ng=function(a){throw a;};
-Deferred.prototype={_id:250149748310446,init:function(){this._next=null;this.callback={ok:Deferred.ok,ng:Deferred.ng};return this},next:function(a){return this._post("ok",a)},error:function(a){return this._post("ng",a)},call:function(a){return this._fire("ok",a)},fail:function(a){return this._fire("ng",a)},cancel:function(){(this.canceller||function(){})();return this.init()},_post:function(a,b){this._next=new Deferred;this._next.callback[a]=b;return this._next},_fire:function(a,b){var c="ok";try{b=
-this.callback[a].call(this,b)}catch(d){if(c="ng",b=d,Deferred.onerror)Deferred.onerror(d)}Deferred.isDeferred(b)?b._next=this._next:this._next&&this._next._fire(c,b);return this}};Deferred.isDeferred=function(a){return!!(a&&a._id==Deferred.prototype._id)};Deferred.next_default=function(a){var b=new Deferred,c=setTimeout(function(){b.call()},0);b.canceller=function(){clearTimeout(c)};if(a)b.callback.ok=a;return b};
-Deferred.next_faster_way_readystatechange="object"===typeof window&&"http:"==location.protocol&&!window.opera&&/\bMSIE\b/.test(navigator.userAgent)&&function(a){var b=new Deferred,c=(new Date).getTime();if(150>c-arguments.callee._prev_timeout_called){var d=!1,e=document.createElement("script");e.type="text/javascript";e.src="data:text/javascript,";e.onreadystatechange=function(){d||(b.canceller(),b.call())};b.canceller=function(){if(!d)d=!0,e.onreadystatechange=null,document.body.removeChild(e)};
-document.body.appendChild(e)}else{arguments.callee._prev_timeout_called=c;var g=setTimeout(function(){b.call()},0);b.canceller=function(){clearTimeout(g)}}if(a)b.callback.ok=a;return b};
-Deferred.next_faster_way_Image="object"===typeof window&&"undefined"!=typeof Image&&!window.opera&&document.addEventListener&&function(a){var b=new Deferred,c=new Image,d=function(){b.canceller();b.call()};c.addEventListener("load",d,!1);c.addEventListener("error",d,!1);b.canceller=function(){c.removeEventListener("load",d,!1);c.removeEventListener("error",d,!1)};c.src="data:image/png,"+Math.random();if(a)b.callback.ok=a;return b};
-Deferred.next_tick="object"===typeof process&&"function"===typeof process.nextTick&&function(a){var b=new Deferred;process.nextTick(function(){b.call()});if(a)b.callback.ok=a;return b};Deferred.next=Deferred.next_faster_way_readystatechange||Deferred.next_faster_way_Image||Deferred.next_tick||Deferred.next_default;
-Deferred.chain=function(){for(var a=Deferred.next(),b=0,c=arguments.length;b<c;b++)(function(b){switch(typeof b){case "function":var c=null;try{c=b.toString().match(/^\s*function\s+([^\s()]+)/)[1]}catch(g){}a="error"!=c?a.next(b):a.error(b);break;case "object":a=a.next(function(){return Deferred.parallel(b)});break;default:throw"unknown type in process chains";}})(arguments[b]);return a};
-Deferred.wait=function(a){var b=new Deferred,c=new Date,d=setTimeout(function(){b.call((new Date).getTime()-c.getTime())},1E3*a);b.canceller=function(){clearTimeout(d)};return b};Deferred.call=function(a){var b=Array.prototype.slice.call(arguments,1);return Deferred.next(function(){return a.apply(this,b)})};
-Deferred.parallel=function(a){1<arguments.length&&(a=Array.prototype.slice.call(arguments));var b=new Deferred,c={},d=0,e;for(e in a)a.hasOwnProperty(e)&&function(e,f){"function"==typeof e&&(e=Deferred.next(e));e.next(function(e){c[f]=e;if(0>=--d){if(a instanceof Array)c.length=a.length,c=Array.prototype.slice.call(c,0);b.call(c)}}).error(function(a){b.fail(a)});d++}(a[e],e);d||Deferred.next(function(){b.call()});b.canceller=function(){for(var b in a)a.hasOwnProperty(b)&&a[b].cancel()};return b};
-Deferred.earlier=function(a){1<arguments.length&&(a=Array.prototype.slice.call(arguments));var b=new Deferred,c={},d=0,e;for(e in a)a.hasOwnProperty(e)&&function(e,f){e.next(function(d){c[f]=d;if(a instanceof Array)c.length=a.length,c=Array.prototype.slice.call(c,0);b.canceller();b.call(c)}).error(function(a){b.fail(a)});d++}(a[e],e);d||Deferred.next(function(){b.call()});b.canceller=function(){for(var b in a)a.hasOwnProperty(b)&&a[b].cancel()};return b};
-Deferred.loop=function(a,b){var c={begin:a.begin||0,end:"number"==typeof a.end?a.end:a-1,step:a.step||1,last:!1,prev:null},d,e=c.step;return Deferred.next(function(){function a(f){if(f<=c.end){if(f+e>c.end)c.last=!0,c.step=c.end-f+1;c.prev=d;d=b.call(this,f,c);return Deferred.isDeferred(d)?d.next(function(b){d=b;return Deferred.call(a,f+e)}):Deferred.call(a,f+e)}return d}return c.begin<=c.end?Deferred.call(a,c.begin):null})};
-Deferred.repeat=function(a,b){var c=0;return Deferred.next(function(){var d=(new Date).getTime();do{if(c>=a)return null;b(c++)}while(20>(new Date).getTime()-d);return Deferred.call(arguments.callee)})};Deferred.register=function(a,b){this.prototype[a]=function(){var a=arguments;return this.next(function(){return b.apply(this,a)})}};Deferred.register("loop",Deferred.loop);Deferred.register("wait",Deferred.wait);
-Deferred.connect=function(a,b,c){var d,e;"string"==typeof b?(d=a,e=d[b],a=c||{}):(e=a,a=b||{},d=a.target);var g=a.args?Array.prototype.slice.call(a.args,0):[],f=isFinite(a.ok)?a.ok:a.args?a.args.length:void 0,h=a.ng;return function(){var a=(new Deferred).next(function(a){var b=this._next.callback.ok;this._next.callback.ok=function(){return b.apply(this,a.args)}}),b=g.concat(Array.prototype.slice.call(arguments,0));if(!(isFinite(f)&&null!==f))f=b.length;b.splice(f,0,function(){a.call(new Deferred.Arguments(arguments))});
-isFinite(h)&&null!==h&&b.splice(h,0,function(){a.fail(arguments)});Deferred.next(function(){e.apply(d,b)});return a}};Deferred.Arguments=function(a){this.args=Array.prototype.slice.call(a,0)};Deferred.retry=function(a,b,c){c||(c={});var d=c.wait||0,e=new Deferred,g=function(){b(a).next(function(a){e.call(a)}).error(function(b){0>=--a?e.fail(["retry failed",b]):setTimeout(g,1E3*d)})};setTimeout(g,0);return e};Deferred.methods="parallel,wait,next,call,loop,repeat,chain".split(",");
-Deferred.define=function(a,b){if(!b)b=Deferred.methods;a||(a=function(){return this}());for(var c=0;c<b.length;c++){var d=b[c];a[d]=Deferred[d]}return Deferred};this.Deferred=Deferred;
+	
+	cancel : function () {
+		(this.canceller || function () {})();
+		return this.init();
+	},
+
+	_post : function (okng, fun) {
+		this._next =  new Deferred();
+		this._next.callback[okng] = fun;
+		return this._next;
+	},
+
+	_fire : function (okng, value) {
+		var next = "ok";
+		try {
+			value = this.callback[okng].call(this, value);
+		} catch (e) {
+			next  = "ng";
+			value = e;
+			if (Deferred.onerror) Deferred.onerror(e);
+		}
+		if (Deferred.isDeferred(value)) {
+			value._next = this._next;
+		} else {
+			if (this._next) this._next._fire(next, value);
+		}
+		return this;
+	}
+};
+Deferred.isDeferred = function (obj) {
+	return !!(obj && obj._id === Deferred.prototype._id);
+};
+
+Deferred.next_default = function (fun) {
+	var d = new Deferred();
+	var id = setTimeout(function () { d.call() }, 0);
+	d.canceller = function () { clearTimeout(id) };
+	if (fun) d.callback.ok = fun;
+	return d;
+};
+Deferred.next_faster_way_readystatechange = ((typeof window === 'object') && (location.protocol == "http:") && !window.opera && /\bMSIE\b/.test(navigator.userAgent)) && function (fun) {
+	var d = new Deferred();
+	var t = new Date().getTime();
+	if (t - arguments.callee._prev_timeout_called < 150) {
+		var cancel = false;
+		var script = document.createElement("script");
+		script.type = "text/javascript";
+		script.src  = "data:text/javascript,";
+		script.onreadystatechange = function () {
+			if (!cancel) {
+				d.canceller();
+				d.call();
+			}
+		};
+		d.canceller = function () {
+			if (!cancel) {
+				cancel = true;
+				script.onreadystatechange = null;
+				document.body.removeChild(script);
+			}
+		};
+		document.body.appendChild(script);
+	} else {
+		arguments.callee._prev_timeout_called = t;
+		var id = setTimeout(function () { d.call() }, 0);
+		d.canceller = function () { clearTimeout(id) };
+	}
+	if (fun) d.callback.ok = fun;
+	return d;
+};
+Deferred.next_faster_way_Image = ((typeof window === 'object') && (typeof(Image) != "undefined") && !window.opera && document.addEventListener) && function (fun) {
+	var d = new Deferred();
+	var img = new Image();
+	var handler = function () {
+		d.canceller();
+		d.call();
+	};
+	img.addEventListener("load", handler, false);
+	img.addEventListener("error", handler, false);
+	d.canceller = function () {
+		img.removeEventListener("load", handler, false);
+		img.removeEventListener("error", handler, false);
+	};
+	img.src = "data:image/png," + Math.random();
+	if (fun) d.callback.ok = fun;
+	return d;
+};
+Deferred.next_tick = (typeof process === 'object' && typeof process.nextTick === 'function') && function (fun) {
+	var d = new Deferred();
+	process.nextTick(function() { d.call() });
+	if (fun) d.callback.ok = fun;
+	return d;
+};
+Deferred.next = 
+	Deferred.next_faster_way_readystatechange ||
+	Deferred.next_faster_way_Image ||
+	Deferred.next_tick ||
+	Deferred.next_default;
+
+Deferred.chain = function () {
+	var chain = Deferred.next();
+	for (var i = 0, len = arguments.length; i < len; i++) (function (obj) {
+		switch (typeof obj) {
+			case "function":
+				var name = null;
+				try {
+					name = obj.toString().match(/^\s*function\s+([^\s()]+)/)[1];
+				} catch (e) { }
+				if (name != "error") {
+					chain = chain.next(obj);
+				} else {
+					chain = chain.error(obj);
+				}
+				break;
+			case "object":
+				chain = chain.next(function() { return Deferred.parallel(obj) });
+				break;
+			default:
+				throw "unknown type in process chains";
+		}
+	})(arguments[i]);
+	return chain;
+};
+
+Deferred.wait = function (n) {
+	var d = new Deferred(), t = new Date();
+	var id = setTimeout(function () {
+		d.call((new Date()).getTime() - t.getTime());
+	}, n * 1000);
+	d.canceller = function () { clearTimeout(id) };
+	return d;
+};
+
+Deferred.call = function (fun) {
+	var args = Array.prototype.slice.call(arguments, 1);
+	return Deferred.next(function () {
+		return fun.apply(this, args);
+	});
+};
+
+Deferred.parallel = function (dl) {
+	var isArray = false;
+	if (arguments.length > 1) {
+		dl = Array.prototype.slice.call(arguments);
+		isArray = true;
+	} else if (Array.isArray && Array.isArray(dl) || typeof dl.length == "number") {
+		isArray = true;
+	}
+	var ret = new Deferred(), values = {}, num = 0;
+	for (var i in dl) if (dl.hasOwnProperty(i)) (function (d, i) {
+		if (typeof d == "function") dl[i] = d = Deferred.next(d);
+		d.next(function (v) {
+			values[i] = v;
+			if (--num <= 0) {
+				if (isArray) {
+					values.length = dl.length;
+					values = Array.prototype.slice.call(values, 0);
+				}
+				ret.call(values);
+			}
+		}).error(function (e) {
+			ret.fail(e);
+		});
+		num++;
+	})(dl[i], i);
+
+	if (!num) Deferred.next(function () { ret.call() });
+	ret.canceller = function () {
+		for (var i in dl) if (dl.hasOwnProperty(i)) {
+			dl[i].cancel();
+		}
+	};
+	return ret;
+};
+
+Deferred.earlier = function (dl) {
+	var isArray = false;
+	if (arguments.length > 1) {
+		dl = Array.prototype.slice.call(arguments);
+		isArray = true;
+	} else if (Array.isArray && Array.isArray(dl) || typeof dl.length == "number") {
+		isArray = true;
+	}
+	var ret = new Deferred(), values = {}, num = 0;
+	for (var i in dl) if (dl.hasOwnProperty(i)) (function (d, i) {
+		d.next(function (v) {
+			values[i] = v;
+			if (isArray) {
+				values.length = dl.length;
+				values = Array.prototype.slice.call(values, 0);
+			}
+			ret.call(values);
+			ret.canceller();
+		}).error(function (e) {
+			ret.fail(e);
+		});
+		num++;
+	})(dl[i], i);
+
+	if (!num) Deferred.next(function () { ret.call() });
+	ret.canceller = function () {
+		for (var i in dl) if (dl.hasOwnProperty(i)) {
+			dl[i].cancel();
+		}
+	};
+	return ret;
+};
+
+
+Deferred.loop = function (n, fun) {
+	var o = {
+		begin : n.begin || 0,
+		end   : (typeof n.end == "number") ? n.end : n - 1,
+		step  : n.step  || 1,
+		last  : false,
+		prev  : null
+	};
+	var ret, step = o.step;
+	return Deferred.next(function () {
+		function _loop (i) {
+			if (i <= o.end) {
+				if ((i + step) > o.end) {
+					o.last = true;
+					o.step = o.end - i + 1;
+				}
+				o.prev = ret;
+				ret = fun.call(this, i, o);
+				if (Deferred.isDeferred(ret)) {
+					return ret.next(function (r) {
+						ret = r;
+						return Deferred.call(_loop, i + step);
+					});
+				} else {
+					return Deferred.call(_loop, i + step);
+				}
+			} else {
+				return ret;
+			}
+		}
+		return (o.begin <= o.end) ? Deferred.call(_loop, o.begin) : null;
+	});
+};
+
+
+Deferred.repeat = function (n, fun) {
+	var i = 0, end = {}, ret = null;
+	return Deferred.next(function () {
+		var t = (new Date()).getTime();
+		do {
+			if (i >= n) return null;
+			ret = fun(i++);
+		} while ((new Date()).getTime() - t < 20);
+		return Deferred.call(arguments.callee);
+	});
+};
+
+Deferred.register = function (name, fun) {
+	this.prototype[name] = function () {
+		var a = arguments;
+		return this.next(function () {
+			return fun.apply(this, a);
+		});
+	};
+};
+
+Deferred.register("loop", Deferred.loop);
+Deferred.register("wait", Deferred.wait);
+
+Deferred.connect = function (funo, options) {
+	var target, func, obj;
+	if (typeof arguments[1] == "string") {
+		target = arguments[0];
+		func   = target[arguments[1]];
+		obj    = arguments[2] || {};
+	} else {
+		func   = arguments[0];
+		obj    = arguments[1] || {};
+		target = obj.target;
+	}
+
+	var partialArgs       = obj.args ? Array.prototype.slice.call(obj.args, 0) : [];
+	var callbackArgIndex  = isFinite(obj.ok) ? obj.ok : obj.args ? obj.args.length : undefined;
+	var errorbackArgIndex = obj.ng;
+
+	return function () {
+		var d = new Deferred().next(function (args) {
+			var next = this._next.callback.ok;
+			this._next.callback.ok = function () {
+				return next.apply(this, args.args);
+			};
+		});
+
+		var args = partialArgs.concat(Array.prototype.slice.call(arguments, 0));
+		if (!(isFinite(callbackArgIndex) && callbackArgIndex !== null)) {
+			callbackArgIndex = args.length;
+		}
+		var callback = function () { d.call(new Deferred.Arguments(arguments)) };
+		args.splice(callbackArgIndex, 0, callback);
+		if (isFinite(errorbackArgIndex) && errorbackArgIndex !== null) {
+			var errorback = function () { d.fail(arguments) };
+			args.splice(errorbackArgIndex, 0, errorback);
+		}
+		Deferred.next(function () { func.apply(target, args) });
+		return d;
+	};
+};
+Deferred.Arguments = function (args) { this.args = Array.prototype.slice.call(args, 0) };
+
+Deferred.retry = function (retryCount, funcDeferred, options) {
+	if (!options) options = {};
+
+	var wait = options.wait || 0;
+	var d = new Deferred();
+	var retry = function () {
+		var m = funcDeferred(retryCount);
+		m.
+			next(function (mes) {
+				d.call(mes);
+			}).
+			error(function (e) {
+				if (--retryCount <= 0) {
+					d.fail(['retry failed', e]);
+				} else {
+					setTimeout(retry, wait * 1000);
+				}
+			});
+	};
+	setTimeout(retry, 0);
+	return d;
+};
+
+Deferred.methods = ["parallel", "wait", "next", "call", "loop", "repeat", "chain"];
+Deferred.define = function (obj, list) {
+	if (!list) list = Deferred.methods;
+	if (!obj)  obj  = (function getGlobal () { return this })();
+	for (var i = 0; i < list.length; i++) {
+		var n = list[i];
+		obj[n] = Deferred[n];
+	}
+	return Deferred;
+};
+
+this.Deferred = Deferred;
+
+(function ($) {
+
+	function wrap (obj) {
+		obj.toJSDeferred = function () {
+			return Deferred.absorb(this);
+		};
+		obj.next = function (fun) {
+			return Deferred.absorb(this).next(fun);
+		};
+		obj.error = function (fun) {
+			return Deferred.absorb(this).error(fun);
+		};
+		obj.done(function (v) {
+			if (obj._next) obj._next._fire('ok', v);
+		});
+		obj.fail(function (v) {
+			if (obj._next) obj._next._fire('ok', v);
+		});
+
+		var orig_promise = obj.promise;
+		obj.promise = function () {
+			return wrap(orig_promise.apply(this, arguments));
+		};
+
+		return obj;
+	}
+	
+	Deferred.absorb = function (obj) {
+		var ret = new Deferred();
+		ret.progress = function () {};
+		obj.done(function (v) {
+			if (v.toJSDeferred) delete v.toJSDeferred;
+			ret.call(v);
+		});
+		obj.fail(function (v) {
+			if (v.toJSDeferred) delete v.toJSDeferred;
+			ret.fail(v);
+		});
+		if (obj.progress) obj.progress(function (v) {
+			ret.progress(v);
+		});
+		return ret;
+	};
+
+	var orig_Deferred = $.Deferred;
+	$.Deferred = function (fun) {
+		return wrap(orig_Deferred.apply(this, arguments));
+	};
+
+	var orig_ajax = $.ajax;
+	$.ajax = function () {
+		return orig_ajax.apply(this, arguments);
+	};
+	var orig_isDeferred = Deferred.isDeferred;
+	Deferred.isDeferred = function (obj) {
+		return orig_isDeferred(obj) || !!(obj && obj.toJSDeferred);
+	};
+
+	$.JSDeferred = Deferred;
+})(jQuery);
