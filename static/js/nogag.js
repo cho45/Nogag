@@ -45,6 +45,26 @@ Nogag = {
 			});
 		}
 
+		if (window.devicePixelRatio > 1) {
+			$(window).load(function () {
+				// console.log('upgrading img');
+				setTimeout(function () {
+					$('a.picasa img').each(function () {
+						var $this = $(this);
+						var src = $this.attr('src').replace('/s900/', '/s2048/');
+						var img = new Image();
+						img.src = src;
+						// console.log('loading ' + src);
+						img.onload = function () {
+							$this.attr('src', src);
+							// console.log('upgraded');
+						};
+					});
+				}, 500);
+			});
+		}
+
+
 		if (Nogag.data('auth')) {
 			Nogag.Editor.init();
 
@@ -53,7 +73,7 @@ Nogag = {
 					Nogag.Editor.newEntry();
 					return false;
 				}).
-				prependTo('#global-navigation ul');
+				appendTo('#global-navigation ul');
 		}
 	},
 

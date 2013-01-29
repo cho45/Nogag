@@ -3,11 +3,11 @@
  */
 
 a:link {
-	color: #ff8108;
+	color: #000;
 }
 
 a:visited {
-	color: #ff8108;
+	color: #000;
 }
 
 a:hover {
@@ -30,10 +30,11 @@ img {
 }
 
 pre {
-	font-size: 80%;
+	font-family: 'Osaka Mono', 'Monaco', 'Lucida Cosole', 'Consolas', monospace;
+	font-size: 75%;
 	overflow: auto;
 	line-height: 1.33;
-	background: #000;
+	background: #efefef;
 }
 
 q {
@@ -42,6 +43,19 @@ q {
 
 p {
 	margin: 1.5em 0;
+}
+
+ul {
+	padding: 0 0 0 1.5em;
+	margin: 1em 0;
+}
+
+ul li {
+	padding: 0;
+}
+
+ul ul {
+	margin: 0;
 }
 
 pre .identifier {
@@ -91,8 +105,8 @@ pre .meta\.tag {
 
 input ,
 textarea {
-	background: #333;
-	color: #fff;
+	background: #fff;
+	color: #333;
 	border: 1px solid #2f3839;
 	padding: 2px;
 }
@@ -106,7 +120,7 @@ ins {
 	display: block;
 	text-decoration: none;
 	background: url('http://cdn-ak.f.st-hatena.com/images/fotolife/c/cho45/20101128/20101128232735.png') no-repeat 0 0;
-	padding: 10px 0 0 1em;
+	padding: 10px 0 0;
 	margin: 1em 0;
 }
 
@@ -136,23 +150,41 @@ figure.quote figcaption {
 }
 
 article section h1 {
+	font-weight: bold;
 	margin: 3em 0 1em;
 }
 
 html {
-	background: #111;
-	color: #efefef;
+	background: #fff;
+	color: #333;
 	margin: 0;
 	padding: 0;
 }
 
 body {
 	text-align: center;
+	font-size: 16px;
 	width: 960px;
 	margin: 0 auto;
-	padding: 20px 0 0;
-	background: #1a1a1a;
+	padding: 10px 0 0;
 	line-height: 1.88;
+	/* IE10 Consumer Preview */ 
+	background-image: -ms-linear-gradient(left, #FFFFFF 0%, #FFFFFF 70%, #DDDDDD 70%, #DDDDDD 100%);
+
+	/* Mozilla Firefox */ 
+	background-image: -moz-linear-gradient(left, #FFFFFF 0%, #FFFFFF 70%, #DDDDDD 70%, #DDDDDD 100%);
+
+	/* Opera */ 
+	background-image: -o-linear-gradient(left, #FFFFFF 0%, #FFFFFF 70%, #DDDDDD 70%, #DDDDDD 100%);
+
+	/* Webkit (Safari/Chrome 10) */ 
+	background-image: -webkit-gradient(linear, left top, right top, color-stop(0, #FFFFFF), color-stop(0.70, #FFFFFF), color-stop(0.70, #DDDDDD), color-stop(1, #DDDDDD));
+
+	/* Webkit (Chrome 11+) */ 
+	background-image: -webkit-linear-gradient(left, #FFFFFF 0%, #FFFFFF 70%, #DDDDDD 70%, #DDDDDD 100%);
+
+	/* W3C Markup, IE10 Release Preview */ 
+	background-image: linear-gradient(to right, #FFFFFF 0%, #FFFFFF 70%, #DDDDDD 70%, #DDDDDD 100%);
 }
 
 body * {
@@ -197,57 +229,53 @@ form.edit-form textarea {
 }
 
 #global-header {
+	font-family: 'Merriweather', serif;
 	display: block;
 	position: relative;
-	width: 716px;
-	height: 100px;
-	margin: 0 auto -20px;
-	padding: 12px 20px 0 244px;
-	background: url('http://cdn-ak.f.st-hatena.com/images/fotolife/c/cho45/20111207/20111207201035.png') no-repeat 30px 16px transparent;
-	_width: 960px;
-	_margin: 0 auto 0;
+	margin: 3em 0 -3em;
+	padding: 1em 0;
+}
+
+#global-header h1 {
+	font-size: 150%;
+	font-weight: 400;
 }
 
 #global-header h1 a {
 	display: block;
-	position: absolute;
-	top: 15px;
-	left: 32px;
-	width: 187px;
-	height: 68px;
-	text-indent: -1000px;
 }
 
 #global-header h1 a:link ,
 #global-header h1 a:visited ,
 #global-header h1 a:hover {
 	text-decoration: none;
-	color: #fff;
+	color: #000;
 }
 
 #global-header #search-form {
 	position: absolute;
-	top: 3px;
-	left: 250px;
+	top: 20px;
+	right: 40px;
 }
 
 #global-navigation {
 	display: block;
-	position: relative;
 	width: 960px;
-	margin: 0 auto -20px;
-	padding: 0;
+	margin: 0 auto;
+	position: relative;
+	top: -6em;
 }
 
 #global-navigation ul {
-	position: absolute;
-	top: -35px;
-	/* left: 252px; */
-	right: 30px;
 	font-size: 10px;
 	list-style: none;
 	margin: 0;
 	padding: 0;
+
+	position: absolute;
+	width: 248px;
+	top: 0;
+	right: 0;
 }
 
 #global-navigation ul li {
@@ -263,13 +291,13 @@ form.edit-form textarea {
 	text-align: center;
 	border-style: solid;
 	border-width: 0 0 1px 0;
-	border-color: #111;
+	border-color: #999;
 }
 
 #global-navigation ul li a:link ,
 #global-navigation ul li a:visited ,
 #global-navigation ul li a:hover {
-	color: #fff;
+	color: #111;
 	text-decoration: none;
 }
 
@@ -278,13 +306,13 @@ form.edit-form textarea {
 }
 
 #content {
-	width: 960px;
+	width: 642px;
+	padding: 20px 0 0 0;
 }
 
 .pager {
 	font-size: 11px;
-	text-align: right;
-	margin: 20px 30px 20px;
+	margin: 20px 0px 20px;
 }
 
 .pager a:link ,
@@ -301,12 +329,11 @@ form.edit-form textarea {
 
 #category-header {
 	margin: 20px 0;
-	padding: 0px 30px;
-	_padding: 30px 30px;
+	padding: 0;
 }
 
 #category-header {
-	font-family: 'Mate SC', serif;
+	font-family: 'Merriweather', serif;
 }
 
 #category-header h1 ,
@@ -329,28 +356,22 @@ form.edit-form textarea {
 
 .entries article {
 	clear: both;
-	background: #111;
-	padding: 5px 30px;
+	padding: 1em 0;
 	margin: 0 0 10px 0;
 }
 
 .entries .date {
 	display: block;
 	clear: both;
-	font-family: 'Mate SC', serif;
-	font-size: 100%;
-	margin: 20px 0;
-	padding: 3px 30px;
-	background: #2F3839;
-	background: -webkit-linear-gradient(top, #2F3839 0%, #242b2b 100%);
-	background: -moz-linear-gradient(top, #2F3839 0%, #242b2b 100%);
-	background: -o-linear-gradient(top, #2F3839 0%, #242b2b 100%);
-	background: -ms-linear-gradient(top, #2F3839 0%, #242b2b 100%);
-	background: linear-gradient(top, #2F3839 0%, #242b2b 100%);
+	font-family: 'Merriweather', serif;
+	font-weight: 400;
+	font-size: 140%;
+	margin: 2em 0 1em -30px;
+	padding: 3px 0;
 }
 
 .entries .date a {
-	color: #fff;
+	color: #000;
 	text-decoration: none;
 }
 
@@ -359,15 +380,19 @@ form.edit-form textarea {
 }
 
 .entries article header {
+	margin: 0 0 0 -30px;
 }
 
 .entries article header h1 {
+	font-family: 'Merriweather', serif;
+	width: 960px;
 	height: 30px;
 	line-height: 30px;
 	text-align: left;
 	padding: 3px 0;
 	margin: 0;
-	font-size: 100%;
+	font-size: 130%;
+	color: #111;
 }
 
 .entries article header h1 a {
@@ -375,7 +400,8 @@ form.edit-form textarea {
 }
 
 .entries article header .metadata {
-	font-family: 'Mate SC', serif;
+	font-family: 'Merriweather', serif;
+	font-weight: 300;
 	text-align: left;
 	padding: 3px 0;
 	margin: 0;
@@ -413,20 +439,9 @@ form.edit-form textarea {
 }
 
 .entries article .content {
-}
-
-.entries article .content a:link {
-	color: #6dd3dd;
-	text-decoration: none;
-}
-
-.entries article .content a:visited {
-	color: #a0bfc2;
-	text-decoration: none;
-}
-
-.entries article .content a:hover {
-	text-decoration: underline;
+	margin: 0 -30px;
+	text-align: justify;
+	text-justify: inter-ideograph;
 }
 
 .entries article .content a.seemore:link {
@@ -442,7 +457,8 @@ form.edit-form textarea {
 }
 
 .entries article pre.code {
-	margin: 20px -30px;
+	width: 900px;
+	margin: 20px 0;
 	padding: 20px 30px;
 }
 
@@ -450,7 +466,7 @@ form.edit-form textarea {
 .entries article a.picasa ,
 .entries article p.photo {
 	display: block;
-	margin: 0 -30px;;
+	margin: 0 ;
 	border: none;
 	text-align: center;
 }
@@ -461,11 +477,12 @@ form.edit-form textarea {
 	max-width: 900px;
 	max-height: 700px;
 	margin: 0 auto;
-	border: none;
+	border-width: 20px 30px;
+	border-style: solid;
+	border-color: #000;
 }
 
 .entries article.photo {
-	background: #000;
 	padding-bottom: 0;
 }
 
@@ -477,17 +494,13 @@ form.edit-form textarea {
 
 .entries article footer .social-buttons {
 	padding: 1em 0;
+	margin: 0 -30px;
 	opacity: 0.9;
 	text-align: right;
 }
 
 .entries article footer .social-buttons iframe {
 	vertical-align: middle;
-}
-
-.entries article .adsense {
-	margin: 0 -30px;
-	padding: 10px 30px;
 }
 
 .amazon {
@@ -537,9 +550,9 @@ figure.http:after {
 #global-footer {
 	margin: 0;
 	padding: 30px;
+	width: 642px;
 	font-size: 80%;
 	text-align: center;
-	background: #000;
 }
 
 #global-footer p {
@@ -565,7 +578,7 @@ figure.http:after {
 }
 
 #archive {
-	padding: 2em 20px 2em 30px;
+	padding: 2em 20px 2em 0;
 }
 
 #archive .year {
@@ -599,15 +612,15 @@ figure.http:after {
 	display: block;
 	text-align: center;
 	padding: 0.5em 0;
-	color: #efefef;
+	color: #999;
 }
 
 #archive .year .months .month a:link {
-	background: #111;
+	background: #efefef;
 }
 
 #archive .year .months .month:nth-child(even) a:link {
-	background: #0d0d0d;
+	background: #e0e0e0;
 }
 
 #archive .year .months .month a:link ,
@@ -621,11 +634,8 @@ figure.http:after {
 }
 
 .adsense {
-	background: #000;
 	text-align: center;
-	padding: 1em;
-	margin: 1em 0;
-	overflow: hidden;
+	margin: 1em -30px;
 }
 
 .adsense ins {
@@ -640,13 +650,12 @@ figure.http:after {
 		padding: 0;
 		margin: 0;
 		font-size: 13pt;
+		background: #fff;
 	}
 
 	#global-header {
-		width: 100%;
 		padding: 0;
-		margin: 0;
-		background: url('http://cdn-ak.f.st-hatena.com/images/fotolife/c/cho45/20111207/20111207201035.png') no-repeat 10px 26px transparent;
+		margin: 10px;
 	}
 
 	#global-header h1 {
@@ -671,6 +680,13 @@ figure.http:after {
 		padding: 0;
 	}
 
+	#global-navigation ul {
+		position: absolute;
+		top: 1em;
+		right: 10px;
+		width: auto;
+	}
+
 	#content {
 		width: 100%;
 		margin: 0;
@@ -684,11 +700,21 @@ figure.http:after {
 
 	.entries .date {
 		padding: 3px 12px;
+		margin-left: 0;
+	}
+
+	.entries article header ,
+	.entries article .content {
+		margin-left: 0;
 	}
 
 	.entries article {
 		padding: 5px 10px;
 		overflow: hidden;
+	}
+
+	.entries article .content {
+		margin: 0;
 	}
 
 	.entries article pre.code {
@@ -699,15 +725,20 @@ figure.http:after {
 	.entries article a.picasa ,
 	.entries article p.photo {
 		display: block;
-		margin: 0 -10px;
 		border: none;
 		text-align: center;
+		margin: 0 -10px;
 	}
 
 	.entries article a.hatena-fotolife img ,
 	.entries article a.picasa img {
 		max-width: 100%;
-		margin: 0;
+		max-height: 500px;
+		border-width: 10px;
+		box-sizing: border-box;
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		-o-box-sizing: border-box;
 	}
 
 	#global-footer {
@@ -737,7 +768,6 @@ figure.http:after {
 	.entries article .adsense ,
 	.adsense {
 		width: 320px;
-		background: #000;
 		text-align: center;
 		padding: 0;
 		margin: 1em auto;

@@ -4,12 +4,12 @@
 	itemscope itemtype="[% permalink ? 'http://schema.org/BlogPosting' : 'http://schema.org/Blog' %]"
 	>
 	<head>
-		<title>[% title ? title _ " - " : "" %][% r.config_param('sitename') %]</title>
+		<title>[% title ? title _ " - " : "" %]氾濫原 [HANRANGEN]</title>
 		[% IF r.req.uri.path == '/' %]
 		<meta name="description" content="写真・文章による、ある普通の人間の人生の記録"/>
 		[% END %]
 		<meta charset="utf-8"/>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes, target-densitydpi=high-dpi"/>
 		<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"/>
 		<link rel="alternate" media="handheld" href="[% r.req.uri.path_query %]"/>
 		<link rel="alternate" type="application/rss+xml" title="Feed" href="/feed"/>
@@ -28,14 +28,14 @@
 		<meta property="og:email" content="cho45@lowreal.net" />
 		<meta property="fb:admins" content="cho45" />
 
-		<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Mate+SC"/>
+		<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Merriweather:400,700,300"/>
 		[% css = [
 			"/css/style.css",
 			"/css/print.css",
 			"/css/colorbox.css",
 		] %]
 		[% IF r.config_param('static_shared') %]
-		<link rel="stylesheet" type="text/css" href="/.shared.css:[% r.config_param('version') %]:[% css.join(',') %]"/>
+		<link rel="stylesheet" type="text/css" href="/.shared.css:[% r.config_param('version') %]006:[% css.join(',') %]"/>
 		[% ELSE %]
 		[% FOR c IN css %] 
 		<link rel="stylesheet" type="text/css" href="[% c %]"/>
@@ -111,7 +111,7 @@
 	</head>
 	<body>
 		<header id="global-header">
-			<h1 id="header"><a href="/">[% r.config_param('sitename') %]</a></h1>
+			<h1 id="header"><a href="/">HANRANGEN</a></h1>
 			[% IF r.has_auth %]
 			<form action="/" method="GET" id="search-form">
 				<p>
@@ -270,7 +270,7 @@
 		] %]
 
 		[% IF r.config_param('static_shared') %]
-		<script type="text/javascript" src="/.shared.js:[% r.config_param('version') %]:[% js.join(',') %]"></script>
+		<script type="text/javascript" src="/.shared.js:[% r.config_param('version') %]008:[% js.join(',') %]"></script>
 		[% ELSE %]
 		[% FOR j IN js %] 
 		<script type="text/javascript" src="[% j %]?[% r.config_param('version') %]"></script>
