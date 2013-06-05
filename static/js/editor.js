@@ -1,5 +1,59 @@
 Deferred.define();
 
+google.load('picker', '1');
+
+Nogag.Backup = {
+	init : function (parent) {
+		var self = this;
+		var forms = parent.find('form[data-backup-key]');
+
+		forms.each(function () {
+			var $form = $(this);
+			self.load($form);
+
+			setInterval(function () {
+				self.save($form);
+			}, 3000);
+		});
+	},
+
+	load : function (form) {
+		var self = this;
+		var key = form.attr('data-backup-key');
+		var backup = localStorage.getItem('backup-' + key);
+		var backupTime = new Date(+localStorage.getItem('backupTime-' + key));
+
+		if (backup) {
+			var confirm = $('<p><a href="">restore backup</a> <span class="datetime"></span></p>');
+			confirm.find('a').click(function () {
+				form.deserialize(backup);
+				confirm.remove();
+				return false;
+			});
+			confirm.find('.datetime').text(backupTime);
+			form.append(confirm);
+		}
+		console.log('load backup: ' + key);
+	},
+
+	save : function (form) {
+		var backup = form.serialize();
+		var backupTime = new Date().getTime();
+
+		var key = form.attr('data-backup-key');
+		localStorage.setItem('backup-' + key, backup);
+		localStorage.setItem('backupTime-' + key, backupTime);
+		// console.log('save backup: ' + key);
+	},
+
+	clear : function (form) {
+		var key = form.attr('data-backup-key');
+		localStorage.removeItem('backup-' + key);
+		localStorage.removeItem('backupTime-' + key);
+		console.log('clear backup: ' + key);
+	}
+};
+
 Nogag.Editor = {
 	init : function () {
 		if (document.getElementById('test')) this.test();
@@ -48,13 +102,36 @@ Nogag.Editor = {
 
 		var actions = {
 			photo : function () {
-				Nogag.Editor.Picasa.get().next(function (syntax) {
-					body.val( body.val() + "\n" + syntax);
-					title.val('[photo]');
-				}).
-				error(function (e) {
-					alert(e);
-				});
+				var picker = new google.picker.PickerBuilder().
+					addView(google.picker.ViewId.PHOTOS).
+					addView(google.picker.ViewId.PHOTO_UPLOAD).
+					addView(google.picker.ViewId.MAPS).
+					setCallback(function (data) {
+						if (data[google.picker.Response.ACTION] != google.picker.Action.PICKED) return;
+
+						var syntax;
+
+						console.log(data);
+						var doc = data[google.picker.Response.DOCUMENTS][0];
+						if (doc.type == 'photo') {
+							var it = {
+								url : doc.url,
+								image : doc.thumbnails[3].url.replace(/s400/, 's900')
+							};
+							syntax    = $('#images-template').text().replace(/\{\{(\w+)\}\}/g, function (_, name) { return it[name] }).replace(/\s+/g, ' ');
+						} else
+						if (doc.type == 'location') {
+							console.log(doc.thumbnails[3]);
+							syntax = '<img src+"' + doc.thumbnails[3].url + '" alt="[MAP]"/>';
+						}
+
+						if (syntax) {
+							body.val( body.val() + "\n" + syntax);
+						}
+					}).
+					build();
+
+				picker.setVisible(true);
 			},
 
 			kousei : function () {
@@ -93,16 +170,20 @@ Nogag.Editor = {
 				$.ajax({
 					url: form.attr('action'),
 					type : "POST",
+					cache: false,
 					data : form.serializeArray(),
 					success : function (data, status, xhr) {
 						var newElement = $(data).find('article[data-id=' + article.attr('data-id') + ']');
 						container.replaceWith(newElement);
 						Nogag.initEntry(newElement);
+						Nogag.Backup.clear(form);
 					}
 				});
 				return false;
 			});
 		}
+
+		Nogag.Backup.init(container);
 
 		body.focus();
 	}

@@ -86,6 +86,14 @@ sub tags {
 	$self->title_tags->[1];
 }
 
+sub has_tag {
+	my ($self, $name) = @_;
+	for my $tag (@{ $self->tags }) {
+		return 1 if $name eq $tag;
+	}
+	0;
+}
+
 sub image {
 	my ($self) = @_;
 	my ($img)  = ($self->formatted_body =~ m{(<img[^>]+>)}) or return undef;

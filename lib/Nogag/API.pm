@@ -11,7 +11,7 @@ use LWP::Simple qw($ua);
 
 sub kousei {
 	my ($class, $r) = @_;
-	return $r->json({ error => 'require authentication' }) unless $r->has_auth;
+#	return $r->json({ error => 'require authentication' }) unless $r->has_auth;
 
 	my $uri = URI->new('http://jlp.yahooapis.jp/KouseiService/V1/kousei');
 	$uri->query_form(

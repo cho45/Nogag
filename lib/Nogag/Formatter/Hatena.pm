@@ -124,7 +124,11 @@ match qr{\[?f:id:([^:]+):(\d+)([jpeg]):image\]?} => sub {
         </span>
     }, {
         link  => $self->{entry}->path('/'),
-        image => sprintf("http://cdn-ak.f.st-hatena.com/images/fotolife/%s/%s/%s/%s.jpg", substr($user, 0, 1), $user, substr($id, 0, 8), $id),
+        image => sprintf("http://cdn-ak.f.st-hatena.com/images/fotolife/%s/%s/%s/%s.%s", substr($user, 0, 1), $user, substr($id, 0, 8), $id, {
+            j => 'jpg',
+            p => 'png',
+            g => 'gif',
+        }->{$type} || 'jpg'),
     });
 };
 

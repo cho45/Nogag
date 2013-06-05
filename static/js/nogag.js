@@ -35,13 +35,21 @@ Nogag = {
 			Nogag.initEntry($(this));
 		});
 
-		var requestFullScreen = document.body.requestFullScreen || document.body.mozRequestFullScreen || document.body.webkitRequestFullScreen;
-		if (requestFullScreen) {
-			this.initPhotoFullScreen();
+		if (Nogag.data('permalink')) {
+			var requestFullScreen = document.body.requestFullScreen || document.body.mozRequestFullScreen || document.body.webkitRequestFullScreen;
+			if (requestFullScreen) {
+				this.initPhotoFullScreen();
+			} else {
+				$('a.picasa').each(function () {
+					var src = $(this).find('img').attr('src');
+					$(this).attr('href', src.replace('/s900/', '/s2048/'));
+				});
+			}
 		} else {
-			$('a.picasa').each(function () {
-				var src = $(this).find('img').attr('src');
-				$(this).attr('href', src.replace('/s900/', '/s2048/'));
+			$('article').each(function () {
+				var $article = $(this);
+				var permalink = $article.find('a[rel="bookmark"]').attr('href');
+				$article.find('a.picasa').attr('href', permalink);
 			});
 		}
 

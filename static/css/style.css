@@ -499,8 +499,18 @@ form.edit-form textarea {
 	text-align: right;
 }
 
-.entries article footer .social-buttons iframe {
+.entries article footer .social-buttons .button {
+	display: inline-block;
+}
+
+.entries article footer .social-buttons iframe ,
+.entries article footer .social-buttons img {
 	vertical-align: middle;
+}
+
+.entries article footer .social-buttons .google-plus {
+	position: relative;
+	top: -2px;
 }
 
 .amazon {
@@ -549,7 +559,7 @@ figure.http:after {
 
 #global-footer {
 	margin: 0;
-	padding: 30px;
+	padding: 0 30px 30px 30px;
 	width: 642px;
 	font-size: 80%;
 	text-align: center;
@@ -635,7 +645,7 @@ figure.http:after {
 
 .adsense {
 	text-align: center;
-	margin: 1em -30px;
+	margin: 0 -30px;
 }
 
 .adsense ins {

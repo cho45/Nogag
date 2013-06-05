@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html
 	data-auth="[% IF r.has_auth %]true[% END %]"
+	data-permalink="[% permalink %]"
 	itemscope itemtype="[% permalink ? 'http://schema.org/BlogPosting' : 'http://schema.org/Blog' %]"
 	>
 	<head>
@@ -13,6 +14,7 @@
 		<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"/>
 		<link rel="alternate" media="handheld" href="[% r.req.uri.path_query %]"/>
 		<link rel="alternate" type="application/rss+xml" title="Feed" href="/feed"/>
+		<meta name="msvalidate.01" content="DA27079A2B657040673E774AADD36151" />
 
 		[% UNLESS permalink %]
 		<meta itemprop="name" content="[% title ? title _ " - " : "" %][% r.config_param('sitename') %]"/>
@@ -28,6 +30,18 @@
 		<meta property="og:email" content="cho45@lowreal.net" />
 		<meta property="fb:admins" content="cho45" />
 
+		<meta name="twitter:card" content="[% entry.has_tag('photo') ? 'photo' : 'summary' %]"/>
+		<meta name="twitter:url" content="[% permalink ?  r.absolute('/' _ entry.path) : r.absolute('/') %]"/>
+		<meta name="twitter:title" content="[% r.config_param('sitename') %]"/>
+		<meta name="twitter:description" content="[% entry.body | trim(140) || '写真・文章による、ある普通の人間の人生の記録' %]"/>
+		[% IF entry.image %]
+		<meta name="twitter:image" content="[% entry.image %]"/>
+		[% ELSIF entries[0].image %]
+		<meta name="twitter:image" content="[% entries[0].image %]"/>
+		[% END %]
+		<meta name="twitter:site" content="cho45"/>
+		<meta name="twitter:creator" content="cho45"/>
+
 		<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Merriweather:400,700,300"/>
 		[% css = [
 			"/css/style.css",
@@ -35,7 +49,7 @@
 			"/css/colorbox.css",
 		] %]
 		[% IF r.config_param('static_shared') %]
-		<link rel="stylesheet" type="text/css" href="/.shared.css:[% r.config_param('version') %]006:[% css.join(',') %]"/>
+		<link rel="stylesheet" type="text/css" href="/.shared.css:[% r.config_param('version') %]007:[% css.join(',') %]"/>
 		[% ELSE %]
 		[% FOR c IN css %] 
 		<link rel="stylesheet" type="text/css" href="[% c %]"/>
@@ -97,6 +111,9 @@
 			}
 		</style>
 
+		<script type="text/javascript">
+			window.google_analytics_uacct = "UA-7079167-5";
+		</script>
 		<script type="text/javascript">
 			var _gaq = _gaq || [];
 			_gaq.push(['_setAccount', 'UA-7079167-5']);
@@ -263,6 +280,7 @@
 
 		[% js = [
 			"/js/jquery.colorbox-min.js",
+			"/js/jquery.deserialize.js",
 			"/js/jsdeferred.js",
 			"/js/keyString.js",
 			"/js/daterelative.js",
@@ -270,7 +288,7 @@
 		] %]
 
 		[% IF r.config_param('static_shared') %]
-		<script type="text/javascript" src="/.shared.js:[% r.config_param('version') %]008:[% js.join(',') %]"></script>
+		<script type="text/javascript" src="/.shared.js:[% r.config_param('version') %]009:[% js.join(',') %]"></script>
 		[% ELSE %]
 		[% FOR j IN js %] 
 		<script type="text/javascript" src="[% j %]?[% r.config_param('version') %]"></script>
@@ -278,6 +296,7 @@
 		[% END %]
 
 		[% IF r.has_auth %]
+		<script src="http://www.google.com/jsapi"></script>
 		<!-- HAS AUTH -->
 		[% INCLUDE "_images.html" %]
 		<script type="text/javascript" src="/js/editor.js?[% r.config_param('version') %]"></script>
