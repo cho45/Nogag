@@ -336,7 +336,7 @@ sub permalink {
 	my $is_category = ($path =~ m{^([^/]+)/$});
 
 	if ($is_category) {
-		my $name = $1;
+		my $name = decode_utf8 $1;
 
 		my $page = $r->req->number_param('page', 100) || 1;
 
@@ -416,13 +416,23 @@ sub permalink {
 			created_at => $entry->{created_at}
 		})->[0];
 
+		my $related = $r->dbh->select(q{
+			SELECT * FROM entries
+			WHERE title <> '[photo]'
+			ORDER BY id DESC
+			LIMIT 10
+		});
+
+		Nogag::Model::Entry->bless($_) for @$related;
+		$r->stash(related => $related);
+
 		$r->stash(entries => [ $entry ]);
 		$r->stash(entry => $entry);
 		$r->stash(permalink => 1);
 		$r->stash(old_entry => $old_entry);
 		$r->stash(new_entry => $new_entry);
 		$r->stash(title => do {
-			my $title = $entry->{title} || HTML::Trim::vtrim($entry->formatted_body, 50, '…');
+			my $title = $entry->{title} || $entry->summary_html(50);
 			$title =~ s/<[^>]+>//g;
 			$title =~ s{^\s+|\s+$}{}g;
 			$title;

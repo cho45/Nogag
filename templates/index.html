@@ -183,6 +183,24 @@
 				[% END %]
 			</div>
 
+			[% IF permalink %]
+			<div class="related" style="font-size:80%">
+				<h2>最近のエントリ</h2>
+				<ul>
+				[% FOR entry IN related %]
+				[% IF entry.summary %]
+				[% LAST IF loop.count > 5 %]
+					<li><a href="/[% entry.path %]" title="[% entry.title %]">→ [% entry.summary(80) %]</a></li>
+				[% END %]
+				[% END %]
+				</ul>
+			</div>
+			[% END %]
+
+			<div style="padding: 0 30px;">
+				[% INCLUDE "_adsense.html" %]
+			</div>
+
 			<div class="pager">
 				[% IF next_page %]
 				<a href="[% next_page %]" rel="next">&#x25BC; もっと古いエントリ</a>
@@ -249,7 +267,6 @@
 		[% IF test %][% INCLUDE 'test.html' %][% END %]
 
 		<footer id="global-footer">
-			[% INCLUDE "_adsense.html" %]
 			<p>
 				[% count %]
 			</p>

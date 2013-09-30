@@ -5,6 +5,7 @@ use strict;
 use warnings;
 
 use Nogag::Time;
+use HTML::Trim;
 
 sub bless {
 	my ($class, $hash) = @_;
@@ -99,6 +100,21 @@ sub image {
 	my ($img)  = ($self->formatted_body =~ m{(<img[^>]+>)}) or return undef;
 	my ($src)  = ($img =~ m{src=['"]([^'">]+)['"]}) or return undef;
 	$src;
+}
+
+sub summary {
+	my ($self, $length) = @_;
+	$length ||= 50;
+	my $body = $self->formatted_body;
+	$body =~ s/<[^>]+>//g;
+	$body =~ s{^\s+|\s+$}{}g;
+	HTML::Trim::vtrim($body, $length, '…');
+}
+
+sub summary_html {
+	my ($self, $length) = @_;
+	$length ||= 50;
+	HTML::Trim::vtrim($self->formatted_body, $length, '…');
 }
 
 1;

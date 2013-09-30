@@ -23,7 +23,7 @@ my $XSLATE = Text::Xslate->new(
 			my ($len) = @_;
 
 			sub {
-				HTML::Trim::vtrim(shift, $len, '…');
+				HTML::Trim::vtrim(shift || '', $len, '…');
 			}
 		},
 	},
