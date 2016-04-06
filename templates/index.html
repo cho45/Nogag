@@ -5,11 +5,12 @@
 	itemscope itemtype="[% permalink ? 'http://schema.org/BlogPosting' : 'http://schema.org/Blog' %]"
 	>
 	<head>
+		<meta charset="utf-8"/>
+
 		<title>[% title ? title _ " - " : "" %]氾濫原 [HANRANGEN]</title>
 		[% IF r.req.uri.path == '/' %]
 		<meta name="description" content="写真・文章による、ある普通の人間の人生の記録"/>
 		[% END %]
-		<meta charset="utf-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes, target-densitydpi=high-dpi"/>
 		<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"/>
 		<link rel="alternate" media="handheld" href="[% r.req.uri.path_query %]"/>
@@ -299,11 +300,8 @@
 			};
 		</script>
 
-		[% r.preload('//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js', 'script') %]
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-
 		[% js = [
-			"/js/jquery.colorbox-min.js",
+			"/js/jquery-1.12.3.min.js",
 			"/js/jquery.deserialize.js",
 			"/js/jsdeferred.js",
 			"/js/keyString.js",
