@@ -5,7 +5,7 @@ use strict;
 use warnings;
 
 use Text::Xatena;
-use Cache::MemoryCache;
+use Cache::FileCache;
 use LWP::UserAgent;
 
 my $ua = LWP::UserAgent->new;
@@ -45,7 +45,7 @@ sub format {
     my ($class, $entry) = @_;
     my $inline = Nogag::Formatter::Hatena::Inline->new(
         ua    => $ua,
-        cache => Cache::MemoryCache->new,
+        cache => Cache::FileCache->new,
         entry => $entry,
     );
     $thx->format($entry->body,
@@ -57,6 +57,7 @@ package
     Nogag::Formatter::Hatena::Inline;
 
 use Text::Xatena::Inline::Aggressive -Base;
+use Log::Minimal;
 
 sub match ($$) { ## no critic
     my ($regexp, $block) = @_;
@@ -136,29 +137,49 @@ match qr{\[?f:id:([^:]+):(\d+)([jpeg]):image\]?} => sub {
 match qr{\[?asin:([^:]+):detail\]?(\s*[.\d]+)?}=> sub {
     my ($self, $asin, $rating) = @_;
 
-    my $uri = URI::Amazon::APA->new('http://webservices.amazon.co.jp/onca/xml');
-    $uri->query_form(
-        Service       => 'AWSECommerceService',
-        Operation     => 'ItemLookup',
-        IdType        => 'ASIN',
-        ItemId        => $asin,
-        AssociateTag  => config->param('amazon_tag'),
-        Condition     => 'All',
-        ResponseGroup => 'ItemAttributes,Images',
-    );
+    $asin = uc $asin;
+    my $key = "ASIN:$asin";
 
-    $uri->sign(
-        key    => config->param('amazon_key'),
-        secret => config->param('amazon_secret'),
-    );
+    my $data = $self->cache->get($key);
+    if (not defined $data) {
+        infof("REQUESTING: %s", $key);
+        my $uri = URI::Amazon::APA->new('http://webservices.amazon.co.jp/onca/xml');
+        $uri->query_form(
+            Service       => 'AWSECommerceService',
+            Operation     => 'ItemLookup',
+            IdType        => 'ASIN',
+            ItemId        => $asin,
+            AssociateTag  => config->param('amazon_tag'),
+            Condition     => 'All',
+            ResponseGroup => 'ItemAttributes,Images',
+        );
 
-    my $res  = $self->ua->get($uri);
-    $res->is_success or die $res->content;
+        $uri->sign(
+            key    => config->param('amazon_key'),
+            secret => config->param('amazon_secret'),
+        );
 
-    my $doc = XML::LibXML->load_xml( string => $res->content );
-    my $xpc = XML::LibXML::XPathContext->new($doc);
-    $xpc->registerNs('a', 'http://webservices.amazon.com/AWSECommerceService/2011-08-01');
-    my $node = $xpc->findnodes('/a:ItemLookupResponse/a:Items/a:Item')->[0];
+        my $res  = $self->ua->get($uri);
+        $res->is_success or die $res->content;
+
+        my $doc = XML::LibXML->load_xml( string => $res->content );
+        my $xpc = XML::LibXML::XPathContext->new($doc);
+        $xpc->registerNs('a', 'http://webservices.amazon.com/AWSECommerceService/2011-08-01');
+        my $node = $xpc->findnodes('/a:ItemLookupResponse/a:Items/a:Item')->[0];
+
+        my $image = $xpc->findvalue('a:MediumImage/a:URL', $node) || '';
+        $image =~ s{http://ecx\.images-amazon\.com}{https://images-na.ssl-images-amazon.com};
+
+        $data = {
+            author => $xpc->findvalue('a:ItemAttributes/a:Author', $node),
+            title  => $xpc->findvalue('a:ItemAttributes/a:Title', $node),
+            image  => $image,
+            link   => $xpc->findvalue('a:DetailPageURL', $node),
+        };
+
+        $self->cache->set($key => $data, '1 month');
+        sleep 1;
+    }
 
     render(q{
         </p>
@@ -178,14 +199,16 @@ match qr{\[?asin:([^:]+):detail\]?(\s*[.\d]+)?}=> sub {
                     /
                     <span itemprop="bestRating">5.0</span>
                 </p>
+                <span itemprop="author" itemscope itemtype="https://schema.org/Person" style="display: none">
+                    <a href="http://www.lowreal.net/" itemprop="url">
+                        <span itemprop="name">cho45</span>
+                    </a>
+                </span>
             </figcaption>
         </figure>
         <p>
     }, {
-        author => $xpc->findvalue('a:ItemAttributes/a:Author', $node),
-        title  => $xpc->findvalue('a:ItemAttributes/a:Title', $node),
-        image  => $xpc->findvalue('a:MediumImage/a:URL', $node),
-        link   => $xpc->findvalue('a:DetailPageURL', $node),
+        %$data,
         rating => sprintf("%.1f", $rating || 3),
     });
 };

@@ -14,6 +14,7 @@ requires 'Config::ENV' => 0.10;
 requires 'HTTP::Server::Simple::PSGI';
 requires 'Data::MessagePack';
 requires 'DBD::SQLite';
+requires 'Cache::LRU';
 
 requires 'Router::Simple';
 

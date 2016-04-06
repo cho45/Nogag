@@ -11,9 +11,6 @@
 	<header>
 		<h1 itemprop="name"><a href="/[% entry.path %]" class="bookmark" rel="bookmark" itemprop="url">[% entry.title || '✖' %]</a></h1>
 		<span class="metadata">
-			[% IF entry.image %]
-			<meta itemprop="image" content="[% entry.image %]"/>
-			[% END %]
 
 			[% FOR tag IN entry.tags %]
 			<a href="/[% tag %]/"><span itemprop="keywords">[% tag %]</span></a>
@@ -29,14 +26,62 @@
 			-->
 			[% END %]
 			|
+
+			<div style="display: none">
+				<meta itemscope itemprop="mainEntityOfPage"  itemType="https://schema.org/WebPage" itemid="/[% entry.path %]"/>
+				<span itemprop="headline">[% entry.summary(100) %]</span>
+
+				<span itemprop="author" itemscope itemtype="https://schema.org/Person">
+					<a href="http://www.lowreal.net/" itemprop="url">
+						<span itemprop="name">cho45</span>
+					</a>
+				</span>
+
+				<span itemprop="publisher" itemscope itemtype="https://schema.org/Organization">
+					<div itemprop="logo" itemscope itemtype="https://schema.org/ImageObject">
+						<meta itemprop="url" content="//www.lowreal.net/images/logo.png">
+						<meta itemprop="width" content="189">
+						<meta itemprop="height" content="105">
+					</div>
+					<meta itemprop="name" content="cho45">
+				</span>
+
+				<meta itemprop="datePublished" content="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z"/>
+				<meta itemprop="dateModified" content="[% entry.modified_at.strftime('%Y-%m-%d') _ 'T' _ entry.modified_at.strftime('%H:%M:%S') %]Z"/>
+
+				[% IF entry.image %]
+				<div itemprop="image" itemscope itemtype="https://schema.org/ImageObject">
+					<meta itemprop="url" content="[% entry.image %]">
+					<meta itemprop="width" content="800">
+					<meta itemprop="height" content="800">
+				</div>
+				[% END %]
+			</div>
 		</span>
 	</header>
+
+	[% IF adsense && !entry.has_tag('photo') %]
+	[% INCLUDE "_adsense.html" %]
+	[% END %]
 
 	<div class="content" itemprop="articleBody">
 		[% entry.formatted_body(permalink) | raw %]
 	</div>
 
 	[% IF permalink %]
+	<div class="adsense">
+		<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+		<!-- 関連コンテンツ -->
+		<ins class="adsbygoogle"
+			 style="display:block"
+			 data-ad-client="ca-pub-4629424540171624"
+			 data-ad-slot="2513927769"
+			 data-ad-format="autorelaxed"></ins>
+		<script>
+		(adsbygoogle = window.adsbygoogle || []).push({});
+		</script>
+	</div>
+
 	<footer>
 		<div class="social-buttons">
 			<!-- twitter -->
@@ -44,27 +89,23 @@
 			<a href="https://twitter.com/share" class="twitter-share-button" data-url="[%  entry_uri %]" data-text="[% entry.title %]" data-count="horizontal" data-via="cho45">Tweet</a><script type="text/javascript" src="//platform.twitter.com/widgets.js"></script>
 			</span>
 
-			<!-- facebook -->
-			<span class="button" style="width: 110px;">
-			<iframe src="http://www.facebook.com/plugins/like.php?href=[% entry_uri | uri %]&amp;layout=button_count&amp;show_faces=false&amp;width=70&amp;action=like&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100px; height:21px;" allowTransparency="true"></iframe>
-			</span>
-
 			<!-- google plus -->
 			<span class="button google-plus" style="width: 70px;">
-			<script type="text/javascript" src="http://apis.google.com/js/plusone.js"></script><div class="g-plusone" data-size="medium"></div>
+			<script type="text/javascript" src="//apis.google.com/js/plusone.js"></script><div class="g-plusone" data-size="medium"></div>
 			</span>
 
 			<!-- tumblr -->
 			<span class="button" id="tumblr_button_abc123">
 			[% IF entry.image %]
-			<a href="http://www.tumblr.com/share/photo?source=[% entry.image | uri %]&amp;caption=[% entry.title | uri %]&amp;clickthru=[% entry_uri | uri %]"><img src="http://platform.tumblr.com/v1/share_1T.png" width="81" height="20" alt="Share on Tumblr"/></a>
+			<a href="http://www.tumblr.com/share/photo?source=[% entry.image | uri %]&amp;caption=[% entry.title | uri %]&amp;clickthru=[% entry_uri | uri %]"><img src="//platform.tumblr.com/v1/share_1T.png" width="81" height="20" alt="Share on Tumblr"/></a>
 			[% ELSE %]
 			<a href="http://www.tumblr.com/share/quote?source=[% entry_uri | uri %]&quote=[% entry.formatted_body_text | uri %]"
-				title="Share on Tumblr"><img src="http://platform.tumblr.com/v1/share_1T.png" width="81" height="20" alt="Share on Tumblr"/></a>
+				title="Share on Tumblr"><img src="//platform.tumblr.com/v1/share_1T.png" width="81" height="20" alt="Share on Tumblr"/></a>
 			[% END %]
 			</span>
 		</div>
 	</footer>
 	[% INCLUDE "_adsense.html" %]
+
 	[% END %]
 </article>

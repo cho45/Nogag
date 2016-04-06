@@ -47,7 +47,7 @@ sub before_dispatch {
 		}
 	}
 
-	$r->res->header('X-Frame-Options'  => 'DENY');
+	# $r->res->header('X-Frame-Options'  => 'DENY');
 	$r->res->header('X-XSS-Protection' => '1');
 }
 
@@ -86,6 +86,8 @@ sub run {
 			$r->stash(title => sprintf('Error %s', $e->{code}));
 			$r->html('index.html');
 		} else {
+			use Data::Dumper;
+			warn Dumper $e ;
 			$r->res->code(500);
 			$r->res->header('X-Message' => "$e");
 			$r->res->header('Content-Type', 'text/plain');
@@ -100,6 +102,11 @@ sub run {
 
 sub config_param {
 	config->param($_[1]);
+}
+
+sub preload {
+	my ($r, $url, $as) = @_;
+	$r->res->headers->push_header('Link' => sprintf('<%s>; rel=preload; as=%s', $url, $as));
 }
 
 sub req { $_[0]->{req} }
@@ -166,7 +173,8 @@ sub absolute {
 sub is_smartphone {
 	my ($r) = @_;
 	$r->{_is_smartphone} //= do {
-		$r->req->user_agent =~ /Android|iPhone|iPod/;
+		my $ua = $r->req->user_agent // '';
+		$ua =~ /Android|iPhone|iPod/;
 	};
 }
 

@@ -3,11 +3,11 @@
  */
 
 a:link {
-	color: #000;
+	color: #222;
 }
 
 a:visited {
-	color: #000;
+	color: #222;
 }
 
 a:hover {
@@ -34,7 +34,10 @@ pre {
 	font-size: 75%;
 	overflow: auto;
 	line-height: 1.33;
-	background: #efefef;
+	background: rgba(255, 255, 255, 0.7) !important;
+	border-style: solid;
+	border-width: 0 0 0 3px;
+	border-color: #efefef;
 }
 
 q {
@@ -119,15 +122,56 @@ a.keyword {
 ins {
 	display: block;
 	text-decoration: none;
-	background: url('http://cdn-ak.f.st-hatena.com/images/fotolife/c/cho45/20101128/20101128232735.png') no-repeat 0 0;
-	padding: 10px 0 0;
+	padding: 10px 0 10px 10px;
 	margin: 1em 0;
+	border-style: solid;
+	border-width: 0 0 0 3px;
+	border-color: #efefef;
+}
+
+ins:before {
+	display: block;
+	content: "追記";
+	color: #333;
+	font-size: 90%;
+}
+
+ins.adsbygoogle ,
+ins.adsbygoogle ins {
+	padding: 0;
+	margin: 0;
+	border-style: none;
+}
+
+ins.adsbygoogle:before ,
+ins.adsbygoogle ins:before {
+	display: none;
+}
+
+del {
+	display: block;
+	color: #999;
+	font-size: 50%;
+	line-height: 1.5;
 }
 
 blockquote {
-	background: url('http://cdn-ak.f.st-hatena.com/images/fotolife/c/cho45/20101128/20101128232736.png') no-repeat 0 0;
-	padding: 10px 0 0 1em;
+	padding: 0 0 0 1em;
 	margin: 1em 0;
+}
+
+table {
+	width: 960px;
+	margin: 20px 0;
+	background: #fff;
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+table th,
+table td {
+	border: 1px solid #ddd;
+	padding: 10px;
 }
 
 nav,
@@ -140,6 +184,9 @@ article {
 	display: block;
 }
 
+figure {
+	margin: 1em 0 1em 1em;
+}
 
 figcaption {
 	font-size: 90%;
@@ -150,13 +197,14 @@ figure.quote figcaption {
 }
 
 article section h1 {
+	font-size: 120%;
 	font-weight: bold;
 	margin: 3em 0 1em;
 }
 
 html {
 	background: #fff;
-	color: #333;
+	color: #4f5759;
 	margin: 0;
 	padding: 0;
 }
@@ -166,28 +214,12 @@ body {
 	font-size: 16px;
 	width: 960px;
 	margin: 0 auto;
-	padding: 10px 0 0;
-	line-height: 1.88;
-	/* IE10 Consumer Preview */ 
-	background-image: -ms-linear-gradient(left, #FFFFFF 0%, #FFFFFF 70%, #DDDDDD 70%, #DDDDDD 100%);
-
-	/* Mozilla Firefox */ 
-	background-image: -moz-linear-gradient(left, #FFFFFF 0%, #FFFFFF 70%, #DDDDDD 70%, #DDDDDD 100%);
-
-	/* Opera */ 
-	background-image: -o-linear-gradient(left, #FFFFFF 0%, #FFFFFF 70%, #DDDDDD 70%, #DDDDDD 100%);
-
-	/* Webkit (Safari/Chrome 10) */ 
-	background-image: -webkit-gradient(linear, left top, right top, color-stop(0, #FFFFFF), color-stop(0.70, #FFFFFF), color-stop(0.70, #DDDDDD), color-stop(1, #DDDDDD));
-
-	/* Webkit (Chrome 11+) */ 
-	background-image: -webkit-linear-gradient(left, #FFFFFF 0%, #FFFFFF 70%, #DDDDDD 70%, #DDDDDD 100%);
-
-	/* W3C Markup, IE10 Release Preview */ 
-	background-image: linear-gradient(to right, #FFFFFF 0%, #FFFFFF 70%, #DDDDDD 70%, #DDDDDD 100%);
+	padding: 0;
+	line-height: 2;
+	background-image: linear-gradient(to right, #FFFFFF 0%, #FFFFFF 78%, #EFEFEF 78%, #EFEFEF 100%);
 }
 
-body * {
+body > * {
 	text-align: left;
 }
 
@@ -225,31 +257,47 @@ form.edit-form input[type=submit] {
 
 form.edit-form textarea {
 	width: 100%;
-	height: 20em;
+	height: 30em;
 }
 
 #global-header {
 	font-family: 'Merriweather', serif;
 	display: block;
 	position: relative;
-	margin: 3em 0 -3em;
-	padding: 1em 0;
+	margin: 0;
+	padding: 2em 0;
+	position: absolute;
+	background: #fff;
 }
 
 #global-header h1 {
-	font-size: 150%;
+	text-align: center;
+	padding: 2em 2em 0 2em;
+	margin: -2em 0 0 0;
+	color: #fff;
+	background: #000;
+	font-size: 100%;
 	font-weight: 400;
 }
 
 #global-header h1 a {
 	display: block;
+	padding: 5px 0;
 }
 
 #global-header h1 a:link ,
 #global-header h1 a:visited ,
 #global-header h1 a:hover {
+	font-family: serif;
 	text-decoration: none;
-	color: #000;
+	color: #fff;
+}
+
+#global-header h1 small {
+	position: relative;
+	top: -1.5em;
+	color: #999;
+	font-size: 50%;
 }
 
 #global-header #search-form {
@@ -259,11 +307,13 @@ form.edit-form textarea {
 }
 
 #global-navigation {
+	font-family: 'Merriweather', serif;
+	font-weight: 400;
 	display: block;
 	width: 960px;
 	margin: 0 auto;
-	position: relative;
-	top: -6em;
+	padding: 3em 0;
+	background: #fff;
 }
 
 #global-navigation ul {
@@ -271,11 +321,7 @@ form.edit-form textarea {
 	list-style: none;
 	margin: 0;
 	padding: 0;
-
-	position: absolute;
-	width: 248px;
-	top: 0;
-	right: 0;
+	text-align: right;
 }
 
 #global-navigation ul li {
@@ -289,9 +335,6 @@ form.edit-form textarea {
 	padding: 5px 0;
 	width: 100px;
 	text-align: center;
-	border-style: solid;
-	border-width: 0 0 1px 0;
-	border-color: #999;
 }
 
 #global-navigation ul li a:link ,
@@ -306,7 +349,7 @@ form.edit-form textarea {
 }
 
 #content {
-	width: 642px;
+	width: 728px;
 	padding: 20px 0 0 0;
 }
 
@@ -349,7 +392,7 @@ form.edit-form textarea {
 }
 
 .entries {
-	margin: 30px 0;
+	margin: 0 0 3em 0;
 	padding: 0px 30px;
 	_padding: 30px 30px;
 }
@@ -357,7 +400,7 @@ form.edit-form textarea {
 .entries article {
 	clear: both;
 	padding: 1em 0;
-	margin: 0 0 10px 0;
+	margin: 0 0 20em 0;
 }
 
 .entries .date {
@@ -365,13 +408,16 @@ form.edit-form textarea {
 	clear: both;
 	font-family: 'Merriweather', serif;
 	font-weight: 400;
-	font-size: 140%;
-	margin: 2em 0 1em -30px;
+	font-size: 80%;
+	margin: 0 0 0 -30px;
+	text-align: left;
 	padding: 3px 0;
+	width: 930px;
+	color: #666;
 }
 
 .entries .date a {
-	color: #000;
+	color: inherit;
 	text-decoration: none;
 }
 
@@ -379,21 +425,85 @@ form.edit-form textarea {
 	position: relative;
 }
 
+.entries article.current {
+	padding-top: 71px;
+}
+
 .entries article header {
 	margin: 0 0 0 -30px;
 }
 
+.entries article.current header {
+	position: fixed;
+	z-index: 99999999;
+	top: 0;
+	left: 0;
+	right: 0;
+	margin: 0;
+	padding: 5px 0 0;
+	background: #fff;
+	border-style: solid;
+	border-width: 0 0 1px 0;
+	border-color: #efefef;
+}
+
+.entries article.current header h1 {
+	font-size: 100%;
+}
+
+.entries article.current header .metadata {
+	font-size: 60%;
+}
+
+.entries article.current header h1, 
+.entries article.current header .metadata {
+	display: block;
+	width: 960px;
+	margin: auto;
+	padding: 0;
+	position: relative;
+}
+
+.entries article.current header h1:after {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	font-family: 'Merriweather', serif;
+	font-weight: 400;
+	content: "HANRANGEN";
+	text-align: right;
+	color: #666;
+}
+
+
 .entries article header h1 {
 	font-family: 'Merriweather', serif;
 	width: 960px;
+	/*
 	height: 30px;
 	line-height: 30px;
+	*/
+	line-height: 1.33;
 	text-align: left;
-	padding: 3px 0;
+	padding: 5px 0;
 	margin: 0;
 	font-size: 130%;
 	color: #111;
+	background: rgba(255, 255, 255, 0.7);
 }
+
+/*
+.entries article header h1:before {
+	display: block;
+	height: 2px;
+	width: 30px;
+	position: relative;
+	content: "";
+	background: #999;
+	left: -50px;
+	top: 15px;
+}
+	*/
 
 .entries article header h1 a {
 	text-decoration: none;
@@ -407,6 +517,20 @@ form.edit-form textarea {
 	margin: 0;
 	font-size: 80%;
 	color: #999;
+}
+
+.entries article header .metadata time {
+	display: inline-block;
+	height: 32px;
+}
+
+
+.entries article header .metadata .hatena-star-star-container {
+	display: inline-block;
+	vertical-align: middle;
+	padding: 0 10px 0 10px;
+	position: relative;
+	top: -2px;
 }
 
 .entries article header .metadata a {
@@ -444,6 +568,15 @@ form.edit-form textarea {
 	text-justify: inter-ideograph;
 }
 
+.entries article .content h1 ,
+.entries article .content h2 ,
+.entries article .content h3 ,
+.entries article .content h4 ,
+.entries article .content h5 ,
+.entries article .content h6 {
+	color: #333;
+}
+
 .entries article .content a.seemore:link {
 	text-decoration: underline;
 }
@@ -462,23 +595,32 @@ form.edit-form textarea {
 	padding: 20px 30px;
 }
 
+.entries article div.gist {
+	font-size: 75%;
+	width: 960px;
+	margin: 20px 0;
+	padding: 0;
+	line-height: 1.33;
+}
+
 .entries article a.hatena-fotolife ,
 .entries article a.picasa ,
 .entries article p.photo {
 	display: block;
 	margin: 0 ;
+	width: 960px;
 	border: none;
-	text-align: center;
+	background: #111;
 }
 
 .entries article a.hatena-fotolife img ,
 .entries article a.picasa img {
 	display: block;
-	max-width: 900px;
+	max-width: 960px;
 	max-height: 700px;
 	margin: 0 auto;
 	border-width: 20px 30px;
-	border-style: solid;
+	border-style: none;
 	border-color: #000;
 }
 
@@ -494,7 +636,6 @@ form.edit-form textarea {
 
 .entries article footer .social-buttons {
 	width: 960px;
-	background: #ffffff;
 	padding: 0 0;
 	margin: 0 -30px;
 	text-align: left;
@@ -588,6 +729,10 @@ figure.http:after {
 	background: none;
 }
 
+.as ins:before {
+	content: "";
+}
+
 #archive {
 	padding: 2em 20px 2em 0;
 }
@@ -623,7 +768,7 @@ figure.http:after {
 	display: block;
 	text-align: center;
 	padding: 0.5em 0;
-	color: #999;
+	color: #333;
 }
 
 #archive .year .months .month a:link {
@@ -646,8 +791,6 @@ figure.http:after {
 
 .adsense {
 	width: 960px;
-	height: 90px;
-	background: #fff;
 	text-align: left;
 	margin: 0 -30px;
 	padding: 0;
@@ -657,6 +800,10 @@ figure.http:after {
 	background: none;
 	padding: 0;
 	margin: 0;
+}
+
+.adsense ins:before {
+	content: "";
 }
 
 @media only screen and (max-width : 980px) {
@@ -670,7 +817,8 @@ figure.http:after {
 
 	#global-header {
 		padding: 0;
-		margin: 10px;
+		margin: 0;
+		position: static;
 	}
 
 	#global-header h1 {
@@ -692,19 +840,18 @@ figure.http:after {
 		position: static;
 		width: 100%;
 		margin: 0;
-		padding: 0;
+		padding: 5px 0;
+		background: #ccc;
 	}
 
 	#global-navigation ul {
-		position: absolute;
-		top: 1em;
-		right: 10px;
-		width: auto;
+		text-align: center;
 	}
 
 	#content {
 		width: 100%;
 		margin: 0;
+		overflow: hidden;
 	}
 
 	.entries {
@@ -714,6 +861,7 @@ figure.http:after {
 
 
 	.entries .date {
+		width: 100%;
 		padding: 3px 12px;
 		margin-left: 0;
 	}
@@ -723,9 +871,21 @@ figure.http:after {
 		margin-left: 0;
 	}
 
+	.entries article header h1, 
+	.entries article header .metadata {
+		display: block;
+		width: 100%;
+		margin: auto;
+		padding: 0;
+		position: relative;
+	}
+
+	.entries article.current header {
+		padding: 5px
+	}
+
 	.entries article {
 		padding: 5px 10px;
-		overflow: hidden;
 	}
 
 	.entries article .content {
@@ -736,13 +896,28 @@ figure.http:after {
 		margin: 0 -10px;
 	}
 
+	.entries article pre.code {
+		width: 100%;
+		margin: 20px 0;
+		padding: 20px 30px;
+	}
+
+	.entries article div.gist {
+		font-size: 75%;
+		width: 100%;
+		margin: 20px 0;
+		padding: 0;
+		line-height: 1.33;
+	}
+
 	.entries article a.hatena-fotolife ,
 	.entries article a.picasa ,
 	.entries article p.photo {
 		display: block;
 		border: none;
+		width: 100%;
 		text-align: center;
-		margin: 0 -10px;
+		margin: 0;
 	}
 
 	.entries article a.hatena-fotolife img ,
@@ -791,5 +966,11 @@ figure.http:after {
 
 	.adsense iframe {
 		margin: auto;
+	}
+
+	.mjx-chtml {
+		overflow: auto;
+		max-width: 100%;
+		padding: 0.5em 0;
 	}
 }

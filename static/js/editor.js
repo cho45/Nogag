@@ -1,7 +1,5 @@
 Deferred.define();
 
-google.load('picker', '1');
-
 Nogag.Backup = {
 	init : function (parent) {
 		var self = this;
@@ -55,8 +53,81 @@ Nogag.Backup = {
 };
 
 Nogag.Editor = {
+	google_client_id :  '980119139173.apps.googleusercontent.com',
+	google_developer_key : 'AIzaSyCDevJrf8SOEfeSeYDOGT9e6jjGDNT6lM4',
+
 	init : function () {
 		if (document.getElementById('test')) this.test();
+	},
+
+	initGoogleAPI : function () {
+		console.log('initGoogleAPI');
+		Nogag.Editor.loadGoogle('auth');
+		Nogag.Editor.loadGoogle('picker');
+	},
+
+	loadGoogle : function (name) {
+		var d = new Deferred();
+		gapi.load(name, {'callback': function () {
+			d.call();
+		} } );
+		return d;
+	},
+
+	oauthGoogle : function () {
+		if (!Nogag.Editor.google_access_token) {
+			var d = new Deferred();
+			gapi.auth.authorize(
+				{
+					'client_id': Nogag.Editor.google_client_id,
+					'scope': [
+						'https://www.googleapis.com/auth/photos',
+						'https://www.googleapis.com/auth/drive.readonly',
+						'https://www.googleapis.com/auth/photos.upload',
+						'https://www.googleapis.com/auth/youtube'
+					],
+					'immediate': false
+				},
+				function (result) {
+					console.log(result);
+					if (result && !result.error) {
+						Nogag.Editor.google_access_token = result.access_token;
+						d.call(result);
+					} else {
+						alert(result.error);
+						d.fail(result);
+					}
+				}
+			);
+			return d;
+		} else {
+			return next();
+		}
+	},
+
+	openPicker : function () {
+		return Nogag.Editor.oauthGoogle().
+		next(function () {
+			var d = new Deferred();
+			var picker = new google.picker.PickerBuilder().
+				setOAuthToken(Nogag.Editor.google_access_token).
+				setDeveloperKey(Nogag.Editor.google_developer_key).
+				addView(google.picker.ViewId.PHOTOS).
+				addView(new google.picker.PhotosView().setType('camerasync')).
+				addView(google.picker.ViewId.PHOTO_UPLOAD).
+				addView(google.picker.ViewId.YOUTUBE).
+				addView(google.picker.ViewId.MAPS).
+				setCallback(function (data) {
+					d.call(data);
+				}).
+				build();
+
+			picker.setVisible(true);
+			return d;
+		}).
+		error(function (e) {
+			alert(e);
+		});
 	},
 
 	test : function () {
@@ -102,36 +173,29 @@ Nogag.Editor = {
 
 		var actions = {
 			photo : function () {
-				var picker = new google.picker.PickerBuilder().
-					addView(google.picker.ViewId.PHOTOS).
-					addView(google.picker.ViewId.PHOTO_UPLOAD).
-					addView(google.picker.ViewId.MAPS).
-					setCallback(function (data) {
-						if (data[google.picker.Response.ACTION] != google.picker.Action.PICKED) return;
+				Nogag.Editor.openPicker().next(function (data) {
+					if (data[google.picker.Response.ACTION] != google.picker.Action.PICKED) return;
 
-						var syntax;
+					var syntax;
 
-						console.log(data);
-						var doc = data[google.picker.Response.DOCUMENTS][0];
-						if (doc.type == 'photo') {
-							var it = {
-								url : doc.url,
-								image : doc.thumbnails[3].url.replace(/s400/, 's900')
-							};
-							syntax    = $('#images-template').text().replace(/\{\{(\w+)\}\}/g, function (_, name) { return it[name] }).replace(/\s+/g, ' ');
-						} else
-						if (doc.type == 'location') {
-							console.log(doc.thumbnails[3]);
-							syntax = '<img src+"' + doc.thumbnails[3].url + '" alt="[MAP]"/>';
-						}
+					console.log(data);
+					var doc = data[google.picker.Response.DOCUMENTS][0];
+					if (doc.type == 'photo') {
+						var it = {
+							url : doc.url,
+							image : doc.thumbnails[3].url.replace(/\/s\d+\//, '/s900/')
+						};
+						syntax    = $('#images-template').text().replace(/\{\{(\w+)\}\}/g, function (_, name) { return it[name] }).replace(/\s+/g, ' ');
+					} else
+					if (doc.type == 'location') {
+						console.log(doc.thumbnails[3]);
+						syntax = '<img src+"' + doc.thumbnails[3].url + '" alt="[MAP]"/>';
+					}
 
-						if (syntax) {
-							body.val( body.val() + "\n" + syntax);
-						}
-					}).
-					build();
-
-				picker.setVisible(true);
+					if (syntax) {
+						body.val( body.val() + "\n" + syntax);
+					}
+				});
 			},
 
 			kousei : function () {
@@ -177,6 +241,7 @@ Nogag.Editor = {
 						container.replaceWith(newElement);
 						Nogag.initEntry(newElement);
 						Nogag.Backup.clear(form);
+						MathJax.Hub.Typeset(newElement[0]);
 					}
 				});
 				return false;
@@ -188,6 +253,7 @@ Nogag.Editor = {
 		body.focus();
 	}
 };
+window['Nogag.Editor.initGoogleAPI'] = Nogag.Editor.initGoogleAPI;
 
 Nogag.Editor.Picasa = {
 	page : 1,
@@ -353,7 +419,7 @@ Nogag.Editor.Picasa.Items = {
 				'fields'      : 'entry(title,link,content,media:group)',
 				'start-index' : self._data.length + 1,
 				'max-results' : num || 24,
-				'imgmax'      : '900',
+				'imgmax'      : '1280',
 				'thumbsize'   : '144c',
 				'_'           : new Date().getTime()
 			},
