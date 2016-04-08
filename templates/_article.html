@@ -26,6 +26,9 @@
 			-->
 			[% END %]
 			|
+			[% IF r.has_auth %]
+			<a href="javascript:void(0)" class="nogag-edit">編集</a>
+			[% END %]
 
 			<div style="display: none">
 				<meta itemscope itemprop="mainEntityOfPage"  itemType="https://schema.org/WebPage" itemid="/[% entry.path %]"/>
@@ -86,12 +89,13 @@
 		<div class="social-buttons">
 			<!-- twitter -->
 			<span class="button" style="width: 90px;">
-			<a href="https://twitter.com/share" class="twitter-share-button" data-url="[%  entry_uri %]" data-text="[% entry.title %]" data-count="horizontal" data-via="cho45">Tweet</a><script type="text/javascript" src="//platform.twitter.com/widgets.js"></script>
+			<a href="https://twitter.com/share" class="twitter-share-button" data-url="[%  entry_uri %]" data-text="[% entry.title %]" data-count="horizontal" data-via="cho45">Tweet</a>
+			<script type="text/javascript" src="//platform.twitter.com/widgets.js" async></script>
 			</span>
 
 			<!-- google plus -->
 			<span class="button google-plus" style="width: 70px;">
-			<script type="text/javascript" src="//apis.google.com/js/plusone.js"></script><div class="g-plusone" data-size="medium"></div>
+			<script type="text/javascript" src="//apis.google.com/js/plusone.js" async></script><div class="g-plusone" data-size="medium"></div>
 			</span>
 
 			<!-- tumblr -->

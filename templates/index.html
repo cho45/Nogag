@@ -3,11 +3,12 @@
 	data-auth="[% IF r.has_auth %]true[% END %]"
 	data-permalink="[% permalink %]"
 	itemscope itemtype="[% permalink ? 'http://schema.org/BlogPosting' : 'http://schema.org/Blog' %]"
+	[% SET version = "1" %]
 	>
 	<head>
 		<meta charset="utf-8"/>
 
-		<title>[% title ? title _ " - " : "" %]氾濫原 [HANRANGEN]</title>
+		<title>[% title ? title _ " - " : "" %]氾濫原</title>
 		[% IF r.req.uri.path == '/' %]
 		<meta name="description" content="写真・文章による、ある普通の人間の人生の記録"/>
 		[% END %]
@@ -16,6 +17,7 @@
 		<link rel="alternate" media="handheld" href="[% r.req.uri.path_query %]"/>
 		<link rel="alternate" type="application/rss+xml" title="Feed" href="/feed"/>
 		<meta name="msvalidate.01" content="DA27079A2B657040673E774AADD36151" />
+		<meta name="referrer" content="unsafe-url"/>
 
 		[% UNLESS permalink %]
 		<meta itemprop="name" content="[% title ? title _ " - " : "" %][% r.config_param('sitename') %]"/>
@@ -44,15 +46,13 @@
 		<meta name="twitter:creator" content="cho45"/>
 
 		[% r.preload('//fonts.googleapis.com/css?family=Merriweather:400,700,300', 'style') %]
-		<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:400,700,300"/>
+		<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:400,700"/>
 
 		[% css = [
 			"/css/style.css",
-			"/css/print.css",
-			"/css/colorbox.css",
 			"/css/github.css",
 		] %]
-		[% FOR c IN css %] 
+		[% FOR c IN css %] [% SET c = c _ '?' _ version %]
 		[% r.preload(c, 'style') %]
 		<link rel="stylesheet" type="text/css" href="[% c %]"/>
 		[% END %]
@@ -105,6 +105,58 @@
 		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 		<![endif]-->
 
+		[% js = [
+			"/js/daterelative.js",
+			"/js/highlight.min.js",
+			"/js/nogag.js",
+		] %]
+
+		[% FOR j IN js %][% SET j = j _ '?' _ version %]
+		[%# r.preload(j, 'script') %]
+		<script type="text/javascript" src="[% j %]" defer></script>
+		[% END %]
+
+
+		[% IF r.has_auth %]
+			<!-- HAS AUTH -->
+			[% INCLUDE "_images.html" %]
+
+			[% js = [
+				"/js/jquery-1.12.3.min.js",
+				"/js/jquery.deserialize.js",
+				"/js/editor.js",
+			] %]
+
+			[% FOR j IN js %][% SET j = j _ '?' _ version %]
+			[% r.preload(j, 'script') %]
+			<script type="text/javascript" src="[% j %]" defer></script>
+			[% END %]
+			<script src="https://apis.google.com/js/api.js?onload=Nogag.Editor.initGoogleAPI" defer></script>
+			<!-- /HAS AUTH -->
+		[% END %]
+
+		<!-- mathjax: [% mathjax ? 'true' : 'false' %] -->
+		[% IF mathjax %]
+		<script type="text/javascript" src="/js/MathJax/MathJax.js?config=TeX-AMS_SVG-full,local/my" async></script>
+		[% END %]
+
+		<script type="text/javascript">
+			Hatena = { Star : {} };
+			Hatena.Star.Token = '7743b0e60f0e3b267f9723d3a5cf96981a59e4f3';
+
+			Hatena.Star.SiteConfig = {
+				entryNodes: {
+					'article': {
+						uri: 'a.bookmark',
+						title: 'h1',
+						container: '.metadata'
+					}
+				}
+			};
+		</script>
+		<script type="text/javascript" src="//s.hatena.ne.jp/js/HatenaStar.js" async></script>
+		<script type="text/javascript" src="//platform.tumblr.com/v1/share.js" async></script>
+
 		<script>
 			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -138,6 +190,9 @@
 				<li><a href="/">Top</a></li>
 				<li><a href="/archive">Archive</a></li>
 				<li><a href="http://www.lowreal.net/">Profile</a></li>
+				[% IF r.has_auth %]
+				<a href="javascript:void(0)" class="nogag-new">New Entry</a>
+				[% END %]
 			</ul>
 		</nav>
 
@@ -277,69 +332,12 @@
 				[% count %]
 			</p>
 			<p>
-				<a href="http://www.lowreal.net/" rel="author"><img src="//www.lowreal.net/images/lowreal.net-logo.png" alt="www.lowreal.net"/></a>
+				<a href="http://www.lowreal.net/" rel="author">www.lowreal.net</a>
 				<br />
 				by <a href="mailto:cho45@lowreal.net">Satoh, Hiroh</a>
 			</p>
 			<a rel="me" href="https://plus.google.com/114431815111528304586?rel=author"><img src="//www.google.com/images/icons/ui/gprofile_button-16.png" width="16" height="16" alt="Google+"/></a>
 		</footer>
-
-		[% r.preload('//s.hatena.ne.jp/js/HatenaStar.js', 'script') %]
-		<script type="text/javascript" src="//s.hatena.ne.jp/js/HatenaStar.js"></script>
-		<script type="text/javascript">
-			Hatena.Star.Token = '7743b0e60f0e3b267f9723d3a5cf96981a59e4f3';
-
-			Hatena.Star.SiteConfig = {
-				entryNodes: {
-					'article': {
-						uri: 'a.bookmark',
-						title: 'h1',
-						container: '.metadata'
-					}
-				}
-			};
-		</script>
-
-		[% js = [
-			"/js/jquery-1.12.3.min.js",
-			"/js/jquery.deserialize.js",
-			"/js/jsdeferred.js",
-			"/js/keyString.js",
-			"/js/daterelative.js",
-			"/js/nogag.js",
-			"/js/highlight.min.js",
-		] %]
-
-		[% FOR j IN js %][% SET j = j _ '?' _ r.config_param('version') %]
-		[% r.preload(j, 'script') %]
-		<script type="text/javascript" src="[% j %]"></script>
-		[% END %]
-
-
-		[% IF r.has_auth %]
-		<!-- HAS AUTH -->
-		[% INCLUDE "_images.html" %]
-		<script type="text/javascript" src="/js/editor.js?[% r.config_param('version') %]"></script>
-		<script src="https://apis.google.com/js/api.js?onload=Nogag.Editor.initGoogleAPI"></script>
-		<!-- /HAS AUTH -->
-		[% END %]
-		<script type="text/javascript">
-			Nogag.init();
-		</script>
-
-
-		<script type="text/javascript" src="//platform.tumblr.com/v1/share.js" async></script>
-
-		<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML-full"></script>
-		<script>
-			MathJax.Hub.Config({
-				tex2jax: {
-					inlineMath: [["\\(","\\)"]],
-					displayMath: [ ["$$", "$$"] ]
-				}
-			});
-			MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
-		</script>
 
 	</body>
 </html>

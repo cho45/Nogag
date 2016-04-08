@@ -1,5 +1,3 @@
-Deferred.define();
-
 Nogag.Backup = {
 	init : function (parent) {
 		var self = this;
@@ -16,7 +14,6 @@ Nogag.Backup = {
 	},
 
 	load : function (form) {
-		var self = this;
 		var key = form.attr('data-backup-key');
 		var backup = localStorage.getItem('backup-' + key);
 		var backupTime = new Date(+localStorage.getItem('backupTime-' + key));
@@ -67,79 +64,71 @@ Nogag.Editor = {
 	},
 
 	loadGoogle : function (name) {
-		var d = new Deferred();
-		gapi.load(name, {'callback': function () {
-			d.call();
-		} } );
-		return d;
+		return new Promise( (resolve, reject) => {
+			gapi.load(name, {'callback': resolve } );
+		});
 	},
 
 	oauthGoogle : function () {
 		if (!Nogag.Editor.google_access_token) {
-			var d = new Deferred();
-			gapi.auth.authorize(
-				{
-					'client_id': Nogag.Editor.google_client_id,
-					'scope': [
-						'https://www.googleapis.com/auth/photos',
-						'https://www.googleapis.com/auth/drive.readonly',
-						'https://www.googleapis.com/auth/photos.upload',
-						'https://www.googleapis.com/auth/youtube'
-					],
-					'immediate': false
-				},
-				function (result) {
-					console.log(result);
-					if (result && !result.error) {
-						Nogag.Editor.google_access_token = result.access_token;
-						d.call(result);
-					} else {
-						alert(result.error);
-						d.fail(result);
+			return new Promise( (resolve, reject) => {
+				gapi.auth.authorize(
+					{
+						'client_id': Nogag.Editor.google_client_id,
+						'scope': [
+							'https://www.googleapis.com/auth/photos',
+							'https://www.googleapis.com/auth/drive.readonly',
+							'https://www.googleapis.com/auth/photos.upload',
+							'https://www.googleapis.com/auth/youtube'
+						],
+						'immediate': false
+					},
+					function (result) {
+						console.log(result);
+						if (result && !result.error) {
+							Nogag.Editor.google_access_token = result.access_token;
+							resolve(result);
+						} else {
+							alert(result.error);
+							reject(result);
+						}
 					}
-				}
-			);
-			return d;
+				);
+			});
 		} else {
-			return next();
+			return Promise.resolve();
 		}
 	},
 
 	openPicker : function () {
 		return Nogag.Editor.oauthGoogle().
-		next(function () {
-			var d = new Deferred();
-			var picker = new google.picker.PickerBuilder().
-				setOAuthToken(Nogag.Editor.google_access_token).
-				setDeveloperKey(Nogag.Editor.google_developer_key).
-				addView(google.picker.ViewId.PHOTOS).
-				addView(new google.picker.PhotosView().setType('camerasync')).
-				addView(google.picker.ViewId.PHOTO_UPLOAD).
-				addView(google.picker.ViewId.YOUTUBE).
-				addView(google.picker.ViewId.MAPS).
-				setCallback(function (data) {
-					d.call(data);
-				}).
-				build();
+		then(() => {
+			return new Promise( (resolve, reject) => {
+				var picker = new google.picker.PickerBuilder().
+					setOAuthToken(Nogag.Editor.google_access_token).
+					setDeveloperKey(Nogag.Editor.google_developer_key).
+					addView(google.picker.ViewId.PHOTOS).
+					addView(new google.picker.PhotosView().setType('camerasync')).
+					addView(google.picker.ViewId.PHOTO_UPLOAD).
+					addView(google.picker.ViewId.YOUTUBE).
+					addView(google.picker.ViewId.MAPS).
+					setCallback(function (data) {
+						resolve(data);
+					}).
+					build();
 
-			picker.setVisible(true);
-			return d;
+				picker.setVisible(true);
+			});
 		}).
-		error(function (e) {
-			alert(e);
-		});
-	},
-
-	test : function () {
-		Nogag.Editor.Picasa.get().next(function (syntax) {
-			alert(syntax);
-		}).
-		error(function (e) {
+		catch((e) => {
 			alert(e);
 		});
 	},
 
 	editEntry : function (article) {
+		if (article) {
+			article = $(article);
+		}
 		var id = article ? article.attr('data-id') : '';
 
 		$.ajax({
@@ -168,26 +157,26 @@ Nogag.Editor = {
 
 	initEditForm : function (container, article) {
 		var form  = container.find('form');
-		var title = container.find('input[name=title]');
+		// var title = container.find('input[name=title]');
 		var body  = container.find('textarea[name=body]');
 
 		var actions = {
 			photo : function () {
-				Nogag.Editor.openPicker().next(function (data) {
-					if (data[google.picker.Response.ACTION] != google.picker.Action.PICKED) return;
+				Nogag.Editor.openPicker().then( (data) => {
+					if (data[google.picker.Response.ACTION] !== google.picker.Action.PICKED) return;
 
 					var syntax;
 
 					console.log(data);
 					var doc = data[google.picker.Response.DOCUMENTS][0];
-					if (doc.type == 'photo') {
+					if (doc.type === 'photo') {
 						var it = {
 							url : doc.url,
-							image : doc.thumbnails[3].url.replace(/\/s\d+\//, '/s900/')
+							image : doc.thumbnails[3].url.replace(/\/s\d+\//, '/s2048/')
 						};
 						syntax    = $('#images-template').text().replace(/\{\{(\w+)\}\}/g, function (_, name) { return it[name] }).replace(/\s+/g, ' ');
 					} else
-					if (doc.type == 'location') {
+					if (doc.type === 'location') {
 						console.log(doc.thumbnails[3]);
 						syntax = '<img src+"' + doc.thumbnails[3].url + '" alt="[MAP]"/>';
 					}
@@ -226,7 +215,7 @@ Nogag.Editor = {
 
 		body.keypress(function (e) {
 			var key = keyString(e);
-			if (key == 'RET') actions.kousei();
+			if (key === 'RET') actions.kousei();
 		});
 
 		if (article) {
@@ -239,7 +228,7 @@ Nogag.Editor = {
 					success : function (data, status, xhr) {
 						var newElement = $(data).find('article[data-id=' + article.attr('data-id') + ']');
 						container.replaceWith(newElement);
-						Nogag.initEntry(newElement);
+						Nogag.initEntry(newElement[0]);
 						Nogag.Backup.clear(form);
 						MathJax.Hub.Typeset(newElement[0]);
 					}
@@ -255,192 +244,3 @@ Nogag.Editor = {
 };
 window['Nogag.Editor.initGoogleAPI'] = Nogag.Editor.initGoogleAPI;
 
-Nogag.Editor.Picasa = {
-	page : 1,
-	limit : 24,
-	init : function () {
-		var self = this;
-		if (self.parent) return;
-		self.parent  = $('#images');
-		self.list    = $('#images-items');
-		self.preview = $('#images-preview');
-		self.actions = $('#images-actions');
-		self.template = self.list.find('.item');
-
-		self.preview.click(function () {
-			self.preview.hide();
-		});
-
-		self.actions.
-			find('.paste').
-				click(function () {
-					if (self.preview.is(':visible')) {
-						Nogag.Editor.Picasa.Items.get(+self.preview.attr('data-index')).
-						next(function (it) {
-							self.preview.hide();
-							self.parent.hide();
-							$.colorbox.close();
-							self.deferred.call(it.syntax);
-						}).
-						error(function (e) {
-							self.deferred.fail(e);
-						});
-					}
-				}).
-			end().
-			find('.left').
-				click(function () {
-					if (self.preview.is(':visible')) {
-						Nogag.Editor.Picasa.Items.get(+self.preview.attr('data-index') - 1).
-						next(function (it) {
-							self.showPreview(it);
-						}).
-						error(function (e) {
-							self.deferred.fail(e);
-						});
-					} else {
-						if (self.page > 1) self.loadPage(--self.page);
-					}
-				}).
-			end().
-			find('.right').
-				click(function () {
-					if (self.preview.is(':visible')) {
-						Nogag.Editor.Picasa.Items.get(+self.preview.attr('data-index') + 1).
-						next(function (it) {
-							self.showPreview(it);
-						}).
-						error(function (e) {
-							self.deferred.fail(e);
-						});
-					} else {
-						self.loadPage(++self.page);
-					}
-				}).
-			end();
-
-		self.loadPage(self.page);
-	},
-
-	get : function () {
-		var self = this;
-		self.init();
-
-		self.deferred = new Deferred();
-		$.colorbox({
-			inline: true,
-			href : self.parent.show()
-		});
-		return self.deferred;
-	},
-
-	showPreview : function (it) {
-		var self = this;
-		var image     = it.content.src;
-		self.preview.attr('data-index', it.index);
-		self.preview.find('img').attr('src', image).end().show();
-		var page = Math.ceil( (it.index + 1) / 24);
-		if (page != self.page) {
-			self.page = page;
-			self.loadPage(self.page);
-		}
-	},
-
-	loadPage : function (page) {
-		var self = this;
-		self.actions.find('.page').text('Load: ' + self.page);
-		self.list.empty();
-		return loop(self.limit, function (n) {
-			var index = (self.page - 1) * self.limit + n;
-			return Nogag.Editor.Picasa.Items.get(index).next(function (it) {
-				if (!it) return;
-
-				var item = self.template.clone();
-				item.
-					find('img.thumbnail').
-						attr({
-							alt : it.title,
-							src : it.thumbnail
-						}).
-						click(function () {
-							self.showPreview(it);
-						}).
-					end().
-					find('a.link').
-						attr({
-							title : it.title,
-							href  : it.link
-						}).
-					end().
-					appendTo(self.list);
-			});
-		}).
-		next(function () {
-			self.actions.find('.page').text('Page: ' + self.page);
-		}).
-		error(function (e) {
-			alert(e);
-		});
-	}
-};
-
-Nogag.Editor.Picasa.Items = {
-	get : function (n, end) {
-		var self = this;
-		if (end) {
-			if (self._done || n < self._data.length) {
-				return next(function () { return self._data.slice(n, end) });
-			} else {
-				return self._loadNext(end - n + 1).next(function () {
-					return self._data.slice(n, end);
-				});
-			}
-		} else {
-			if (self._done || n < self._data.length) {
-				return next(function () { return self._data[n] });
-			} else {
-				return self._loadNext().next(function () {
-					return self._data[n];
-				});
-			}
-		}
-	},
-
-	_done : false,
-	_data : [],
-	_loadNext : function (num) {
-		var self = this;
-
-		var ret = new Deferred();
-		$.ajax({
-			url : 'http://picasaweb.google.com/data/feed/base/user/cho101101?alt=json&kind=photo&hl=ja&access=public&callback=?',
-			dataType: 'jsonp',
-			data : {
-				'fields'      : 'entry(title,link,content,media:group)',
-				'start-index' : self._data.length + 1,
-				'max-results' : num || 24,
-				'imgmax'      : '1280',
-				'thumbsize'   : '144c',
-				'_'           : new Date().getTime()
-			},
-			success : function (res) {
-				if (!res.feed.entry.length) self._done = true;
-				var i = self._data.length;
-				self._data = self._data.concat(res.feed.entry);
-				for (var it; (it = self._data[i]); i++) {
-					it.index     = i;
-					it.title     = it.title.$t;
-					it.thumbnail = it.media$group.media$thumbnail[0].url;
-					it.link      = $.grep(it.link, function (_) { return _.rel == 'http://schemas.google.com/photos/2007#canonical' && _.type == 'text/html'; })[0].href;
-					it.image     = it.content.src;
-					it.syntax    = $('#images-template').text().replace(/\{\{(\w+)\}\}/g, function (_, name) { return it[name] }).replace(/\s+/g, ' ');
-				}
-				ret.call();
-			},
-			error : function (e) {
-				ret.fail(e);
-			}
-		});
-		return ret;
-	}
-};

@@ -42,8 +42,10 @@ sub render {
 
 sub html {
 	my ($r, $name, $vars) = @_;
+	my $html = $r->render($name, $vars);
+	$html =~ s{(<img src="https://[^.]+\.googleusercontent\.com/.+?)/s\d+/(.+?")}{$1/s2048/$2}g;
 	$r->res->content_type('text/html; charset=utf-8');
-	$r->res->content(encode_utf8 $r->render($name, $vars));
+	$r->res->content(encode_utf8 $html);
 }
 
 sub json {
@@ -51,6 +53,13 @@ sub json {
 	my $body = JSON::XS->new->ascii(1)->encode($vars);
 	$r->res->content_type('application/json; charset=utf-8');
 	$r->res->content($body);
+}
+
+sub redirect {
+	my ($r, $location, $code) = @_;
+	$code ||= 302;
+	$r->res->status($code);
+	$r->res->header('Location' => $location);
 }
 
 1;

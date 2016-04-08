@@ -7,3 +7,8 @@ Makefile
 app.conf
 *.xml
 diary-*
+*.gz
+*.br
+node_modules
+service/mathjax/log/main
+static/js/MathJax

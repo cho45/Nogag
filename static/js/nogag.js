@@ -7,27 +7,33 @@ Nogag = {
 
 		var articles = document.querySelectorAll('article');
 		for (var i = 0, it; (it = articles[i]); i++) {
-			Nogag.initEntry($(it));
+			Nogag.initEntry(it);
 		}
 
-		$('a.picasa').each(function () {
-			var img = $(this).find('img');
-			var src = img.attr('src');
+		var photos = document.querySelectorAll('a.picasa');
+		for (var i = 0, it; (it = photos[i]); i++) (function (anchor) {
+			var img = anchor.querySelector('img');
+			var src = img.getAttribute('src');
+
 			var link = src.replace(/\/s(9[06]0|1280)\//, '/s2048/');
-			$(this).attr('href', link);
 			if (window.devicePixelRatio > 1) {
 				src = src.replace(/\/s(9[06]0|1280)\//, '/s2048/');
 			} else {
-				src = src.attr('src').replace(/\/s900\//, '/s960/');
+				src = src.replace(/\/s900\//, '/s960/');
 			}
-			var loader = new Image();
-			loader.src = src;
-			console.log('loading ' + src);
-			loader.onload = function () {
-				img.attr('src', src);
-				console.log('upgraded');
-			};
-		});
+
+			anchor.href = link;
+
+			if (src !== img.getAttribute('src')) {
+				var loader = new Image();
+				loader.src = src;
+				console.log('loading ' + src);
+				loader.onload = function () {
+					img.src = src;
+					console.log('upgraded');
+				};
+			}
+		})(it);
 
 		DateRelative.updateAll();
 
@@ -65,23 +71,23 @@ Nogag = {
 		if (Nogag.data('auth')) {
 			Nogag.Editor.init();
 
-			$('<li><a href="">New Entry</a></li>').
-				click(function () {
+			var button = document.querySelector('.nogag-new');
+			if (button) {
+				button.addEventListener('click', function () {
 					Nogag.Editor.newEntry();
-					return false;
-				}).
-				appendTo('#global-navigation ul');
+				});
+			}
 		}
 	},
 
 	initEntry : function (entry) {
 		if (Nogag.data('auth')) {
-			$('<a href="">編集</a>').
-				click(function () {
+			var button = entry.querySelector('.nogag-edit');
+			if (button) {
+				button.addEventListener('click', function () {
 					Nogag.Editor.editEntry(entry);
-					return false;
-				}).
-				appendTo(entry.find('.metadata'));
+				});
+			}
 		}
 
 		Nogag.highlight(entry);
@@ -95,10 +101,16 @@ Nogag = {
 		'css'        : 'Css'
 	},
 	highlight : function (container) {
-		container.find('pre.code').each(function () {
-			if (/lang-(\S+)/.test(this.className)) {
-				hljs.highlightBlock(this);
+		var codes = container.querySelectorAll('pre.code');
+		for (var i = 0, it; (it = codes[i]); i++) {
+			if (/lang-(\S+)/.test(it.className)) {
+				hljs.highlightBlock(it);
 			}
-		});
+		}
+
 	}
 };
+
+document.addEventListener('DOMContentLoaded', function () {
+	Nogag.init();
+}, false);

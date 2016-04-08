@@ -10,6 +10,8 @@ use Time::Seconds;
 use HTML::Trim;
 use URI::QueryParam;
 use Digest::MD5 qw(md5_hex);
+use Cache::FileCache;
+use Cache::Invalidatable;
 
 use Nogag::Base;
 use Nogag::Time;
@@ -21,8 +23,11 @@ use parent qw(Nogag::Base);
 
 our @EXPORT = qw(config throw);
 
+my $cache = Cache::Invalidatable->new(cache => Cache::FileCache->new({ 'namespace' => 'EntryCache-v4' . config->env, default_expires_in => 60 * 60 * 24 * 365 }));
+
 route "/" => \&index;
 route "/login" => \&login;
+route "/logout" => \&logout;
 route "/api/edit" => \&edit;
 route "/sitemap.xml" => \&sitemap;
 route "/mobilesitemap.xml" => \&mobilesitemap;
@@ -53,6 +58,12 @@ sub login {
 
 	$r->session->set('login' => 1); # ensure create session
 	$r->html('login.html');
+}
+
+sub logout {
+	my ($r) = @_;
+	$r->session->expire;
+	$r->redirect('/');
 }
 
 sub edit {
@@ -89,6 +100,8 @@ sub edit {
 
 			if ($entry->id) {
 				$entry->{body} = $r->req->string_param('body');
+				my $formatted_body = $formatter->format($entry);
+				$formatted_body = filter_math($formatted_body);
 
 				$r->dbh->update(q{
 					UPDATE entries
@@ -103,9 +116,11 @@ sub edit {
 					id             => $entry->id,
 					title          => $r->req->string_param('title'),
 					body           => $r->req->string_param('body'),
-					formatted_body => $formatter->format($entry),
+					formatted_body => $formatted_body,
 					modified_at    => gmtime.q(),
-				})
+				});
+
+				$cache->invalidate_related("".$entry->id);
 			} else {
 				my $date = localtime;
 				my $now  = gmtime;
@@ -114,6 +129,8 @@ sub edit {
 
 				$entry->{path} = $path;
 				$entry->{body} = $r->req->string_param('body');
+				my $formatted_body = $formatter->format($entry);
+				$formatted_body = filter_math($formatted_body);
 
 				$r->dbh->update(q{
 					INSERT INTO entries
@@ -141,7 +158,7 @@ sub edit {
 				}, {
 					title          => $r->req->string_param('title'),
 					body           => $r->req->string_param('body'),
-					formatted_body => Nogag::Formatter::Hatena->format($entry),
+					formatted_body => $formatted_body,
 					path           => $path,
 					format         => 'Hatena',
 					date           => $date->strftime('%Y-%m-%d'),
@@ -150,6 +167,7 @@ sub edit {
 				});
 
 				$entry->{id} = $r->dbh->sqlite_last_insert_rowid;
+				$cache->invalidate_related("/");
 			}
 
 			$entry = $r->dbh->select(q{
@@ -175,6 +193,18 @@ sub edit {
 
 sub index {
 	my ($r) = @_;
+
+	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->request_uri);
+	unless ($r->has_auth) {
+		if (my $cached = $cache->get($cache_key)) {
+			use Data::Dumper;
+			warn Dumper  [ debug => "return cached key: $cache_key" ];
+			$r->{res} = Nogag::Response->new(@$cached);
+			my $etag = $r->res->header('ETag');
+			$r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
+			return;
+		}
+	}
 
 	my $page = $r->req->number_param('page', 100) || 1;
 
@@ -217,6 +247,8 @@ sub index {
 
 	@$entries or $r->res->status(404);
 
+	$r->stash(mathjax => enable_mathjax(@$entries));
+
 	if (@$entries) {
 		my $modified_at = [ sort { $b->modified_at <=> $a->modified_at } @$entries]->[0]->modified_at;
 		my $etag = md5_hex(join("\n", $modified_at->epoch, -s $r->config->root->file('templates/index.html')));
@@ -237,6 +269,9 @@ sub index {
 	});
 
 	$r->html('index.html');
+	use Data::Dumper;
+	warn Dumper ['new cache' => $cache_key] ;
+	$cache->set($cache_key => $r->res->finalize, [ "/", map { $_->id } @$entries ]);
 }
 
 sub archive {
@@ -331,6 +366,18 @@ sub archive_index {
 sub permalink {
 	my ($r) = @_;
 
+	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->request_uri);
+	unless ($r->has_auth) {
+		if (my $cached = $cache->get($cache_key)) {
+			use Data::Dumper;
+			warn Dumper  [ debug => "return cached key: $cache_key" ];
+			$r->{res} = Nogag::Response->new(@$cached);
+			my $etag = $r->res->header('ETag');
+			$r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
+			return;
+		}
+	}
+
 	my $path = $r->req->param('path');
 
 	my $is_category = ($path =~ m{^([^/]+)/$});
@@ -356,6 +403,7 @@ sub permalink {
 		my $count = $r->dbh->value('SELECT count(*) FROM entries');
 
 		@$entries or $r->res->status(404);
+		$r->stash(mathjax => enable_mathjax(@$entries));
 
 		if (@$entries) {
 			my $modified_at = [ sort { $b->modified_at <=> $a->modified_at } @$entries]->[0]->modified_at;
@@ -381,6 +429,11 @@ sub permalink {
 		my $tmpl = config->root->subdir('templates/category')->file("$name.html");
 		if (-e $tmpl) {
 			return $r->html($tmpl);
+		} else {
+			$r->html('index.html');
+			use Data::Dumper;
+			warn Dumper ['new cache' => $cache_key] ;
+			$cache->set($cache_key => $r->res->finalize, [ "/", map { $_->id } @$entries ]);
 		}
 	} else {
 		my $entry = $r->dbh->select(q{
@@ -426,7 +479,11 @@ sub permalink {
 		Nogag::Model::Entry->bless($_) for @$related;
 		$r->stash(related => $related);
 
-		$r->stash(entries => [ $entry ]);
+		my $entries = [ $entry ];
+
+		$r->stash(mathjax => enable_mathjax(@$entries));
+
+		$r->stash(entries => $entries);
 		$r->stash(entry => $entry);
 		$r->stash(permalink => 1);
 		$r->stash(old_entry => $old_entry);
@@ -437,9 +494,12 @@ sub permalink {
 			$title =~ s{^\s+|\s+$}{}g;
 			$title;
 		} . $entry->date->strftime(" | %a, %b %e. %Y"));
-	}
 
-	$r->html('index.html');
+		$r->html('index.html');
+		use Data::Dumper;
+		warn Dumper ['new cache' => $cache_key] ;
+		$cache->set($cache_key => $r->res->finalize, [ $entry->id ]);
+	}
 }
 
 sub sitemap {
@@ -502,6 +562,23 @@ sub test {
 	my ($r) = @_;
 	$r->stash(test => 1);
 	$r->res->content(encode_utf8 $r->render('index.html'));
+}
+
+
+use LWP::Simple qw($ua);
+sub filter_math {
+	my ($html) = @_;
+	my $res = $ua->post('http://127.0.0.1:13370/', Content => encode_utf8 $html);
+	if ($res->is_success) {
+		return $res->decoded_content;
+	} else {
+		return $html;
+	}
+}
+
+sub enable_mathjax {
+	my (@entries) = @_;
+	!!grep { $_->formatted_body(1) =~ /\\\(|\$\$/ } @entries;
 }
 
 1;

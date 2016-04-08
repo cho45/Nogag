@@ -27,8 +27,13 @@ http.createServer(function (req, res) {
 		mjAPI.typeset({
 			html: html.join(""),
 			renderer: "SVG",
-			inputs: ["TeX"]
+			inputs: ["TeX"],
+			ex: 6,
+			width: 40
 		}, function (result) {
+			console.log('typeset done');
+			console.log(result);
+
 			res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8'});
 			res.end(result.html);
 		});
