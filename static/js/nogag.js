@@ -27,7 +27,7 @@ Nogag = {
 			if (src !== img.getAttribute('src')) {
 				var loader = new Image();
 				loader.src = src;
-				console.log('loading ' + src);
+				console.log('upgrade loading ' + src);
 				loader.onload = function () {
 					img.src = src;
 					console.log('upgraded');
@@ -93,13 +93,6 @@ Nogag = {
 		Nogag.highlight(entry);
 	},
 
-	langs : {
-		'perl'       : 'Perl',
-		'ruby'       : 'Ruby',
-		'javascript' : 'JavaScript',
-		'html'       : 'Html',
-		'css'        : 'Css'
-	},
 	highlight : function (container) {
 		var codes = container.querySelectorAll('pre.code');
 		for (var i = 0, it; (it = codes[i]); i++) {

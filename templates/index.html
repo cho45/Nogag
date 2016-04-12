@@ -3,7 +3,6 @@
 	data-auth="[% IF r.has_auth %]true[% END %]"
 	data-permalink="[% permalink %]"
 	itemscope itemtype="[% permalink ? 'http://schema.org/BlogPosting' : 'http://schema.org/Blog' %]"
-	[% SET version = "1" %]
 	>
 	<head>
 		<meta charset="utf-8"/>
@@ -13,9 +12,24 @@
 		<meta name="description" content="写真・文章による、ある普通の人間の人生の記録"/>
 		[% END %]
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes, target-densitydpi=high-dpi"/>
+
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+
+		<link rel="preconnect" href="https://s.hatena.ne.jp" crossorigin>
+
+		<link rel="preconnect" href="https://www.google-analytics.com" crossorigin>
+		<link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin>
+		<link rel="preconnect" href="https://googleads.g.doubleclick.net" crossorigin>
+		<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+		<link rel="preconnect" href="https://tpc.googlesyndication.com" crossorigin>
+
+		<link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin>
+
 		<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"/>
 		<link rel="alternate" media="handheld" href="[% r.req.uri.path_query %]"/>
 		<link rel="alternate" type="application/rss+xml" title="Feed" href="/feed"/>
+
 		<meta name="msvalidate.01" content="DA27079A2B657040673E774AADD36151" />
 		<meta name="referrer" content="unsafe-url"/>
 
@@ -45,37 +59,37 @@
 		<meta name="twitter:site" content="cho45"/>
 		<meta name="twitter:creator" content="cho45"/>
 
-		[% r.preload('//fonts.googleapis.com/css?family=Merriweather:400,700,300', 'style') %]
-		<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:400,700"/>
+		[% r.preload('//fonts.googleapis.com/css?family=Merriweather:400', 'style', 'crossorigin') %]
+		<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:400"/>
 
 		[% css = [
 			"/css/style.css",
 			"/css/github.css",
 		] %]
-		[% FOR c IN css %] [% SET c = c _ '?' _ version %]
+		[% FOR c IN css %]
 		[% r.preload(c, 'style') %]
 		<link rel="stylesheet" type="text/css" href="[% c %]"/>
 		[% END %]
 
 		<style type="text/css">
 			.hatena-star-add-button-image {
-				background-image: url('//cdn-ak.f.st-hatena.com/images/fotolife/c/cho45/20101127/20101127010806.gif');
+				background-image: url('/images/star/20101127010806.gif');
 			}
 
 			.hatena-star-star-image {
-				background-image: url('//cdn-ak.f.st-hatena.com/images/fotolife/c/cho45/20101127/20101127010252.gif');
+				background-image: url('/images/star/20101127010252.gif');
 			}
 
 			.hatena-star-green-star-image {
-				background-image: url('//cdn-ak.f.st-hatena.com/images/fotolife/c/cho45/20100115/20100115025631.gif');
+				background-image: url('/images/star/20100115025631.gif');
 			}
 
 			.hatena-star-red-star-image {
-				background-image: url('//cdn-ak.f.st-hatena.com/images/fotolife/c/cho45/20100115/20100115025800.gif');
+				background-image: url('/images/star/20100115025800.gif');
 			}
 
 			.hatena-star-blue-star-image {
-				background-image: url('//cdn-ak.f.st-hatena.com/images/fotolife/c/cho45/20100115/20100115025902.gif');
+				background-image: url('/images/star/20100115025902.gif');
 			}
 
 			.hatena-star-comment-container {
@@ -111,8 +125,8 @@
 			"/js/nogag.js",
 		] %]
 
-		[% FOR j IN js %][% SET j = j _ '?' _ version %]
-		[%# r.preload(j, 'script') %]
+		[% FOR j IN js %]
+		[%# r.preload(j, 'script', 'nopush') %]
 		<script type="text/javascript" src="[% j %]" defer></script>
 		[% END %]
 
@@ -122,13 +136,12 @@
 			[% INCLUDE "_images.html" %]
 
 			[% js = [
-				"/js/jquery-1.12.3.min.js",
-				"/js/jquery.deserialize.js",
+				"/js/keyboard.js",
 				"/js/editor.js",
 			] %]
 
-			[% FOR j IN js %][% SET j = j _ '?' _ version %]
-			[% r.preload(j, 'script') %]
+			[% FOR j IN js %]
+			[%# r.preload(j, 'script', 'nopush') %]
 			<script type="text/javascript" src="[% j %]" defer></script>
 			[% END %]
 			<script src="https://apis.google.com/js/api.js?onload=Nogag.Editor.initGoogleAPI" defer></script>
@@ -137,6 +150,10 @@
 
 		<!-- mathjax: [% mathjax ? 'true' : 'false' %] -->
 		[% IF mathjax %]
+		[%# r.preload("/js/MathJax/MathJax.js?config=TeX-AMS_SVG-full,local/my" , 'script', 'nopush') %]
+		[%# r.preload("/js/MathJax/config/TeX-AMS_SVG-full.js?rev=2.6.1" , 'script', 'nopush') %]
+		[%# r.preload("/js/MathJax/config/local/my.js?rev=2.6.1" , 'script', 'nopush') %]
+		[%# r.preload("/js/MathJax/jax/output/SVG/fonts/TeX/fontdata.js?rev=2.6.1" , 'script', 'nopush') %]
 		<script type="text/javascript" src="/js/MathJax/MathJax.js?config=TeX-AMS_SVG-full,local/my" async></script>
 		[% END %]
 
@@ -155,8 +172,8 @@
 			};
 		</script>
 		<script type="text/javascript" src="//s.hatena.ne.jp/js/HatenaStar.js" async></script>
-		<script type="text/javascript" src="//platform.tumblr.com/v1/share.js" async></script>
 
+		[% r.preload("//www.google-analytics.com/analytics.js" , 'script') %]
 		<script>
 			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -191,7 +208,7 @@
 				<li><a href="/archive">Archive</a></li>
 				<li><a href="http://www.lowreal.net/">Profile</a></li>
 				[% IF r.has_auth %]
-				<a href="javascript:void(0)" class="nogag-new">New Entry</a>
+				<li><a href="javascript:void(0)" class="nogag-new">New Entry</a></li>
 				[% END %]
 			</ul>
 		</nav>
@@ -236,7 +253,18 @@
 				[% FOR entry IN related %]
 				[% IF entry.summary %]
 				[% LAST IF loop.count > 5 %]
-					<li><a href="/[% entry.path %]" title="[% entry.title %]">→ [% entry.summary(80) %]</a></li>
+					<li>
+						<a href="/[% entry.path %]">
+							[% IF entry.title %]
+							<b>[% entry.title %]</b><br/>
+							[% END %]
+							[% entry.summary(80) %]
+
+							<time data-epoch="[% entry.created_at.epoch %]" datetime="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z" pubdate itemprop="datePublished">
+								[% entry.created_at.offset(9).strftime('%H:%M') %]
+							</time>
+						</a>
+					</li>
 				[% END %]
 				[% END %]
 				</ul>
@@ -245,7 +273,7 @@
 
 			[% UNLESS permalink %]
 			<div class="adsense" style="margin-left: 0px">
-				<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+				<!-- script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script -->
 				<!-- 関連コンテンツ -->
 				<ins class="adsbygoogle"
 					 style="display:block"
@@ -339,5 +367,16 @@
 			<a rel="me" href="https://plus.google.com/114431815111528304586?rel=author"><img src="//www.google.com/images/icons/ui/gprofile_button-16.png" width="16" height="16" alt="Google+"/></a>
 		</footer>
 
+		[% r.preload("//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" , 'script') %]
+		<!-- script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script -->
+		<script>
+			window.addEventListener('load', function () {
+				setTimeout(function () {
+					var s = document.createElement('script');
+					s.src = "//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js";
+					document.body.appendChild(s);
+				}, 10);
+			}, false);
+		</script>
 	</body>
 </html>

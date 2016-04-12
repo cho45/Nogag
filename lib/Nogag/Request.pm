@@ -55,4 +55,10 @@ sub if_none_match {
 	$match ne $etag;
 }
 
+sub is_super_reload {
+	my ($self) = @_;
+	my $cache_control = $self->header('Cache-Control') || '';
+	$cache_control eq 'no-cache';
+}
+
 1;

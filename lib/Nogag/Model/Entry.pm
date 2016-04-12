@@ -6,6 +6,7 @@ use warnings;
 
 use Nogag::Time;
 use HTML::Trim;
+use Text::Overflow qw(ellipsis);
 
 sub bless {
 	my ($class, $hash) = @_;
@@ -47,15 +48,15 @@ sub path {
 }
 
 sub date {
-	Nogag::Time->from_db($_[0]->{date});
+	$_[0]->{__date} //= Nogag::Time->from_db($_[0]->{date});
 }
 
 sub created_at {
-	Nogag::Time->from_db($_[0]->{created_at});
+	$_[0]->{__created_at} //= Nogag::Time->from_db($_[0]->{created_at});
 }
 
 sub modified_at {
-	Nogag::Time->from_db($_[0]->{modified_at});
+	$_[0]->{__modified_at} //= Nogag::Time->from_db($_[0]->{modified_at});
 }
 
 sub title_tags {
@@ -104,17 +105,24 @@ sub image {
 
 sub summary {
 	my ($self, $length) = @_;
-	$length ||= 50;
-	my $body = $self->formatted_body;
-	$body =~ s/<[^>]+>//g;
-	$body =~ s{^\s+|\s+$}{}g;
-	HTML::Trim::vtrim($body, $length, '…');
+	my $key = "_summary_$length";
+	$self->{$key} //= do {
+		$length ||= 50;
+		my $body = $self->formatted_body;
+		$body =~ s{<(style|script)[^>]*>[^<]*</(style|script)>}{};
+		$body =~ s/<[^>]+>//g;
+		$body =~ s{^\s+|\s+$}{}g;
+		ellipsis($body, $length);
+	}
 }
 
 sub summary_html {
 	my ($self, $length) = @_;
 	$length ||= 50;
-	HTML::Trim::vtrim($self->formatted_body, $length, '…');
+	my $key = "_summary_html_$length";
+	$self->{$key} //= do {
+		HTML::Trim::vtrim($self->formatted_body, $length, '…');
+	};
 }
 
 1;

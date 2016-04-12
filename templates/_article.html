@@ -73,7 +73,7 @@
 
 	[% IF permalink %]
 	<div class="adsense">
-		<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+		<!-- script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script -->
 		<!-- 関連コンテンツ -->
 		<ins class="adsbygoogle"
 			 style="display:block"
@@ -85,30 +85,6 @@
 		</script>
 	</div>
 
-	<footer>
-		<div class="social-buttons">
-			<!-- twitter -->
-			<span class="button" style="width: 90px;">
-			<a href="https://twitter.com/share" class="twitter-share-button" data-url="[%  entry_uri %]" data-text="[% entry.title %]" data-count="horizontal" data-via="cho45">Tweet</a>
-			<script type="text/javascript" src="//platform.twitter.com/widgets.js" async></script>
-			</span>
-
-			<!-- google plus -->
-			<span class="button google-plus" style="width: 70px;">
-			<script type="text/javascript" src="//apis.google.com/js/plusone.js" async></script><div class="g-plusone" data-size="medium"></div>
-			</span>
-
-			<!-- tumblr -->
-			<span class="button" id="tumblr_button_abc123">
-			[% IF entry.image %]
-			<a href="http://www.tumblr.com/share/photo?source=[% entry.image | uri %]&amp;caption=[% entry.title | uri %]&amp;clickthru=[% entry_uri | uri %]"><img src="//platform.tumblr.com/v1/share_1T.png" width="81" height="20" alt="Share on Tumblr"/></a>
-			[% ELSE %]
-			<a href="http://www.tumblr.com/share/quote?source=[% entry_uri | uri %]&quote=[% entry.formatted_body_text | uri %]"
-				title="Share on Tumblr"><img src="//platform.tumblr.com/v1/share_1T.png" width="81" height="20" alt="Share on Tumblr"/></a>
-			[% END %]
-			</span>
-		</div>
-	</footer>
 	[% INCLUDE "_adsense.html" %]
 
 	[% END %]

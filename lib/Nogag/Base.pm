@@ -105,8 +105,24 @@ sub config_param {
 }
 
 sub preload {
-	my ($r, $url, $as) = @_;
-	$r->res->headers->push_header('Link' => sprintf('<%s>; rel=preload; as=%s', $url, $as));
+	my ($r, $url, $as, @rest) = @_;
+	my $link = join("; ",
+		"<$url>",
+		"rel=preload",
+		$as ? "as=$as" : (),
+		@rest
+	);
+	$r->res->headers->push_header('Link' => $link);
+}
+
+sub link {
+	my ($r, $rel, $url, @rest) = @_;
+	my $link = join("; ",
+		"<$url>",
+		"rel=$rel",
+		@rest
+	);
+	$r->res->headers->push_header('Link' => $link);
 }
 
 sub req { $_[0]->{req} }
@@ -155,7 +171,7 @@ sub stash {
 
 sub has_auth {
 	my ($r) = @_;
-	$r->session->get('auth') 
+	$r->session ? $r->session->get('auth') : undef
 }
 
 sub require_auth {

@@ -12,6 +12,7 @@ use URI::QueryParam;
 use Digest::MD5 qw(md5_hex);
 use Cache::FileCache;
 use Cache::Invalidatable;
+use Log::Minimal;
 
 use Nogag::Base;
 use Nogag::Time;
@@ -23,7 +24,7 @@ use parent qw(Nogag::Base);
 
 our @EXPORT = qw(config throw);
 
-my $cache = Cache::Invalidatable->new(cache => Cache::FileCache->new({ 'namespace' => 'EntryCache-v4' . config->env, default_expires_in => 60 * 60 * 24 * 365 }));
+my $cache = Cache::Invalidatable->new(cache => Cache::FileCache->new({ 'namespace' => 'EntryCache-v7' . config->env, default_expires_in => 60 * 60 * 24 * 365 }));
 
 route "/" => \&index;
 route "/login" => \&login;
@@ -196,9 +197,8 @@ sub index {
 
 	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->request_uri);
 	unless ($r->has_auth) {
-		if (my $cached = $cache->get($cache_key)) {
-			use Data::Dumper;
-			warn Dumper  [ debug => "return cached key: $cache_key" ];
+		if ( (my $cached = $cache->get($cache_key)) && !$r->req->is_super_reload) {
+			infof("return cache: %s", $cache_key);
 			$r->{res} = Nogag::Response->new(@$cached);
 			my $etag = $r->res->header('ETag');
 			$r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
@@ -269,8 +269,7 @@ sub index {
 	});
 
 	$r->html('index.html');
-	use Data::Dumper;
-	warn Dumper ['new cache' => $cache_key] ;
+	infof("new cache: %s", $cache_key);
 	$cache->set($cache_key => $r->res->finalize, [ "/", map { $_->id } @$entries ]);
 }
 
@@ -368,9 +367,8 @@ sub permalink {
 
 	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->request_uri);
 	unless ($r->has_auth) {
-		if (my $cached = $cache->get($cache_key)) {
-			use Data::Dumper;
-			warn Dumper  [ debug => "return cached key: $cache_key" ];
+		if ( (my $cached = $cache->get($cache_key)) && !$r->req->is_super_reload) {
+			infof("return cache: %s", $cache_key);
 			$r->{res} = Nogag::Response->new(@$cached);
 			my $etag = $r->res->header('ETag');
 			$r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
@@ -431,8 +429,7 @@ sub permalink {
 			return $r->html($tmpl);
 		} else {
 			$r->html('index.html');
-			use Data::Dumper;
-			warn Dumper ['new cache' => $cache_key] ;
+			infof("new cache: %s", $cache_key);
 			$cache->set($cache_key => $r->res->finalize, [ "/", map { $_->id } @$entries ]);
 		}
 	} else {
@@ -496,8 +493,7 @@ sub permalink {
 		} . $entry->date->strftime(" | %a, %b %e. %Y"));
 
 		$r->html('index.html');
-		use Data::Dumper;
-		warn Dumper ['new cache' => $cache_key] ;
+		infof("new cache: %s", $cache_key);
 		$cache->set($cache_key => $r->res->finalize, [ $entry->id ]);
 	}
 }
@@ -568,6 +564,9 @@ sub test {
 use LWP::Simple qw($ua);
 sub filter_math {
 	my ($html) = @_;
+	unless (like_mathjax($html)) {
+		return $html;
+	}
 	my $res = $ua->post('http://127.0.0.1:13370/', Content => encode_utf8 $html);
 	if ($res->is_success) {
 		return $res->decoded_content;
@@ -576,9 +575,14 @@ sub filter_math {
 	}
 }
 
+sub like_mathjax {
+	my ($html) = @_;
+	$html =~ /\\\(|\$\$/;
+}
+
 sub enable_mathjax {
 	my (@entries) = @_;
-	!!grep { $_->formatted_body(1) =~ /\\\(|\$\$/ } @entries;
+	!!grep { like_mathjax($_->formatted_body(1)) } @entries;
 }
 
 1;

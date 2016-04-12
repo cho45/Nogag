@@ -11,6 +11,10 @@ use Text::Xslate qw(mark_raw);
 use JSON::XS;
 use Encode;
 use HTML::Trim;
+use HTML::Packer;
+use JavaScript::Packer;
+use CSS::Packer;
+use Text::Overflow qw(ellipsis);
 
 use Nogag::Config;
 
@@ -23,7 +27,8 @@ my $XSLATE = Text::Xslate->new(
 			my ($len) = @_;
 
 			sub {
-				HTML::Trim::vtrim(shift || '', $len, '…');
+				ellipsis(shift || '', $len);
+				# HTML::Trim::vtrim(shift || '', $len, '…');
 			}
 		},
 	},
@@ -44,6 +49,12 @@ sub html {
 	my ($r, $name, $vars) = @_;
 	my $html = $r->render($name, $vars);
 	$html =~ s{(<img src="https://[^.]+\.googleusercontent\.com/.+?)/s\d+/(.+?")}{$1/s2048/$2}g;
+#	$html = HTML::Packer->init->minify(\$html, {
+#			# do_javascript => 'clean',
+#		do_stylesheet => 'minify',
+#		remove_newlines => 1,
+#		html5 => 1,
+#	});
 	$r->res->content_type('text/html; charset=utf-8');
 	$r->res->content(encode_utf8 $html);
 }
