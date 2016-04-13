@@ -30,6 +30,10 @@
 		<link rel="alternate" media="handheld" href="[% r.req.uri.path_query %]"/>
 		<link rel="alternate" type="application/rss+xml" title="Feed" href="/feed"/>
 
+		[% IF permalink %]
+		<link rel="canonical" href="[% r.absolute('/' _ entry.path) %]">
+		[% END %]
+
 		<meta name="msvalidate.01" content="DA27079A2B657040673E774AADD36151" />
 		<meta name="referrer" content="unsafe-url"/>
 
@@ -166,7 +170,7 @@
 					'article': {
 						uri: 'a.bookmark',
 						title: 'h1',
-						container: '.metadata'
+						container: '.social .hatena-star'
 					}
 				}
 			};
@@ -286,9 +290,7 @@
 			</div>
 			[% END %]
 
-			<div style="padding: 0 30px;">
-				[% INCLUDE "_adsense.html" %]
-			</div>
+			[% INCLUDE "_adsense.html" %]
 
 			<div class="pager">
 				[% IF next_page %]
