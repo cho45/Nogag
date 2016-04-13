@@ -309,7 +309,13 @@ body > * {
 #content {
 }
 
+.related {
+	margin: 0 auto;
+	width: 728px;
+}
+
 .pager {
+	text-align: center;
 	font-size: 11px;
 	margin: 20px 0px 20px;
 }
@@ -614,7 +620,6 @@ figure.http:after {
 #global-footer {
 	margin: 0;
 	padding: 0 30px 30px 30px;
-	width: 642px;
 	font-size: 80%;
 	text-align: center;
 }

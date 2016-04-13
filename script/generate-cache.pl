@@ -12,6 +12,8 @@ use HTTP::Message::PSGI;
 use HTTP::Request::Common;
 use Log::Minimal;
 
+$ENV{LANG} = 'C';
+
 sub create_cache {
 	my ($path) = @_;
 	my $res = Nogag->new(GET($path, 'Cache-Control' => 'no-cache')->to_psgi)->run->res;

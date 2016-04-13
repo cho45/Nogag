@@ -105,9 +105,9 @@ sub image {
 
 sub summary {
 	my ($self, $length) = @_;
+	$length ||= 50;
 	my $key = "_summary_$length";
 	$self->{$key} //= do {
-		$length ||= 50;
 		my $body = $self->formatted_body;
 		$body =~ s{<(style|script)[^>]*>[^<]*</(style|script)>}{};
 		$body =~ s/<[^>]+>//g;
