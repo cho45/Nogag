@@ -5,13 +5,14 @@ use strict;
 use warnings;
 use Config::ENV 'PLACK_ENV', export => 'config';
 use Path::Class;
+use URI;
 use constant root => dir(".")->absolute;
 
 common +{
 	appname        => 'nogag',
 	sitename       => '氾濫原 [HANRANGEN]',
 	entry_per_page => 4,
-	static_shared  => 0,
+	base_uri => URI->new('https://lowreal.net'),
 	version        => scalar time,
 	load("app.conf"),
 };
@@ -26,7 +27,6 @@ config test => {
 };
 
 config production => {
-	static_shared => 1,
 	db => root->file('db/data.db'),
 };
 

@@ -1,3 +1,5 @@
+@charset "UTF-8";
+
 a:link {
 	color: #222;
 }
@@ -151,13 +153,22 @@ figure.quote figcaption {
 .share-buttons {
 	vertical-align: middle;
 	line-height: 32px;
-	padding: 0;
+	padding: 20px;
 	font-size: 14px;
 	background: #fff;
-	margin: 0 auto;
+	margin: 0;
 	text-align: center;
-	width: 220px;
 	color: #000;
+}
+
+.share-buttons::after {
+	display: block;
+	content: "共有する";
+	font-size: 14px;
+	margin: 0;
+	padding: 0;
+	color: #666;
+	line-height: 1.2;
 }
 
 .share-buttons .share-button {
@@ -168,7 +179,11 @@ figure.quote figcaption {
 	margin-right: 8px;
 	position: relative;
 	border-radius: 3px;
-	box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.3);
+	overflow: hidden;
+}
+
+.share-buttons .share-button[href*="line.me"] {
+	display: none;
 }
 
 .share-buttons .share-button img {
@@ -917,4 +932,9 @@ figure.http:after {
 		max-width: 100%;
 		padding: 0.5em 0;
 	}
+
+	.share-buttons .share-button[href*="line.me"] {
+		display: inline-block;
+	}
+
 }

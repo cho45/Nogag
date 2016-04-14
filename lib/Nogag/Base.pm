@@ -181,7 +181,7 @@ sub require_auth {
 
 sub absolute {
 	my ($r, $path) = @_;
-	my $uri = $r->req->uri->clone;
+	my $uri = config->param('base_uri')->clone;
 	$uri->path_query($path);
 	"$uri";
 }
