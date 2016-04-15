@@ -194,8 +194,10 @@ sub edit {
 
 sub index {
 	my ($r) = @_;
+	my $page = $r->req->number_param('page', 100) || 1;
+	my $query = $r->req->string_param('query') || '';
 
-	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->request_uri);
+	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->path, $page, $query);
 	unless ($r->has_auth) {
 		if ( (my $cached = $cache->get($cache_key)) && !$r->req->is_super_reload) {
 			infof("return cache: %s", $cache_key);
@@ -206,11 +208,10 @@ sub index {
 		}
 	}
 
-	my $page = $r->req->number_param('page', 100) || 1;
 
 	my $entries;
 
-	if ($r->has_auth && (my $query = $r->req->string_param('query'))) {
+	if ($r->has_auth && $query) {
 		$entries = $r->dbh->select(q{
 			SELECT * FROM entries
 			WHERE title LIKE :query OR formatted_body LIKE :query
@@ -365,7 +366,15 @@ sub archive_index {
 sub permalink {
 	my ($r) = @_;
 
-	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->request_uri);
+	my $page = $r->req->number_param('page', 100) || 1;
+	my $path = $r->req->param('path');
+	my $is_category = ($path =~ m{^([^/]+)/$});
+	my $category_name = decode_utf8 $1;
+
+	my $cache_key = $is_category ?
+		join(":", $r->has_auth ? 'a' : 'b', $r->req->path, $page):
+		join(":", $r->has_auth ? 'a' : 'b', $r->req->path);
+
 	unless ($r->has_auth) {
 		if ( (my $cached = $cache->get($cache_key)) && !$r->req->is_super_reload) {
 			infof("return cache: %s", $cache_key);
@@ -376,14 +385,8 @@ sub permalink {
 		}
 	}
 
-	my $path = $r->req->param('path');
-
-	my $is_category = ($path =~ m{^([^/]+)/$});
-
 	if ($is_category) {
-		my $name = decode_utf8 $1;
-
-		my $page = $r->req->number_param('page', 100) || 1;
+		my $name = $category_name;
 
 		my $entries = $r->dbh->select(q{
 			SELECT * FROM entries

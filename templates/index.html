@@ -119,7 +119,7 @@
 		-->
 
 		<!--[if lt IE 9]>
-		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 		<![endif]-->
 
 		[% js = [
@@ -160,21 +160,7 @@
 		<script type="text/javascript" src="/js/MathJax/MathJax.js?config=TeX-AMS_SVG-full,local/my" async></script>
 		[% END %]
 
-		<script type="text/javascript">
-			Hatena = { Star : {} };
-			Hatena.Star.Token = '7743b0e60f0e3b267f9723d3a5cf96981a59e4f3';
-
-			Hatena.Star.SiteConfig = {
-				entryNodes: {
-					'article': {
-						uri: 'a.bookmark',
-						title: 'h1',
-						container: '.social .hatena-star'
-					}
-				}
-			};
-		</script>
-		<script type="text/javascript" src="//s.hatena.ne.jp/js/HatenaStar.js" async></script>
+		<script type="text/javascript" src="/js/HatenaStar/HatenaStar.js" async defer></script>
 
 		[% r.preload("//www.google-analytics.com/analytics.js" , 'script') %]
 		<script>

@@ -462,27 +462,6 @@ body > * {
 	text-decoration: none;
 }
 
-.entries article header .share {
-	position: absolute;
-	display: block;
-	top: 0;
-	right: 0;
-	opacity: 0.3;
-}
-
-.entries article header .share:hover {
-	opacity: 0.9;
-}
-
-.entries article header .share a {
-	display: inline-block;
-	width: 100px;
-	height: 16px;
-	overflow: hidden;
-	background: url('/images/share-on-tumblr.png') top left no-repeat transparent;
-	text-indent: -9999px;
-}
-
 .entries article header .metadata .author {
 	display: none;
 }
@@ -649,20 +628,6 @@ figure.http:after {
 
 #global-footer .message {
 	color: #666;
-}
-
-.ad {
-	background: #000;
-	padding: 5px 30px;
-	margin: 0 0 5px 0;
-}
-
-.ad ins {
-	background: none;
-}
-
-.as ins:before {
-	content: "";
 }
 
 #archive {
@@ -925,12 +890,6 @@ figure.http:after {
 
 	.adsense iframe {
 		margin: auto;
-	}
-
-	.mjx-chtml {
-		overflow: auto;
-		max-width: 100%;
-		padding: 0.5em 0;
 	}
 
 	.share-buttons .share-button[href*="line.me"] {

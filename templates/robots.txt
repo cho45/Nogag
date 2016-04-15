@@ -4,3 +4,6 @@ Sitemap: [% r.absolute('/mobilesitemap.xml') %]
 User-agent: *
 Allow: /
 
+User-Agent: MJ12bot
+Crawl-Delay: 1000
+

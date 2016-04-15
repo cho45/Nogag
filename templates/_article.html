@@ -100,7 +100,9 @@
 				<img src="/images/sharebuttons/linebutton_40x40_en.png" width="40" height="40" alt="LINE it!"/>
 			</a>
 			<a class="share-button" style="background: #00a4de" target="_blank"
-				href="http://b.hatena.ne.jp/add?url=[% canonical | uri %]">
+				href="http://b.hatena.ne.jp/add?url=[% canonical | uri %]"
+				onclick="ga('send', 'social', 'Hatena::Bookmark', 'Share', '[% canonical %]')"
+				>
 				<img src="/images/sharebuttons/hatenabookmark-logomark.svg" width="40" height="40" alt="はてなブックマーク"/>
 			</a>
 		</p>
