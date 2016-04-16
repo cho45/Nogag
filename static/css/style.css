@@ -218,6 +218,7 @@ body {
 	font-family: 'Myriad Pro', 'Hiragino Kaku Gothic Pro', 'ヒラギノ角ゴ Pro W3', メイリオ, Meiryo, 'ＭＳ Ｐゴシック', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
+	word-wrap: break-word;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	-moz-font-feature-settings: 'liga', 'kern';
@@ -350,9 +351,6 @@ body > * {
 #category-header {
 	margin: 20px 0;
 	padding: 0;
-}
-
-#category-header {
 	font-family: 'Merriweather', serif;
 }
 
@@ -612,22 +610,98 @@ figure.http:after {
 }
 
 #global-footer {
-	margin: 0;
-	padding: 0 30px 30px 30px;
+	width: 728px;
+	margin: 0 auto;
+	padding: 0 0 5em 0;
 	font-size: 80%;
-	text-align: center;
+	text-align: left;
 }
 
-#global-footer p {
-	text-align: center;
+#global-footer .author {
+	display: flex;
 }
 
-#global-footer img {
-	border: none;
+#global-footer .author .image {
 }
 
-#global-footer .message {
-	color: #666;
+#global-footer .author .desc {
+	padding: 0 0 0 20px;
+	flex: 1;
+}
+
+#global-footer .author .desc p {
+	margin: 0;
+}
+
+.google-plus-button {
+	display: inline-block;
+	height: 20px;
+	padding: 0 2px;
+	position: relative;
+}
+.google-plus-button img {
+	position: relative;
+	top: 1px;
+	vertical-align: top;
+}
+
+.button {
+	display: inline-block;
+	position: relative;
+	height: 20px;
+	padding: 1px 8px 1px 6px;
+	margin-right: 5px;
+	font-weight: 500;
+	color: #fff !important;
+	cursor: pointer;
+	border-radius: 3px;
+	box-sizing: border-box;
+	font: normal normal normal 11px/18px 'Helvetica Neue',Arial,sans-serif;
+	text-decoration: none;
+}
+
+.button i {
+	position: relative;
+	top: 2px;
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+	background: transparent 0 0 no-repeat;
+}
+
+.button .label {
+	display: inline-block;
+	white-space: nowrap;
+	margin-left: 3px;
+	vertical-align: top;
+}
+
+.button.twitter-follow-button {
+	background-color: #1b95e0;
+}
+
+.button.twitter-follow-button i {
+	background-image: url('/images/twitter.svg');
+}
+
+.button.github-button {
+	top: 1px;
+	background: #ddd;
+	background-image: linear-gradient(#eee, #ddd);
+	border-color: #ccc;
+	border-style: solid;
+	border-width: 1px;
+	color: #333 !important;
+}
+
+.button.github-button i {
+	top: 1px;
+	background-image: url('/images/github.svg');
+}
+
+.button.github-button .label {
+	position: relative;
+	top: -1px;
 }
 
 #archive {
@@ -754,6 +828,10 @@ figure.http:after {
 		background: transparent;
 	}
 
+	#category-header {
+		padding: 0 10px;
+	}
+
 	#content {
 		width: 100%;
 		margin: 0;
@@ -855,10 +933,13 @@ figure.http:after {
 		max-height: 100%;
 	}
 
+
+	.related ,
 	#global-footer {
 		margin: 0;
-		padding: 10px 0;
+		padding: 10px;
 		width: 100%;
+		box-sizing: border-box;
 	}
 
 	.pager {

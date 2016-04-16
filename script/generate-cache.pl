@@ -27,7 +27,7 @@ my $target = shift @ARGV || ':all';
 
 if ($target eq ':all' || $target eq ':index') {
 	create_cache('/');
-	for my $page (2..10) {
+	for my $page (2..30) {
 		eval {
 			create_cache("/?page=$page");
 		};

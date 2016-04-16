@@ -263,8 +263,10 @@ sub index {
 	$r->stash(next_page => do {
 		if ($page < 100 && @$entries) {
 			my $uri = $r->req->uri->clone;
-			$uri->query_param_delete('page');
-			$uri->query_param_append('page' => $page + 1);
+			$uri->query_form(
+				page => $page + 1,
+				query => $query ? $query : (),
+			);
 			$uri->path_query;
 		}
 	});
@@ -421,8 +423,9 @@ sub permalink {
 		$r->stash(next_page => do {
 			if ($page < 100 && @$entries) {
 				my $uri = $r->req->uri->clone;
-				$uri->query_param_delete('page');
-				$uri->query_param_append('page' => $page + 1);
+				$uri->query_form(
+					page => $page + 1,
+				);
 				$uri->path_query;
 			}
 		});

@@ -13,18 +13,14 @@
 		[% END %]
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes, target-densitydpi=high-dpi"/>
 
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+		[%- r.link('preconnect', 'https://fonts.gstatic.com', 'crossorigin') -%]
+		[%- r.link('preconnect', 'https://s.hatena.ne.jp', 'crossorigin') -%]
 
-		<link rel="preconnect" href="https://s.hatena.ne.jp" crossorigin>
+		[%- r.link('preconnect', 'https://googleads.g.doubleclick.net', 'crossorigin') -%]
+		[%- r.link('preconnect', 'https://www.gstatic.com', 'crossorigin') -%]
+		[%- r.link('preconnect', 'https://tpc.googlesyndication.com', 'crossorigin') -%]
 
-		<link rel="preconnect" href="https://www.google-analytics.com" crossorigin>
-		<link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin>
-		<link rel="preconnect" href="https://googleads.g.doubleclick.net" crossorigin>
-		<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-		<link rel="preconnect" href="https://tpc.googlesyndication.com" crossorigin>
-
-		<link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin>
+		[%- r.link('preconnect', 'https://lh3.googleusercontent.com', 'crossorigin') -%]
 
 		<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"/>
 		<link rel="alternate" type="application/rss+xml" title="Feed" href="/feed"/>
@@ -130,7 +126,7 @@
 
 		[% FOR j IN js %]
 		[%# r.preload(j, 'script', 'nopush') %]
-		<script type="text/javascript" src="[% j %]" defer></script>
+		<script src="[% j %]" defer></script>
 		[% END %]
 
 
@@ -145,7 +141,7 @@
 
 			[% FOR j IN js %]
 			[%# r.preload(j, 'script', 'nopush') %]
-			<script type="text/javascript" src="[% j %]" defer></script>
+			<script src="[% j %]" defer></script>
 			[% END %]
 			<script src="https://apis.google.com/js/api.js?onload=Nogag.Editor.initGoogleAPI" defer></script>
 			<!-- /HAS AUTH -->
@@ -157,10 +153,10 @@
 		[%# r.preload("/js/MathJax/config/TeX-AMS_SVG-full.js?rev=2.6.1" , 'script', 'nopush') %]
 		[%# r.preload("/js/MathJax/config/local/my.js?rev=2.6.1" , 'script', 'nopush') %]
 		[%# r.preload("/js/MathJax/jax/output/SVG/fonts/TeX/fontdata.js?rev=2.6.1" , 'script', 'nopush') %]
-		<script type="text/javascript" src="/js/MathJax/MathJax.js?config=TeX-AMS_SVG-full,local/my" async></script>
+		<script src="/js/MathJax/MathJax.js?config=TeX-AMS_SVG-full,local/my" async defer></script>
 		[% END %]
 
-		<script type="text/javascript" src="/js/HatenaStar/HatenaStar.js" async defer></script>
+		<script src="/js/HatenaStar/HatenaStar.js" async defer></script>
 
 		[% r.preload("//www.google-analytics.com/analytics.js" , 'script') %]
 		<script>
@@ -195,7 +191,7 @@
 			<ul>
 				<li><a href="/">Top</a></li>
 				<li><a href="/archive">Archive</a></li>
-				<li><a href="http://www.lowreal.net/">Profile</a></li>
+				<li><a href="https://www.lowreal.net/">Profile</a></li>
 				[% IF r.has_auth %]
 				<li><a href="javascript:void(0)" class="nogag-new">New Entry</a></li>
 				[% END %]
@@ -325,11 +321,11 @@
 					</header>
 					<div class="content">
 						[% IF error.code == 404 %]
-						<script type="text/javascript">
+						<script>
 							var GOOG_FIXURL_LANG = 'ja';
 							var GOOG_FIXURL_SITE = 'http://lowreal.net/'
 						</script>
-						<script type="text/javascript" src="//linkhelp.clients.google.com/tbproxy/lh/wm/fixurl.js">
+						<script src="//linkhelp.clients.google.com/tbproxy/lh/wm/fixurl.js" async defer>
 						</script>
 						[% ELSE %]
 						<p>[% error.code %]: [% error.message %]</p>
@@ -343,15 +339,43 @@
 		[% IF test %][% INCLUDE 'test.html' %][% END %]
 
 		<footer id="global-footer">
-			<p>
-				[% count %]
-			</p>
-			<p>
-				<a href="http://www.lowreal.net/" rel="author">www.lowreal.net</a>
-				<br />
-				by <a href="mailto:cho45@lowreal.net">Satoh, Hiroh</a>
-			</p>
-			<a rel="me" href="https://plus.google.com/114431815111528304586?rel=author"><img src="//www.google.com/images/icons/ui/gprofile_button-16.png" width="16" height="16" alt="Google+"/></a>
+			<h2>書いている人</h2>
+			<div class="author">
+				<div class="image">
+					<img src="/images/profile.jpg" alt="Photo" width="90" height="90"/>
+				</div>
+				<div class="desc">
+					<p>
+						cho45 (<a href="https://www.lowreal.net/" rel="author">www.lowreal.net</a>) 
+						&lt;<a href="mailto:cho45@lowreal.net">cho45@lowreal.net</a>&gt;
+					</p>
+					<p>
+						JavaScript, Perl, Ruby, HTML, CSS, Web etc
+					</p>
+					<p>
+						<a class="button twitter-follow-button" href="https://twitter.com/intent/follow?&ref_src=twsrc%5Etfw&region=follow_link&screen_name=cho45&tw_p=followbutton"
+							onclick="ga('send', 'social', 'Twitter', 'Follow', 'cho45')"
+							><i></i>
+							<span class="label">
+								Follow <b>@cho45</b>
+							</span>
+						</a>
+						<a class="button github-button" href="https://github.com/cho45"
+							onclick="ga('send', 'social', 'GitHub', 'Follow', 'cho45')"
+							><i></i>
+							<span class="label">
+								Follow <b>@cho45</b>
+							</span>
+						</a>
+						<a class="google-plus-button" rel="me" href="https://plus.google.com/114431815111528304586?rel=author"
+							onclick="ga('send', 'social', 'Google', 'Follow', 'cho45')"
+							><img src="//www.google.com/images/icons/ui/gprofile_button-16.png" width="16" height="16" alt="Google+"/></a>
+					</p>
+					<p>
+						[% count %]
+					</p>
+				</div>
+			</div>
 		</footer>
 
 		[% r.preload("//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" , 'script') %]
