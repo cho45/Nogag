@@ -89,18 +89,6 @@ Nogag = {
 				});
 			}
 		}
-
-		Nogag.highlight(entry);
-	},
-
-	highlight : function (container) {
-		var codes = container.querySelectorAll('pre.code');
-		for (var i = 0, it; (it = codes[i]); i++) {
-			if (/lang-(\S+)/.test(it.className)) {
-				hljs.highlightBlock(it);
-			}
-		}
-
 	}
 };
 

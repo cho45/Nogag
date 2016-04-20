@@ -1,0 +1,7 @@
+#!/bin/sh
+
+exec 2>&1
+cd /srv/www/lowreal.net/Nogag-beta
+
+exec setuidgid cho45 /home/cho45/app/node/bin/node ./script/postprocess-js-daemon.js
+

@@ -17,6 +17,7 @@ use CSS::Packer;
 use Text::Overflow qw(ellipsis);
 
 use Nogag::Config;
+use Nogag::Utils;
 
 my $XSLATE = Text::Xslate->new(
 	syntax   => 'TTerse',
@@ -33,6 +34,34 @@ my $XSLATE = Text::Xslate->new(
 		},
 	},
 );
+#{
+#	no warnings 'redefine';
+#	*Text::Xslate::slurp_template = sub {
+#		my ($self, $input_layer, $fullpath) = @_;
+#		my $source = sub {
+#			if (ref $fullpath eq 'SCALAR') {
+#				return $$fullpath;
+#			} else {
+#				open my($source), '<' . $input_layer, $fullpath
+#					or $self->_error("LoadError: Cannot open $fullpath for reading: $!");
+#				local $/;
+#				return scalar <$source>;
+#			}
+#		}->();
+#		if ($fullpath =~ /\.html$/) {
+#			$source =~ s{^\s+}{}gm;
+#			$source =~ s{\n\n+}{\n}g;
+#			return $source;
+#		} else {
+#			return $source;
+#		}
+#	};
+#	$XSLATE->load_file($_) for qw{
+#		index.html
+#		_article.html
+#		_adsense.html
+#	};
+#};
 
 sub render {
 	my ($r, $name, $vars) = @_;
@@ -49,12 +78,7 @@ sub html {
 	my ($r, $name, $vars) = @_;
 	my $html = $r->render($name, $vars);
 	$html =~ s{(<img src="https://[^.]+\.googleusercontent\.com/.+?)/s\d+/(.+?")}{$1/s2048/$2}g;
-#	$html = HTML::Packer->init->minify(\$html, {
-#			# do_javascript => 'clean',
-#		do_stylesheet => 'minify',
-#		remove_newlines => 1,
-#		html5 => 1,
-#	});
+	# $html = Nogag::Utils->minify($html);
 	$r->res->content_type('text/html; charset=utf-8');
 	$r->res->content(encode_utf8 $html);
 }

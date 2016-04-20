@@ -10,5 +10,5 @@ diary-*
 *.gz
 *.br
 node_modules
-service/mathjax/log/main
+service/postprocess-js-daemon/log/main
 static/js/MathJax

@@ -17,6 +17,7 @@ use Log::Minimal;
 use Nogag::Base;
 use Nogag::Time;
 use Nogag::Model::Entry;
+use Nogag::Utils;
 
 use Nogag::Formatter::Hatena;
 
@@ -102,7 +103,7 @@ sub edit {
 			if ($entry->id) {
 				$entry->{body} = $r->req->string_param('body');
 				my $formatted_body = $formatter->format($entry);
-				$formatted_body = filter_math($formatted_body);
+				$formatted_body = Nogag::Utils->postprocess($formatted_body);
 
 				$r->dbh->update(q{
 					UPDATE entries
@@ -131,7 +132,7 @@ sub edit {
 				$entry->{path} = $path;
 				$entry->{body} = $r->req->string_param('body');
 				my $formatted_body = $formatter->format($entry);
-				$formatted_body = filter_math($formatted_body);
+				$formatted_body = Nogag::Utils->postprocess($formatted_body);
 
 				$r->dbh->update(q{
 					INSERT INTO entries
@@ -564,21 +565,6 @@ sub test {
 	my ($r) = @_;
 	$r->stash(test => 1);
 	$r->res->content(encode_utf8 $r->render('index.html'));
-}
-
-
-use LWP::Simple qw($ua);
-sub filter_math {
-	my ($html) = @_;
-	unless (like_mathjax($html)) {
-		return $html;
-	}
-	my $res = $ua->post('http://127.0.0.1:13370/', Content => encode_utf8 $html);
-	if ($res->is_success) {
-		return $res->decoded_content;
-	} else {
-		return $html;
-	}
 }
 
 sub like_mathjax {

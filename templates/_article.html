@@ -10,13 +10,13 @@
 	>
 	<header>
 		<h1 itemprop="name"><a href="/[% entry.path %]" class="bookmark" rel="bookmark" itemprop="url">[% entry.title || '✖' %]</a></h1>
-		<span class="metadata">
+		<div class="metadata">
 
 			[% FOR tag IN entry.tags %]
 			<a href="/[% tag %]/"><span itemprop="keywords">[% tag %]</span></a>
 			[% END %]
 			|
-			<time data-epoch="[% entry.created_at.epoch %]" datetime="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z" pubdate itemprop="datePublished">
+			<time data-epoch="[% entry.created_at.epoch %]" datetime="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z" itemprop="datePublished">
 				[% entry.created_at.offset(9).strftime('%H:%M') %]
 			</time>
 			[% IF entry.created_at != entry.modified_at %]
@@ -60,7 +60,7 @@
 				</div>
 				[% END %]
 			</div>
-		</span>
+		</div>
 	</header>
 
 	[% IF adsense && !entry.has_tag('photo') %]
