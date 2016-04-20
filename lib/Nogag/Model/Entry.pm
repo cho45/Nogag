@@ -7,6 +7,7 @@ use warnings;
 use Nogag::Time;
 use HTML::Trim;
 use Text::Overflow qw(ellipsis);
+use AMP;
 
 sub bless {
 	my ($class, $hash) = @_;
@@ -45,6 +46,10 @@ sub path {
 	my ($self, $prefix) = @_;
 	$prefix ||= '';
 	$prefix . $self->{path};
+}
+
+sub amp_html {
+	$_[0]->{amp_html};
 }
 
 sub date {

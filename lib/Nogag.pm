@@ -41,7 +41,10 @@ route "/test" => \&test;
 route '/{year:[0-9]{4}}/{month:[0-9]{2}}/' => \&archive;
 route '/{year:[0-9]{4}}/{month:[0-9]{2}}/{day:[0-9]{2}}/' => \&archive;
 route '/archive' => \&archive_index;
-route '/{path:.+}' => \&permalink;
+route '/{path:[^~]+}' => \&permalink;
+
+route '/~amp/' => \&amp_index;
+route '/~amp/{path:.+}' => \&amp_permalink;
 
 sub login {
 	my ($r) = @_;
@@ -564,6 +567,119 @@ sub test {
 	my ($r) = @_;
 	$r->stash(test => 1);
 	$r->res->content(encode_utf8 $r->render('index.html'));
+}
+
+sub amp_permalink {
+	my ($r) = @_;
+
+	my $path = $r->req->param('path');
+
+	my $entry = $r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE path = :path
+	}, {
+		path => $path,
+	})->[0] or throw code => 404, message => 'Not Found';
+
+	Nogag::Model::Entry->bless($entry);
+
+	my $etag = md5_hex(join("\n", $entry->modified_at->epoch, -s $r->config->root->file('templates/index.html')));
+	$r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
+	$r->res->header('ETag' => $etag);
+
+	$r->res->header('Last-Modified' => $entry->modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
+
+	my $old_entry = $r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE created_at < :created_at
+		ORDER BY created_at DESC
+		LIMIT 1
+	}, {
+		created_at => $entry->{created_at}
+	})->[0];
+
+	my $new_entry = $r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE created_at > :created_at
+		ORDER BY created_at ASC
+		LIMIT 1
+	}, {
+		created_at => $entry->{created_at}
+	})->[0];
+
+	my $related = $r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE title <> '[photo]'
+		ORDER BY id DESC
+		LIMIT 10
+	});
+
+	Nogag::Model::Entry->bless($_) for @$related;
+	$r->stash(related => $related);
+
+	my $entries = [ $entry ];
+
+	$r->stash(mathjax => enable_mathjax(@$entries));
+
+	$r->stash(entries => $entries);
+	$r->stash(entry => $entry);
+	$r->stash(permalink => 1);
+	$r->stash(old_entry => $old_entry);
+	$r->stash(new_entry => $new_entry);
+	$r->stash(title => do {
+		my $title = $entry->{title} || $entry->summary_html(50);
+		$title =~ s/<[^>]+>//g;
+		$title =~ s{^\s+|\s+$}{}g;
+		$title;
+	} . $entry->date->strftime(" | %a, %b %e. %Y"));
+
+	$r->html('amp.html');
+}
+
+sub amp_index {
+	my ($r) = @_;
+	my $page = $r->req->number_param('page', 100) || 1;
+	my $query = $r->req->string_param('query') || '';
+
+	my $dates = $r->dbh->select(q{
+		SELECT `date` FROM entries
+		GROUP BY `date`
+		ORDER BY `date` DESC
+		LIMIT :limit OFFSET :offset
+	}, {
+		limit  => config->param('entry_per_page'),
+		offset => ($page - 1) * config->param('entry_per_page'),
+	});
+
+	my $entries = $r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE `date` IN (:dates)
+		ORDER BY `date` DESC, `created_at` ASC
+	}, {
+		dates => [ map { $_->{date} } @$dates ]
+	});
+
+	for my $entry (@$entries) {
+		Nogag::Model::Entry->bless($entry);
+		$entry->{amp_html} = $r->amp->filter($entry->formatted_body(0));
+	}
+
+	@$entries or $r->res->status(404);
+
+	$r->stash(entries => $entries);
+	$r->stash(page => $page);
+	$r->stash(next_page => do {
+		if ($page < 100 && @$entries) {
+			my $uri = $r->req->uri->clone;
+			$uri->query_form(
+				page => $page + 1,
+				query => $query ? $query : (),
+			);
+			$uri->path_query;
+		}
+	});
+
+	$r->html('amp.html');
 }
 
 

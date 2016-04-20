@@ -1,0 +1,100 @@
+body {
+	background: white;
+	margin: 0;
+	padding: 0;
+}
+
+amp-img {
+	max-width: 100%;
+	max-height: 100%;
+	height: auto;
+}
+
+.display-none {
+	display: none;
+}
+
+#global-header {
+	background: #000;
+}
+
+#global-header h1 {
+	margin: 0;
+	padding: 5px 10px 0 0;
+}
+
+#global-header h1 a {
+	display: block;
+	text-align: center;
+}
+
+.share-buttons {
+	vertical-align: middle;
+	line-height: 32px;
+	padding: 20px;
+	font-size: 14px;
+	background: #fff;
+	margin: 0;
+	text-align: center;
+	color: #000;
+}
+
+.share-buttons::after {
+	display: block;
+	content: "共有する";
+	font-size: 14px;
+	margin: 0;
+	padding: 0;
+	color: #666;
+	line-height: 1.2;
+}
+
+.share-buttons .share-button {
+	display: inline-block;
+	text-align: center;
+	height: 40px;
+	width: 40px;
+	margin-right: 8px;
+	position: relative;
+	border-radius: 3px;
+	overflow: hidden;
+}
+
+.share-buttons .share-button[href*="www.facebook.com"] {
+	background: #3b5998;
+}
+
+.share-buttons .share-button[href*="twitter.com"] {
+	background: #55acee
+}
+
+.share-buttons .share-button[href*="plus.google.com"] {
+	box-shadow: none;
+}
+
+.share-buttons .share-button[href*="b.hatena.ne.jp"] {
+	background: #00a4de;
+}
+
+.share-buttons .share-button amp-img {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.metadata .microdata {
+	display: none;
+}
+
+
+.MathJax_SVG_Display {text-align: center; margin: 1em 0em; position: relative; display: block; text-indent: 0; max-width: none; max-height: none; min-width: 0; min-height: 0; width: 100%}
+.MathJax_SVG .MJX-monospace {font-family: monospace}
+.MathJax_SVG .MJX-sans-serif {font-family: sans-serif}
+.MathJax_SVG {display: inline; font-style: normal; font-weight: normal; line-height: normal; font-size: 100%; font-size-adjust: none; text-indent: 0; text-align: left; text-transform: none; letter-spacing: normal; word-spacing: normal; word-wrap: normal; white-space: nowrap; float: none; direction: ltr; max-width: none; max-height: none; min-width: 0; min-height: 0; border: 0; padding: 0; margin: 0}
+.MathJax_SVG * {transition: none; -webkit-transition: none; -moz-transition: none; -ms-transition: none; -o-transition: none}
+.mjx-svg-href {fill: blue; stroke: blue}
+.MathJax_SVG.inline {
+	font-size: 100%;
+	display: inline-block;
+}

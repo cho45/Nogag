@@ -194,5 +194,10 @@ sub is_smartphone {
 	};
 }
 
+sub amp {
+	my ($r, $entry) = @_;
+	$r->{amp} ||= AMP->new;
+}
+
 1;
 __END__
