@@ -13,6 +13,7 @@ common +{
 	sitename       => '氾濫原 [HANRANGEN]',
 	entry_per_page => 4,
 	base_uri => URI->new('https://lowreal.net'),
+	link_headers   => '/tmp/lowreal.net.link.txt',
 	version        => scalar time,
 	load("app.conf"),
 };
@@ -27,6 +28,7 @@ config test => {
 };
 
 config production => {
+	link_headers   => '/srv/www/lowreal.net.link.txt',
 	db => root->file('db/data.db'),
 };
 

@@ -125,7 +125,7 @@
 		] %]
 
 		[% FOR j IN js %]
-		[%# r.preload(j, 'script', 'nopush') %]
+		[% r.preload(j, 'script', 'nopush') %]
 		<script src="[% j %]" defer></script>
 		[% END %]
 
@@ -140,7 +140,7 @@
 			] %]
 
 			[% FOR j IN js %]
-			[%# r.preload(j, 'script', 'nopush') %]
+			[% r.preload(j, 'script', 'nopush') %]
 			<script src="[% j %]" defer></script>
 			[% END %]
 			<script src="https://apis.google.com/js/api.js?onload=Nogag.Editor.initGoogleAPI" defer></script>
@@ -236,7 +236,7 @@
 				<h2>最近のエントリ</h2>
 				<ul>
 				[% FOR entry IN related %]
-				[% IF entry.summary %]
+				[% IF entry.summary | raw %]
 				[% LAST IF loop.count > 5 %]
 					<li>
 						<a href="/[% entry.path %]">
@@ -353,14 +353,14 @@
 						JavaScript, Perl, Ruby, HTML, CSS, Web etc
 					</p>
 					<p>
-						<a class="button twitter-follow-button" href="https://twitter.com/intent/follow?&ref_src=twsrc%5Etfw&region=follow_link&screen_name=cho45&tw_p=followbutton"
+						<a class="button twitter-follow-button" href="https://twitter.com/intent/follow?&ref_src=twsrc%5Etfw&region=follow_link&screen_name=cho45&tw_p=followbutton" rel="nofollow"
 							onclick="ga('send', 'social', 'Twitter', 'Follow', 'cho45')"
 							><i></i>
 							<span class="label">
 								Follow <b>@cho45</b>
 							</span>
 						</a>
-						<a class="button github-button" href="https://github.com/cho45"
+						<a class="button github-button" href="https://github.com/cho45" rel="nofollow"
 							onclick="ga('send', 'social', 'GitHub', 'Follow', 'cho45')"
 							><i></i>
 							<span class="label">

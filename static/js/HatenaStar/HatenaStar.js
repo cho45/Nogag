@@ -4685,9 +4685,14 @@ Hatena.Star.EntryLoader.loadEntries = function (node) {
     return entries;
 };
 
-window.addEventListener('load', function () {
+if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', function () {
+        new Hatena.Star.EntryLoader();
+    });
+} else {
     new Hatena.Star.EntryLoader();
-});
+}
+
 
 /* Hatena.Star.SiteConfig */
 /* sample configuration for Hatena Diary */
