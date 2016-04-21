@@ -11,16 +11,19 @@ use lib config->root->subdir('lib')->absolute.q();
 use HTTP::Message::PSGI;
 use HTTP::Request::Common;
 use Log::Minimal;
+use Time::HiRes qw(gettimeofday tv_interval);
 
 $ENV{LANG} = 'C';
 
 sub create_cache {
 	my ($path) = @_;
+	my $t0 = [ gettimeofday ];
 	my $res = Nogag->new(GET($path, 'Cache-Control' => 'no-cache')->to_psgi)->run->res;
 	if ($res->status ne '200') {
 		die $res;
 	}
-	infof("created for %s", $path);
+	my $elapsed = tv_interval($t0);
+	infof("created for %s with %d", $path, $elapsed * 1000);
 }
 
 my $target = shift @ARGV || ':all';

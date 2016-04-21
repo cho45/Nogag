@@ -492,12 +492,7 @@ sub permalink {
 		$r->stash(permalink => 1);
 		$r->stash(old_entry => $old_entry);
 		$r->stash(new_entry => $new_entry);
-		$r->stash(title => do {
-			my $title = $entry->{title} || $entry->summary_html(50);
-			$title =~ s/<[^>]+>//g;
-			$title =~ s{^\s+|\s+$}{}g;
-			$title;
-		} . $entry->date->strftime(" | %a, %b %e. %Y"));
+		$r->stash(title => $entry->title_for_permalink);
 
 		$r->html('index.html');
 		infof("new cache: %s", $cache_key);

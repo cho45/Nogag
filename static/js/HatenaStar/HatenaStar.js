@@ -4664,7 +4664,7 @@ Hatena.Star.EntryLoader.loadEntries = function (node) {
     var entryNodes = node.getElementsByTagName('article');
     for (var i = 0, entryNode; (entryNode = entryNodes[i]); i++) {
         var uri = entryNode.querySelector('a.bookmark').href || '';
-        var title = entryNode.querySelector('h1').innerText;
+        var title = entryNode.querySelector('*[itemprop=name]').innerText;
         var container = entryNode.querySelector('.social .hatena-star');
 
         var sc = Hatena.Star.EntryLoader.createStarContainer();

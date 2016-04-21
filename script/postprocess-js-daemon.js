@@ -1,10 +1,34 @@
 #!/usr/bin/env node
 
+const jsdom = require("jsdom").jsdom;
 const mjAPI = require("mathjax-node/lib/mj-page.js");
 const hljs = require('highlight.js');
-const jsdom = require("jsdom").jsdom;
-const minify = require('html-minifier').minify;
 
+const minify = require('html-minifier').minify;
+const http = require('http');
+const https = require('https');
+const url = require('url');
+const vm = require('vm');
+
+const HTTPS = {
+	GET : function (url) {
+		var body = '';
+		return new Promise( (resolve, reject) => {
+			https.get(
+				url,
+				(res) => {
+					res.on('data', function (chunk) {
+						body += chunk;
+					});
+					res.on('end', function() {
+						res.body = body;
+						resolve(res);
+					})
+				}
+			).on('error', reject);
+		});
+	}
+};
 
 mjAPI.start();
 mjAPI.config({
@@ -24,11 +48,19 @@ function processWithString (html) {
 
 function processWithDOM (html) {
 	console.log('processWithDOM');
-	var document = jsdom();
+	var document = jsdom(undefined, {
+		features: {
+			FetchExternalResources: false,
+			ProcessExternalResources: false,
+			SkipExternalResources: /./
+		}
+	});
 	document.body.innerHTML = html;
 	var dom = document.body;
 	return Promise.resolve(dom).
 		then(processHighlight).
+		then(processImages).
+		then(processWidgets).
 		then( (dom) => dom.innerHTML );
 }
 
@@ -43,6 +75,74 @@ function processHighlight (node) {
 		}
 	}
 	return Promise.resolve(node);
+}
+
+function processImages (node) {
+	console.log('processImages');
+	{
+		var imgs = node.querySelectorAll('img[src*="googleusercontent"], img[src*="ggpht"]');
+		for (var i = 0, img; (img = imgs[i]); i++) {
+			img.src = img.src.
+				replace(/^http:/, 'https:').
+				replace(/\/s\d+\//g, '/s2048/');
+		}
+	}
+	{
+		var imgs = node.querySelectorAll('img[src*="cdn-ak.f.st-hatena.com"]');
+		for (var i = 0, img; (img = imgs[i]); i++) {
+			img.src = img.src.
+				replace(/^http:/, 'https:');
+		}
+	}
+	{
+		var imgs = node.querySelectorAll('img[src*="ecx.images-amazon.com"]');
+		for (var i = 0, img; (img = imgs[i]); i++) {
+			img.src = img.src.
+				replace(/^http:\/\/ecx\.images-amazon\.com/, 'https://images-na.ssl-images-amazon.com');
+		}
+	}
+	return Promise.resolve(node);
+}
+
+function processWidgets (node) {
+	var promises = [];
+
+	console.log('processWidgets');
+	var iframes = node.querySelectorAll('iframe[src*="www.youtube.com"]');
+	for (var i = 0, iframe; (iframe = iframes[i]); i++) {
+		iframe.src = iframe.src.replace(/^http:/, 'https:');
+	}
+
+	var scripts = node.getElementsByTagName('script');
+	for (var i = 0, it; (it = scripts[i]); i++) (function (it) {
+		if (!it.src) return;
+		if (it.src.match(new RegExp('https://gist.github.com/[^.]+?.js'))) {
+			var promise = HTTPS.GET(it.src).
+				then( (res) => {
+					var written = '';
+					vm.runInNewContext(res.body, {
+						document : {
+							write : function (str) {
+								written += str;
+							}
+						}
+					});
+					var div = node.ownerDocument.createElement('div');
+					div.innerHTML = written;
+					div.className = 'gist-github-com-js';
+					it.parentNode.replaceChild(div, it);
+				}).
+				catch( (e) => {
+					console.log(e);
+				});
+
+			promises.push(promise);
+		}
+	})(it);
+
+	return Promise.all(promises).then( () => {
+		return node;
+	});
 }
 
 function processMathJax (html) {
@@ -68,9 +168,16 @@ function processMathJax (html) {
 
 function processMinify (html) {
 	return Promise.resolve(minify(html, {
+		html5: true,
+		customAttrSurround: [
+			[/\[%\s*(?:IF|UNLESS)\s+.+?\s*%\]/, /\[%\s*END\s*%\]/]
+		],
+		decodeEntities: true,
 		collapseBooleanAttributes: true,
 		collapseInlineTagWhitespace: true,
 		collapseWhitespace: true,
+		conservativeCollapse: true,
+		preserveLineBreaks: false,
 		minifyCSS: true,
 		minifyJS: true,
 		removeAttributeQuotes: true,
@@ -78,14 +185,15 @@ function processMinify (html) {
 		removeRedundantAttributes: true,
 		removeScriptTypeAttributes: true,
 		removeStyleLinkTypeAttributes: true,
+		processConditionalComments: true,
+		removeComments: true,
 		sortAttributes: true,
-		sortClassName: true,
+		sortClassName: false,
 		useShortDoctype: true
 	}));
 }
+const port = process.env['PORT'] || 13370
 
-const http = require('http');
-const url = require('url');
 http.createServer(function (req, res) {
 	var html = '';
 	var location = url.parse(req.url, true);
@@ -107,7 +215,8 @@ http.createServer(function (req, res) {
 				}).
 				catch( (e) => {
 					console.log(e);
-					res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8'});
+					console.log(e.stack);
+					res.writeHead(500, {'Content-Type': 'text/plain; charset=utf-8'});
 					res.end(html);
 				});
 		} else {
@@ -121,10 +230,11 @@ http.createServer(function (req, res) {
 				}).
 				catch( (e) => {
 					console.log(e);
-					res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8'});
+					console.log(e.stack);
+					res.writeHead(500, {'Content-Type': 'text/plain; charset=utf-8'});
 					res.end(html);
 				});
 		}
 	});
-}).listen(13370, '127.0.0.1');
-console.log('Server running at http://127.0.0.1:13370/');
+}).listen(port, '127.0.0.1');
+console.log('Server running at http://127.0.0.1:' + port);

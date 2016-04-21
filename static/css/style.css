@@ -27,10 +27,6 @@ img {
 	border: none;
 }
 
-svg {
-	max-width: 100%;
-}
-
 pre {
 	font-family: 'Osaka Mono', 'Monaco', 'Lucida Cosole', 'Consolas', monospace;
 	font-size: 75%;
@@ -193,7 +189,12 @@ figure.quote figcaption {
 	transform: translate(-50%, -50%);
 }
 
-article section h1 {
+article section h1 ,
+article section h2 ,
+article section h3 ,
+article section h4 ,
+article section h5 ,
+article section h6 {
 	font-size: 115%;
 	font-weight: bold;
 	color: #333;
@@ -238,7 +239,7 @@ body > * {
 	background: #fff;
 }
 
-#global-header h1 {
+#global-header #header {
 	text-align: center;
 	padding: 32px 32px 10px;
 	margin: -32px 0 0 0;
@@ -248,20 +249,20 @@ body > * {
 	font-weight: 400;
 }
 
-#global-header h1 a {
+#global-header #header a {
 	display: block;
 	padding: 5px 0;
 }
 
-#global-header h1 a:link ,
-#global-header h1 a:visited ,
-#global-header h1 a:hover {
+#global-header #header a:link ,
+#global-header #header a:visited ,
+#global-header #header a:hover {
 	font-family: serif;
 	text-decoration: none;
 	color: #fff;
 }
 
-#global-header h1 small {
+#global-header #header small {
 	position: relative;
 	top: -1.5em;
 	color: #999;
@@ -361,9 +362,13 @@ body > * {
 	font-weight: normal;
 }
 
-#category-header h2 {
+#category-header h1 small ,
+#category-header h2 small {
 	padding: 0 0.5em;
 	color: #666;
+	display: inline;
+	font-size: 100%;
+	font-weight: normal;
 }
 
 .entries {
@@ -410,7 +415,8 @@ body > * {
 	align-items: center;
 }
 
-.entries article header h1 {
+.entries article header h1 ,
+.entries article header h2 {
 	flex: auto;
 	font-family: 'Merriweather', serif;
 	font-weight: 400;
@@ -427,7 +433,8 @@ body > * {
 	background: rgba(255, 255, 255, 0.7);
 }
 
-.entries article header h1 a {
+.entries article header h1 a ,
+.entries article header h2 a {
 	text-decoration: none;
 }
 
@@ -491,6 +498,12 @@ body > * {
 
 .entries article .content a.seemore:hover {
 	text-decoration: none;
+}
+
+.entries article .content img ,
+.entries article .content svg ,
+.entries article .content iframe {
+	max-width: 100%;
 }
 
 .entries article pre.code {
@@ -797,12 +810,12 @@ figure.http:after {
 		position: static;
 	}
 
-	#global-header h1 {
+	#global-header #header {
 		margin: 0;
 		padding: 0;
 	}
 
-	#global-header h1 a {
+	#global-header #header a {
 		left: 0px;
 	}
 
@@ -856,6 +869,7 @@ figure.http:after {
 	}
 
 	.entries article header h1, 
+	.entries article header h2, 
 	.entries article header .metadata {
 		display: block;
 		width: 100%;

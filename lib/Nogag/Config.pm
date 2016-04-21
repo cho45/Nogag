@@ -10,7 +10,7 @@ use constant root => dir(".")->absolute;
 
 common +{
 	appname        => 'nogag',
-	sitename       => '氾濫原 [HANRANGEN]',
+	sitename       => '氾濫原',
 	entry_per_page => 4,
 	base_uri => URI->new('https://lowreal.net'),
 	link_headers   => '/tmp/lowreal.net.link.txt',

@@ -10,7 +10,6 @@ use UNIVERSAL::require;
 use Encode;
 
 my $r = Nogag->new({});
-$r->dbh->begin_work;
 
 my $target = shift @ARGV or die;
 
@@ -31,6 +30,7 @@ printf "%d rows, ok?", scalar @$rows;
 <>;
 
 for my $row (@$rows) {
+	$r->dbh->begin_work;
 	Nogag::Model::Entry->bless($row);
 
 	my $formatter = "Nogag::Formatter::" . $row->format;
@@ -39,6 +39,7 @@ for my $row (@$rows) {
 	printf "id:%d, path:%s = %s\n", $row->id, $row->path, $formatter;
 
 	my $formatted_body = $formatter->format($row);
+	$formatted_body = Nogag::Utils->postprocess($formatted_body);
 
 	$r->dbh->update(q{
 		UPDATE entries
@@ -49,7 +50,7 @@ for my $row (@$rows) {
 	}, {
 		formatted_body => $formatted_body,
 		id => $row->{id},
-	})
+	});
+	$r->dbh->commit;
 }
 
-$r->dbh->commit;

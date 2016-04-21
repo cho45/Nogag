@@ -3,13 +3,12 @@
 	id="post-[% entry.created_at.epoch %]"
 	class="[% entry.tags.join(' ') %] [% IF is_first %]first[% END %]"
 	data-id="[% entry.id %]"
-	[% UNLESS permalink %]
-	itemprop="blogPosts"
-	itemscope itemtype="http://schema.org/BlogPosting"
-	[% END %]
+	[% UNLESS permalink %]itemprop="blogPosts"[% END %]
+	[% UNLESS permalink %]itemscope[% END %]
+	[% UNLESS permalink %]itemtype="http://schema.org/BlogPosting"[% END %]
 	>
 	<header>
-		<h1 itemprop="name"><a href="/[% entry.path %]" class="bookmark" rel="bookmark" itemprop="url">[% entry.title || '✖' %]</a></h1>
+		<h2 itemprop="name"><a href="/[% entry.path %]" class="bookmark" rel="bookmark" itemprop="url">[% entry.title || '✖' %]</a></h2>
 		<div class="metadata">
 
 			[% FOR tag IN entry.tags %]
@@ -20,10 +19,10 @@
 				[% entry.created_at.offset(9).strftime('%H:%M') %]
 			</time>
 			[% IF entry.created_at != entry.modified_at %]
-			<!--
-			|
-			<time datetime="[% entry.modified_at.strftime('%Y-%m-%d') _ 'T' _ entry.modified_at.strftime('%H:%M:%S') %]Z">[% entry.modified_at.offset(9) %]</time>
-			-->
+				[%- IF 0 %]
+				|
+				<time datetime="[% entry.modified_at.strftime('%Y-%m-%d') _ 'T' _ entry.modified_at.strftime('%H:%M:%S') %]Z">[% entry.modified_at.offset(9) %]</time>
+				[%END %]
 			[% END %]
 			|
 			[% IF r.has_auth %]
@@ -31,7 +30,7 @@
 			[% END %]
 
 			<div style="display: none">
-				<meta itemscope itemprop="mainEntityOfPage"  itemType="https://schema.org/WebPage" itemid="/[% entry.path %]"/>
+				<meta itemscope itemprop="mainEntityOfPage"  itemType="https://schema.org/WebPage" content="/[% entry.path %]"/>
 				<span itemprop="headline">[% entry.summary(100) %]</span>
 
 				<span itemprop="author" itemscope itemtype="https://schema.org/Person">
@@ -40,14 +39,14 @@
 					</a>
 				</span>
 
-				<span itemprop="publisher" itemscope itemtype="https://schema.org/Organization">
+				<div itemprop="publisher" itemscope itemtype="https://schema.org/Organization">
 					<div itemprop="logo" itemscope itemtype="https://schema.org/ImageObject">
-						<meta itemprop="url" content="//www.lowreal.net/images/logo.png">
+						<meta itemprop="url" content="https://www.lowreal.net/images/logo.png">
 						<meta itemprop="width" content="189">
 						<meta itemprop="height" content="105">
 					</div>
 					<meta itemprop="name" content="cho45">
-				</span>
+				</div>
 
 				<meta itemprop="datePublished" content="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z"/>
 				<meta itemprop="dateModified" content="[% entry.modified_at.strftime('%Y-%m-%d') _ 'T' _ entry.modified_at.strftime('%H:%M:%S') %]Z"/>
@@ -57,6 +56,12 @@
 					<meta itemprop="url" content="[% entry.image %]">
 					<meta itemprop="width" content="800">
 					<meta itemprop="height" content="800">
+				</div>
+				[% ELSE %]
+				<div itemprop="image" itemscope itemtype="https://schema.org/ImageObject">
+					<meta itemprop="url" content="https://www.lowreal.net/images/logo.png">
+					<meta itemprop="width" content="189">
+					<meta itemprop="height" content="105">
 				</div>
 				[% END %]
 			</div>
@@ -70,6 +75,10 @@
 	<div class="content" itemprop="articleBody">
 		[% entry.formatted_body(permalink) | raw %]
 	</div>
+
+	[% IF permalink %]
+	[% INCLUDE "_adsense.html" %]
+	[% END %]
 
 	<div class="social">
 		[% canonical = r.absolute('/' _ entry.path) %]
@@ -94,7 +103,7 @@
 				<img src="/images/sharebuttons/g+138.png" width="45" height="45" alt="Share on Google+"/>
 			</a>
 			<a class="share-button" style="" target="_blank" rel="nofollow"
-				href="http://line.me/R/msg/text/?[% entry.title _ "\n" _ canonical | uri %]"
+				href="http://line.me/R/msg/text/?[% entry.title _ '\n' _ canonical | uri %]"
 				onclick="ga('send', 'social', 'LINE', 'Share', '[% canonical %]')"
 				>
 				<img src="/images/sharebuttons/linebutton_40x40_en.png" width="40" height="40" alt="LINE it!"/>
@@ -121,8 +130,5 @@
 		(adsbygoogle = window.adsbygoogle || []).push({});
 		</script>
 	</div>
-
-	[% INCLUDE "_adsense.html" %]
-
 	[% END %]
 </article>

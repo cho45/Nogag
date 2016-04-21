@@ -34,34 +34,34 @@ my $XSLATE = Text::Xslate->new(
 		},
 	},
 );
-#{
-#	no warnings 'redefine';
-#	*Text::Xslate::slurp_template = sub {
-#		my ($self, $input_layer, $fullpath) = @_;
-#		my $source = sub {
-#			if (ref $fullpath eq 'SCALAR') {
-#				return $$fullpath;
-#			} else {
-#				open my($source), '<' . $input_layer, $fullpath
-#					or $self->_error("LoadError: Cannot open $fullpath for reading: $!");
-#				local $/;
-#				return scalar <$source>;
-#			}
-#		}->();
-#		if ($fullpath =~ /\.html$/) {
-#			$source =~ s{^\s+}{}gm;
-#			$source =~ s{\n\n+}{\n}g;
-#			return $source;
-#		} else {
-#			return $source;
-#		}
-#	};
-#	$XSLATE->load_file($_) for qw{
-#		index.html
-#		_article.html
-#		_adsense.html
-#	};
-#};
+{
+	no warnings 'redefine';
+	*Text::Xslate::slurp_template = sub {
+		my ($self, $input_layer, $fullpath) = @_;
+		my $source = sub {
+			if (ref $fullpath eq 'SCALAR') {
+				return $$fullpath;
+			} else {
+				open my($source), '<' . $input_layer, $fullpath
+					or $self->_error("LoadError: Cannot open $fullpath for reading: $!");
+				local $/;
+				return scalar <$source>;
+			}
+		}->();
+		if ($fullpath =~ /\.html$/) {
+			$source = Nogag::Utils->minify($source);
+			return $source;
+		} else {
+			return $source;
+		}
+	};
+	$XSLATE->load_file($_) for qw{
+		index.html
+		_article.html
+		_adsense.html
+		_images.html
+	};
+};
 
 sub render {
 	my ($r, $name, $vars) = @_;
@@ -77,8 +77,12 @@ sub render {
 sub html {
 	my ($r, $name, $vars) = @_;
 	my $html = $r->render($name, $vars);
-	$html =~ s{(<img src="https://[^.]+\.googleusercontent\.com/.+?)/s\d+/(.+?")}{$1/s2048/$2}g;
-	# $html = Nogag::Utils->minify($html);
+	$html =~ s{(<img[^>]*? src=["']?https?://[^.]+?\.(?:googleusercontent|ggpht)\.com/.+?)/s\d+/([^"'<>]+?["']?)}{
+		no warnings "uninitialized";
+		my $str ="$1/s2048/$2";
+		$str =~ s{(=["'])?https?}{$1https};
+		$str;
+	}ge;
 	$r->res->content_type('text/html; charset=utf-8');
 	$r->res->content(encode_utf8 $html);
 }

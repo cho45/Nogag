@@ -15,7 +15,7 @@ my $thx = Text::Xatena->new(
     templates => {
         'Section' => q[
             <section class="level-{{= $level }}">
-                <h1>{{= $title }}</h1>
+                <h{{= $level + 2 }}>{{= $title }}</h{{= $level + 2 }}>
                 {{= $content }}
             </section>
         ],

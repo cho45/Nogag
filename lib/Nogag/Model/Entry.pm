@@ -83,6 +83,27 @@ sub raw_title {
 	$self->{title}
 }
 
+sub title_for_permalink {
+	my ($self) = @_;
+	my $title;
+	if ($self->raw_title) {
+		$title = $self->title;
+		if (@{ $self->tags }) {
+			$title .= ' | ' . join(' | ', @{ $self->tags });
+		}
+	} else {
+		$title = $self->summary_html(50);
+	}
+
+	unless ($self->title) {
+		$title .= $self->date->strftime(' | %a, %b %e. %Y');
+	}
+
+	$title =~ s/<[^>]+>//g;
+	$title =~ s{^\s+|\s+$}{}g;
+	$title;
+}
+
 sub tags {
 	my ($self) = @_;
 	$self->title_tags->[1];

@@ -11,7 +11,7 @@
 		[% IF r.req.uri.path == '/' %]
 		<meta name="description" content="写真・文章による、ある普通の人間の人生の記録"/>
 		[% END %]
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes, target-densitydpi=high-dpi"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes"/>
 
 		[%- r.link('preconnect', 'https://fonts.gstatic.com', 'crossorigin') -%]
 		[%- r.link('preconnect', 'https://s.hatena.ne.jp', 'crossorigin') -%]
@@ -33,11 +33,11 @@
 		<meta name="referrer" content="unsafe-url"/>
 
 		[% UNLESS permalink %]
-		<meta itemprop="name" content="[% title ? title _ " - " : "" %][% r.config_param('sitename') %]"/>
+		<meta itemprop="name" content="[% title ? title _ ' - ' : '' %][% r.config_param('sitename') %]"/>
 		<meta itemprop="description" content="写真・文章による、ある普通の人間の人生の記録"/>
 		[% END %]
 
-		<meta property="og:title" content="[% title ? title _ " - " : "" %][% r.config_param('sitename') %]"/>
+		<meta property="og:title" content="[% title ? title _ ' - ' : '' %][% r.config_param('sitename') %]"/>
 		<meta property="og:type" content="[% permalink ? 'article' : 'blog' %]"/>
 		<meta property="og:url" content="[% permalink ?  r.absolute('/' _ entry.path) : r.absolute('/') %]"/>
 		[% IF entry.image %]
@@ -96,6 +96,7 @@
 			}
 		</style>
 
+		<!-- htmlmin:ignore -->
 		<!--
 		<rdf:RDF
 			xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -113,6 +114,7 @@
 			</rdf:Description>
 		</rdf:RDF>
 		-->
+		<!-- htmlmin:ignore -->
 
 		<!--[if lt IE 9]>
 		<script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -131,8 +133,6 @@
 
 		[% IF r.has_auth %]
 			<!-- HAS AUTH -->
-			[% INCLUDE "_images.html" %]
-
 			[% js = [
 				"/js/keyboard.js",
 				"/js/editor.js",
@@ -174,7 +174,7 @@
 			<h1 id="header">
 				[% r.preload('/images/hanrangen.svg', 'image') %]
 				<a href="/">
-					<img src="/images/hanrangen.svg" width="60" height="50" style="margin: auto; display: block"/>
+					<img src="/images/hanrangen.svg" width="60" height="50" style="margin: auto; display: block" alt="[% title ? title _ ' - ' : '' %]氾濫原"/>
 				</a>
 			</h1>
 			[% IF r.has_auth %]
@@ -200,11 +200,12 @@
 		<div id="content">
 			[% IF category %]
 			<header id="category-header">
-				<h1>Category [% category %].</h1>
-				[% SWITCH category %]
-				[% CASE 'photo' %]
-				<h2>Logs and expression by photographs / 写真による記録と表現</h2>
-				[% END %]
+				<h2>Category [% category %].
+					[% SWITCH category %]
+					[% CASE 'photo' %]
+					<small>Logs and expression by photographs / 写真による記録と表現</small>
+					[% END %]
+				</h2>
 			</header>
 			[% END %]
 
@@ -388,5 +389,10 @@
 				}, 10);
 			}, false);
 		</script>
+
+		[% IF r.has_auth %]
+			<!-- HAS AUTH -->
+			[% INCLUDE "_images.html" %]
+		[% END %]
 	</body>
 </html>
