@@ -1,7 +1,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 	<url>
 		<loc>[% r.absolute('/') %]</loc>
-		<changefreq>daily</changefreq>
+		<changefreq>always</changefreq>
 		<priority>1.0</priority>
 	</url>
 	<url>
@@ -18,13 +18,12 @@
 	[% END %]
 	[% END %]
 
-	[% priority = 1.00 %]
 	[% FOR entry IN entries %]
+	[% priority = 1.0 - (loop.index / loop.size) %]
 	<url>
 		<loc>[% r.absolute('/' _ entry.path) %]</loc>
-		<lastmod>[% entry.lastmod %]</lastmod>
-		<priority>[% priority > 0 ? priority : 0.1 %]</priority>
+		[% IF 0 %]<lastmod>[% entry.lastmod %]</lastmod>[% END %]
+		<priority>[% priority < 0.1 ? 0.1 : priority %]</priority>
 	</url>
-	[% priority = priority - 0.01 %]
 	[% END %]
 </urlset>

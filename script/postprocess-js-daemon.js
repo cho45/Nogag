@@ -9,6 +9,7 @@ const http = require('http');
 const https = require('https');
 const url = require('url');
 const vm = require('vm');
+const imageSize = require('image-size');
 
 const HTTPS = {
 	GET : function (url) {
@@ -26,6 +27,34 @@ const HTTPS = {
 					})
 				}
 			).on('error', reject);
+		});
+	},
+
+	getImageSize : function (imgUrl) {
+		return new Promise( (resolve, reject) => {
+			var options = url.parse(imgUrl);
+			options.headers = {
+				'Range': 'bytes=0-131072'
+			};
+
+			https.get(options, function (res) {
+				console.log(options);
+				console.log(res.statusCode);
+				console.log(res.headers);
+				var chunks = [];
+				res.
+					on('data', function (chunk) {
+						chunks.push(chunk);
+					}).
+					on('end', function() {
+						var buffer = Buffer.concat(chunks);
+						try {
+							resolve(imageSize(buffer));
+						} catch (e) {
+							reject(e);
+						}
+					});
+			}).on('error', reject);
 		});
 	}
 };
@@ -101,7 +130,27 @@ function processImages (node) {
 				replace(/^http:\/\/ecx\.images-amazon\.com/, 'https://images-na.ssl-images-amazon.com');
 		}
 	}
-	return Promise.resolve(node);
+
+	// fill width/height
+	var promises = [];
+	{
+		var imgs = node.querySelectorAll('img[src]');
+		for (var i = 0, img; (img = imgs[i]); i++) (function (img) {
+			if (!img.src) return;
+			if (img.width || img.height) return;
+			var promise = HTTPS.getImageSize(img.src).
+				then( (size) => {
+					img.width = size.width;
+					img.height = size.height;
+				}).
+				catch( (e) => {
+					console.log(e);
+				});
+
+			promises.push(promise);
+		})(img);
+	}
+	return Promise.all(promises).then( () => node );
 }
 
 function processWidgets (node) {
@@ -140,9 +189,7 @@ function processWidgets (node) {
 		}
 	})(it);
 
-	return Promise.all(promises).then( () => {
-		return node;
-	});
+	return Promise.all(promises).then( () => node );
 }
 
 function processMathJax (html) {

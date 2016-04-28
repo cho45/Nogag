@@ -58,9 +58,6 @@
 		<meta name="twitter:site" content="cho45"/>
 		<meta name="twitter:creator" content="cho45"/>
 
-		[% r.preload('//fonts.googleapis.com/css?family=Merriweather:400', 'style', 'crossorigin') %]
-		<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Merriweather:400"/>
-
 		[% css = [
 			"/css/style.css",
 			"/css/github.css",
@@ -70,31 +67,11 @@
 		<link rel="stylesheet" type="text/css" href="[% c %]"/>
 		[% END %]
 
-		<style type="text/css">
-			.hatena-star-add-button-image {
-				background-image: url('/images/star/20101127010806.gif');
-			}
-
-			.hatena-star-star-image {
-				background-image: url('/images/star/20101127010252.gif');
-			}
-
-			.hatena-star-green-star-image {
-				background-image: url('/images/star/20100115025631.gif');
-			}
-
-			.hatena-star-red-star-image {
-				background-image: url('/images/star/20100115025800.gif');
-			}
-
-			.hatena-star-blue-star-image {
-				background-image: url('/images/star/20100115025902.gif');
-			}
-
-			.hatena-star-comment-container {
-				display: none;
-			}
-		</style>
+		[% r.preload('//fonts.googleapis.com/css?family=Merriweather:400', 'style', 'crossorigin') %]
+		<link rel="preload" href="//fonts.googleapis.com/css?family=Merriweather:400" crossorigin/>
+		<script>
+			document.querySelector('link[href*="fonts.googleapis.com"').rel = 'stylesheet';
+		</script>
 
 		<!-- htmlmin:ignore -->
 		<!--
@@ -130,24 +107,8 @@
 		<script src="[% j %]" defer></script>
 		[% END %]
 
-
-		[% IF r.has_auth %]
-			<!-- HAS AUTH -->
-			[% js = [
-				"/js/keyboard.js",
-				"/js/editor.js",
-			] %]
-
-			[% FOR j IN js %]
-			[% r.preload(j, 'script', 'nopush') %]
-			<script src="[% j %]" defer></script>
-			[% END %]
-			<script src="https://apis.google.com/js/api.js?onload=Nogag.Editor.initGoogleAPI" defer></script>
-			<!-- /HAS AUTH -->
-		[% END %]
-
 		<!-- mathjax: [% mathjax ? 'true' : 'false' %] -->
-		[% IF mathjax %]
+		[% IF 0 %]
 		[%# r.preload("/js/MathJax/MathJax.js?config=TeX-AMS_SVG-full,local/my" , 'script', 'nopush') %]
 		[%# r.preload("/js/MathJax/config/TeX-AMS_SVG-full.js?rev=2.6.1" , 'script', 'nopush') %]
 		[%# r.preload("/js/MathJax/config/local/my.js?rev=2.6.1" , 'script', 'nopush') %]
@@ -167,6 +128,15 @@
 			ga('create', 'UA-7079167-5', 'lowreal.net');
 			ga('send', 'pageview');
 
+		</script>
+
+		[% r.preload("//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" , 'script') %]
+		<script async defer src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+		<script>
+		  (adsbygoogle = window.adsbygoogle || []).push({
+			google_ad_client: "ca-pub-4629424540171624",
+			enable_page_level_ads: true
+		  });
 		</script>
 	</head>
 	<body>
@@ -257,7 +227,7 @@
 			[% END %]
 
 			[% UNLESS permalink %]
-			<div class="adsense" style="margin-left: 0px">
+			<div class="adsense">
 				<!-- script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script -->
 				<!-- 関連コンテンツ -->
 				<ins class="adsbygoogle"
@@ -378,9 +348,8 @@
 			</div>
 		</footer>
 
-		[% r.preload("//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" , 'script') %]
-		<!-- script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script -->
-		<script>
+		<script async defer src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+		<!-- script>
 			window.addEventListener('load', function () {
 				setTimeout(function () {
 					var s = document.createElement('script');
@@ -388,7 +357,7 @@
 					document.body.appendChild(s);
 				}, 10);
 			}, false);
-		</script>
+		</script -->
 
 		[% IF r.has_auth %]
 			<!-- HAS AUTH -->

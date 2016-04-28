@@ -504,6 +504,8 @@ body > * {
 .entries article .content svg ,
 .entries article .content iframe {
 	max-width: 100%;
+	height: auto;
+	width: auto;
 }
 
 .entries article pre.code {

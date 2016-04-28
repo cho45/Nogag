@@ -60,14 +60,31 @@ Nogag.Backup = {
 Nogag.Editor = {
 	google_client_id :  '980119139173.apps.googleusercontent.com',
 	google_developer_key : 'AIzaSyCDevJrf8SOEfeSeYDOGT9e6jjGDNT6lM4',
+	googleAPI : null,
 
 	init : function () {
-	},
+		console.log('Nogag.Editor.init');
+		var loadScript = new Promise( (resolve, reject) => {
+			window['Nogag.Editor.initGoogleAPI'] = () => {
+				delete window['Nogag.Editor.initGoogleAPI'];
+				resolve();
+			};
+			Nogag.loadScript('https://apis.google.com/js/api.js?onload=Nogag.Editor.initGoogleAPI').
+				catch(reject);
+		});
 
-	initGoogleAPI : function () {
-		console.log('initGoogleAPI');
-		Nogag.Editor.loadGoogle('auth');
-		Nogag.Editor.loadGoogle('picker');
+		this.googleAPI = loadScript.
+			then( () => {
+				console.log('Google API Loaded');
+			}).
+			then( () => Promise.all([
+				Nogag.Editor.loadGoogle('auth'),
+				Nogag.Editor.loadGoogle('picker')
+			])).
+			then( () => {
+				console.log('Google API Loaded / auth, picker');
+			}).
+			catch( (e) => alert(e) );
 	},
 
 	loadGoogle : function (name) {

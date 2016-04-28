@@ -7,11 +7,14 @@ use warnings;
 use Encode;
 use LWP::Simple qw($ua);
 use Log::Minimal;
+use Nogag::Config;
 
 sub postprocess {
 	my ($class, $html) = @_;
 	infof("postprocess");
-	my $res = $ua->post('http://127.0.0.1:13370/', Content => encode_utf8 $html);
+	my $uri = config->param('postprocess')->clone;
+	$uri->path('/');
+	my $res = $ua->post("$uri", Content => encode_utf8 $html);
 	if ($res->is_success) {
 		return $res->decoded_content;
 	} else {
@@ -23,7 +26,10 @@ sub postprocess {
 sub minify {
 	my ($class, $html) = @_;
 	infof("minify");
-	my $res = $ua->post('http://127.0.0.1:13370/?minifyOnly=1', Content => encode_utf8 $html);
+	my $uri = config->param('postprocess')->clone;
+	$uri->path('/');
+	$uri->query_form(minifyOnly => 1);
+	my $res = $ua->post("$uri", Content => encode_utf8 $html);
 	if ($res->is_success) {
 		return $res->decoded_content;
 	} else {

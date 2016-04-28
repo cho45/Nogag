@@ -12,7 +12,8 @@ common +{
 	appname        => 'nogag',
 	sitename       => '氾濫原',
 	entry_per_page => 4,
-	base_uri => URI->new('https://lowreal.net'),
+	base_uri       => URI->new('https://lowreal.net'),
+	postprocess    => URI->new('http://127.0.0.1:13370'),
 	link_headers   => '/tmp/lowreal.net.link.txt',
 	version        => scalar time,
 	load("app.conf"),
@@ -20,6 +21,7 @@ common +{
 
 config development => {
 	db => root->file('db/development.db'),
+	postprocess    => URI->new('http://127.0.0.1:13371'),
 	explain => 1,
 };
 

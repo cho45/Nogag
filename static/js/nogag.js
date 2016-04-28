@@ -69,12 +69,12 @@ Nogag = {
 //		}).scroll();
 
 		if (Nogag.data('auth')) {
-			Nogag.Editor.init();
-
 			var button = document.querySelector('.nogag-new');
 			if (button) {
 				button.addEventListener('click', function () {
-					Nogag.Editor.newEntry();
+					Nogag.loadEditor().then(function () {
+						Nogag.Editor.newEntry();
+					});
 				});
 			}
 		}
@@ -85,10 +85,35 @@ Nogag = {
 			var button = entry.querySelector('.nogag-edit');
 			if (button) {
 				button.addEventListener('click', function () {
-					Nogag.Editor.editEntry(entry);
+					Nogag.loadEditor().then(function () {
+						Nogag.Editor.editEntry(entry);
+					});
 				});
 			}
 		}
+	},
+
+	loadScript : function (url) {
+		return new Promise( function (resolve, reject) {
+			var script = document.createElement('script');
+			script.onload = resolve;
+			script.onerror = reject;
+			script.src = url;
+			document.body.appendChild(script);
+		});
+	},
+
+	loadEditor : function () {
+		return Promise.all([
+			Nogag.loadScript('/js/keyboard.js'),
+			Nogag.loadScript('/js/editor.js')
+		]).
+			then(function () {
+				Nogag.Editor.init();
+			}).
+			then(function () {
+				console.log('loadEditor done');
+			});
 	}
 };
 

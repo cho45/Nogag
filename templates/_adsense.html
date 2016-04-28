@@ -1,23 +1,38 @@
 <div class="adsense">
-[% IF r.is_smartphone %]
-	<!-- script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script -->
-	<!-- 汎用スマフォ -->
-	<ins class="adsbygoogle"
-		 style="display:inline-block;width:320px;height:50px"
-		 data-ad-client="ca-pub-4629424540171624"
-		 data-ad-slot="7984955760"></ins>
+	[% IF !r.stash('adsense_templates') %][% SET temp = r.stash('adsense_templates', 1) %]
+	<div id="adsense-sp">
+		<!-- script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script -->
+		<!-- lowreal.net スマフォラージ -->
+		<ins class="adsbygoogle"
+			 style="display:inline-block;width:320px;height:100px"
+			 data-ad-client="ca-pub-4629424540171624"
+			 data-ad-slot="5926551368"></ins>
+	</div>
+	<div id="adsense-pc">
+		<!-- script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script -->
+		<!-- lowreal.net -->
+		<ins class="adsbygoogle"
+			 style="display:inline-block;width:728px;height:90px"
+			 data-ad-client="ca-pub-4629424540171624"
+			 data-ad-slot="2606789716"></ins>
+	</div>
 	<script>
-	(adsbygoogle = window.adsbygoogle || []).push({});
+		(function () {
+			var templateSp = document.getElementById('adsense-sp');
+			var templatePc = document.getElementById('adsense-pc');
+			templateSp.parentNode.removeChild(templateSp);
+			templatePc.parentNode.removeChild(templatePc);
+			if (window.innerWidth < 800) {
+				window['adsense-template'] = templateSp.innerHTML;
+			} else {
+				window['adsense-template'] = templatePc.innerHTML;
+			}
+		})();
 	</script>
-[% ELSE %]
-	<!-- script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script -->
-	<!-- lowreal.net -->
-	<ins class="adsbygoogle"
-		 style="display:inline-block;width:728px;height:90px"
-		 data-ad-client="ca-pub-4629424540171624"
-		 data-ad-slot="2606789716"></ins>
+	[% END %]
+
 	<script>
-	(adsbygoogle = window.adsbygoogle || []).push({});
+		document.write(window['adsense-template']);
+		(adsbygoogle = window.adsbygoogle || []).push({});
 	</script>
-[% END %]
 </div>
