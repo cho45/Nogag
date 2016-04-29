@@ -101,6 +101,8 @@ sub edit {
 			$formatter->use or die $@;
 
 			if ($entry->id) {
+				$r->invalidate_trackback_entries($entry);
+
 				$entry->{body} = $r->req->string_param('body');
 				my $formatted_body = $formatter->format($entry);
 				$formatted_body = Nogag::Utils->postprocess($formatted_body);
@@ -181,6 +183,8 @@ sub edit {
 
 			Nogag::Model::Entry->bless($entry);
 
+			$r->invalidate_trackback_entries($entry);
+
 			# $r->res->redirect("/" . $entry->path);
 			$r->res->redirect(scalar $r->req->param('location'));
 		}
@@ -244,6 +248,7 @@ sub index {
 	}
 
 	Nogag::Model::Entry->bless($_) for @$entries;
+	$r->fill_trackbacks($_) for @$entries;
 
 	my $count = $r->dbh->value('SELECT count(*) FROM entries');
 
@@ -254,7 +259,8 @@ sub index {
 	if (@$entries) {
 		my $modified_at = [ sort { $b->modified_at <=> $a->modified_at } @$entries]->[0]->modified_at;
 		my $etag = md5_hex(join("\n", $modified_at->epoch, -s $r->config->root->file('templates/index.html')));
-		$r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
+		# キャッシュから返すときだけ304
+		# $r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
 		$r->res->header('ETag' => $etag);
 		$r->res->header('Last-Modified' => $modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
 	}
@@ -403,6 +409,7 @@ sub permalink {
 		});
 
 		Nogag::Model::Entry->bless($_) for @$entries;
+		$r->fill_trackbacks($_) for @$entries;
 
 		my $count = $r->dbh->value('SELECT count(*) FROM entries');
 
@@ -412,7 +419,8 @@ sub permalink {
 		if (@$entries) {
 			my $modified_at = [ sort { $b->modified_at <=> $a->modified_at } @$entries]->[0]->modified_at;
 			my $etag = md5_hex(join("\n", $modified_at->epoch, -s $r->config->root->file('templates/index.html')));
-			$r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
+			# キャッシュから返す場合だけ 304 を返す
+			# $r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
 			$r->res->header('ETag' => $etag);
 			$r->res->header('Last-Modified' => $modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
 		}
@@ -448,9 +456,11 @@ sub permalink {
 		})->[0] or throw code => 404, message => 'Not Found';
 
 		Nogag::Model::Entry->bless($entry);
+		$r->fill_trackbacks($entry);
 
 		my $etag = md5_hex(join("\n", $entry->modified_at->epoch, -s $r->config->root->file('templates/index.html')));
-		$r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
+		# キャッシュから返す場合だけ304
+		# $r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
 		$r->res->header('ETag' => $etag);
 
 		$r->res->header('Last-Modified' => $entry->modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
@@ -481,6 +491,7 @@ sub permalink {
 		});
 
 		Nogag::Model::Entry->bless($_) for @$related;
+
 		$r->stash(related => $related);
 
 		my $entries = [ $entry ];
@@ -570,6 +581,38 @@ sub like_mathjax {
 sub enable_mathjax {
 	my (@entries) = @_;
 	!!grep { like_mathjax($_->formatted_body(1)) } @entries;
+}
+
+sub fill_trackbacks {
+	my ($r, $entry) = @_;
+	my $trackbacks = $r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE 
+			created_at > :created_at AND
+			body LIKE :trackback
+		ORDER BY id DESC
+	}, {
+		created_at => $entry->{created_at},
+		trackback => '%' . $entry->path . '%',
+	});
+	Nogag::Model::Entry->bless($_) for @$trackbacks;
+	$entry->trackbacks($trackbacks);
+	$entry;
+}
+
+sub invalidate_trackback_entries {
+	my ($r, $entry) = @_;
+	my $paths = [ $entry->formatted_body(1) =~ m{/(\d\d\d\d/\d\d/\d\d/\d+)}g ];
+	my $related_entries = $r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE path IN (:paths)
+	}, {
+		paths => $paths,
+	});
+
+	for (@$related_entries) {
+		$cache->invalidate_related("".$_->{id});
+	}
 }
 
 1;

@@ -18,7 +18,8 @@ sub postprocess {
 	if ($res->is_success) {
 		return $res->decoded_content;
 	} else {
-		critf("failed %p", $res);
+		local $Log::Minimal::AUTODUMP = 1;
+		critf("failed %s", $res);
 		return $html;
 	}
 }
@@ -33,7 +34,8 @@ sub minify {
 	if ($res->is_success) {
 		return $res->decoded_content;
 	} else {
-		critf("failed %p", $res);
+		local $Log::Minimal::AUTODUMP = 1;
+		critf("failed %s", $res);
 		return $html;
 	}
 }

@@ -13,6 +13,14 @@ sub bless {
 	bless $hash, $class;
 }
 
+sub trackbacks {
+	my ($self, $val) = @_;
+	if (defined $val) {
+		$self->{trackbacks} = $val;
+	}
+	$self->{trackbacks};
+}
+
 sub id             { $_[0]->{id} }
 sub body           { $_[0]->{body} }
 sub formatted_body {

@@ -4,6 +4,7 @@ use utf8;
 use strict;
 use warnings;
 use Scalar::Util qw(weaken);
+use Log::Minimal;
 
 sub new {
 	my ($class, %args) = @_;
@@ -59,10 +60,12 @@ sub remove {
 
 sub invalidate_related {
 	my ($self, $src) = @_;
+	infof("invalidate_related %s", $src);
 	my $sources = $self->{cache}->get('__sources') || {};
 	my $keys = delete $sources->{$src};
 	$self->{cache}->set('__sources' => $sources);
 	for my $key (keys %$keys) {
+		infof("invalidate_related remove key: %s", $key);
 		$self->remove($key);
 	}
 }
