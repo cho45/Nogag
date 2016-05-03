@@ -192,13 +192,13 @@ match qr{\[?asin:([^:]+):detail\]?(\s*[.\d]+)?}=> sub {
                     <a href="[% link %]" itemprop="url"><span itemprop="name">[% title %]</span></a>
                 </p>
                 <p class="author">[% author %]</p>
-                <p class="rating" data-rating="[% rating %]" itemprop="reviewRating" itemscope itemtype="http://schema.org/Rating">
+                <div class="rating" data-rating="[% rating %]" itemprop="reviewRating" itemscope itemtype="http://schema.org/Rating">
                     &#9733;
                     <meta itemprop="worstRating" content="1.0"/>
                     <span itemprop="ratingValue">[% rating %]</span>
                     /
                     <span itemprop="bestRating">5.0</span>
-                </p>
+                </div>
                 <span itemprop="author" itemscope itemtype="https://schema.org/Person" style="display: none">
                     <a href="http://www.lowreal.net/" itemprop="url">
                         <span itemprop="name">cho45</span>

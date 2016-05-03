@@ -216,7 +216,7 @@
 							[% END %]
 							[% entry.summary(80) %]
 
-							<time data-epoch="[% entry.created_at.epoch %]" datetime="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z" pubdate itemprop="datePublished">
+							<time data-epoch="[% entry.created_at.epoch %]" datetime="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z" itemprop="datePublished">
 								[% entry.created_at.offset(9).strftime('%H:%M') %]
 							</time>
 						</a>

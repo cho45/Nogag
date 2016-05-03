@@ -171,7 +171,9 @@ sub edit {
 				});
 
 				$entry->{id} = $r->dbh->sqlite_last_insert_rowid;
-				$cache->invalidate_related("/");
+				if (!fork) {
+					$cache->invalidate_related("/");
+				}
 			}
 
 			$entry = $r->dbh->select(q{
