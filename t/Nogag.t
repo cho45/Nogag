@@ -7,10 +7,16 @@ use Test::Name::FromLine;
 use HTTP::Request::Common;
 use HTTP::Message::PSGI;
 use Router::Simple;
+use JSON;
 
 BEGIN { use_ok( 'Nogag' ); }
 
 use Nogag::Test;
+
+my $postprocess = postprocess();
+my $config_guard = config->local(
+	postprocess    => URI->new('http://127.0.0.1:' . $postprocess->port),
+);
 
 subtest base => sub {
 	my $app = Nogag->new(GET('/')->to_psgi);
@@ -48,10 +54,10 @@ subtest xframeoptions => sub {
 		$r->res->headers->remove_header('X-Frame-Options');
 	});
 
-	{
-		my $r = Nogag->new(GET('/')->to_psgi)->run;
-		is $r->res->header('X-Frame-Options'), 'DENY';
-	};
+#	{
+#		my $r = Nogag->new(GET('/')->to_psgi)->run;
+#		is $r->res->header('X-Frame-Options'), 'DENY';
+#	};
 
 	{
 		my $r = Nogag->new(GET('/sameorigin')->to_psgi)->run;
@@ -64,9 +70,95 @@ subtest xframeoptions => sub {
 	};
 };
 
-subtest default => sub {
+subtest login => sub {
 	my $mech = mechanize();
-	$mech->get_ok("/");
+
+	{
+		my $res = $mech->get("/", 'Cache-Control' => 'no-cache');
+		is($res->code, 404);
+		like($res->content, qr{data-auth=""});
+	};
+
+	$mech->login;
+
+	{
+		my $res = $mech->get("/", 'Cache-Control' => 'no-cache');
+		is($res->code, 404);
+		like($res->content, qr{data-auth="true"});
+	};
+
+	$mech->logout;
+
+	{
+		my $res = $mech->get("/", 'Cache-Control' => 'no-cache');
+		is($res->code, 404);
+		like($res->content, qr{data-auth=""});
+	};
+};
+
+subtest edit => sub {
+	my $mech = mechanize();
+	{
+		my $res = $mech->get("/", 'Cache-Control' => 'no-cache');
+		is($res->code, 404);
+	}
+
+	{
+		my $res = $mech->get('/api/edit');
+		is($res->code, 200);
+		my $json = decode_json($res->content);
+		is($json->{error}, 'require authentication');
+		ok(!$json->{html});
+	};
+
+	$mech->login;
+
+	my $entry = get_entry($mech->edit(
+		title => 'test',
+		body => 'test',
+		location => '/',
+	));
+
+	{
+		my $mech = mechanize();
+		$mech->get_and_cache_created_ok('/');
+		$mech->get_and_cache_created_ok($entry->path);
+	};
+
+	subtest permalink_cache => sub {
+		my $entry_id = $mech->edit(
+			title => 'test',
+			body => 'test',
+			location => '/',
+		);
+		my $entry = get_entry($entry_id);
+
+		{
+			my $mech = mechanize();
+			$mech->get_and_cache_created_ok('/');
+			$mech->get_and_cache_created_ok($entry->path);
+		};
+
+		{
+			$mech->edit(
+				id => $entry->id,
+				title => 'test',
+				body => 'test',
+				location => '/',
+			);
+
+			{
+				my $mech = mechanize();
+				$mech->get_and_cache_created_ok('/');
+				$mech->get_and_cache_created_ok($entry->path);
+			};
+		};
+	};
+
+	{
+		my $mech = mechanize();
+		$mech->get_cached_ok($entry->path);
+	};
 };
 
 done_testing;

@@ -59,6 +59,7 @@ package
 use Text::Xatena::Inline::Aggressive -Base;
 use Log::Minimal;
 
+no warnings 'redefine';
 sub match ($$) { ## no critic
     my ($regexp, $block) = @_;
     my $pkg = caller(0);

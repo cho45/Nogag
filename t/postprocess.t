@@ -12,18 +12,14 @@ use LWP::UserAgent;
 use URI;
 use Encode;
 
+use Nogag::Test;
+
 use Test::More;
 use Test::TCP;
 use Test::HTML::Differences -color;
 
 
-my $backend = Test::TCP->new(
-	code => sub {
-		my $port = shift;
-		local $ENV{PORT} = $port;
-		exec 'node', './script/postprocess-js-daemon.js';
-	}
-);
+my $backend = Nogag::Test::postprocess;
 my $ua = LWP::UserAgent->new( max_redirect => 0 );
 
 sub postprocess {

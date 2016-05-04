@@ -25,7 +25,7 @@ use parent qw(Nogag::Base);
 
 our @EXPORT = qw(config throw);
 
-my $cache = Cache::Invalidatable->new(cache => Cache::FileCache->new({ 'namespace' => 'EntryCache-v7' . config->env, default_expires_in => 60 * 60 * 24 * 365 }));
+our $cache = Cache::Invalidatable->new(cache => Cache::FileCache->new({ 'namespace' => 'EntryCache-v7' . config->env, default_expires_in => 60 * 60 * 24 * 365 }));
 
 route "/" => \&index;
 route "/login" => \&login;
@@ -93,6 +93,7 @@ sub edit {
 		when ('GET') {
 			$r->json(+{
 				html => $r->render('form.html'),
+				sk => $r->sk,
 			});
 		}
 
@@ -173,6 +174,7 @@ sub edit {
 				$entry->{id} = $r->dbh->sqlite_last_insert_rowid;
 				if (!fork) {
 					$cache->invalidate_related("/");
+					exit;
 				}
 			}
 
@@ -188,6 +190,7 @@ sub edit {
 			$r->invalidate_trackback_entries($entry);
 
 			# $r->res->redirect("/" . $entry->path);
+			$r->res->header('X-Entry', $entry->id);
 			$r->res->redirect(scalar $r->req->param('location'));
 		}
 
@@ -209,6 +212,7 @@ sub index {
 		if ( (my $cached = $cache->get($cache_key)) && !$r->req->is_super_reload) {
 			infof("return cache: %s", $cache_key);
 			$r->{res} = Nogag::Response->new(@$cached);
+			$r->res->header('X-Cache', 'HIT');
 			my $etag = $r->res->header('ETag');
 			$r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
 			return;
@@ -390,6 +394,7 @@ sub permalink {
 		if ( (my $cached = $cache->get($cache_key)) && !$r->req->is_super_reload) {
 			infof("return cache: %s", $cache_key);
 			$r->{res} = Nogag::Response->new(@$cached);
+			$r->res->header('X-Cache', 'HIT');
 			my $etag = $r->res->header('ETag');
 			$r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
 			return;
