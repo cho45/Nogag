@@ -9,9 +9,8 @@ use HTTP::Message::PSGI;
 use Router::Simple;
 use JSON;
 
-BEGIN { use_ok( 'Nogag' ); }
-
 use Nogag::Test;
+use Nogag;
 
 my $postprocess = postprocess();
 my $config_guard = config->local(

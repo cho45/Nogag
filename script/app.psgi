@@ -23,9 +23,7 @@ use lib config->root->subdir('lib')->absolute.q();
 
 POSIX::setlocale(&POSIX::LC_ALL, "C");
 
-if (not -e config->param('db')) {
-	Nogag->setup_schema;
-}
+Nogag->setup_schema;
 
 builder {
 	enable "Plack::Middleware::Static",

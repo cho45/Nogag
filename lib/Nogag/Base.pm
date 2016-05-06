@@ -146,9 +146,26 @@ sub dbh {
 
 sub setup_schema {
 	my ($class) = @_;
-	my $schema = file('db/schema.sql')->slurp;
-	my $dbh = DBI->connect('dbi:SQLite:' . config->param('db'));
-	$dbh->do($_) for split /;/, $schema;
+	do {
+		my $schema = file('db/schema.sql')->slurp;
+		my $dbh = DBI->connect('dbi:SQLite:' . config->param('db'), "", "", {
+			sqlite_allow_multiple_statements => 1,
+			RaiseError => 1,
+			sqlite_see_if_its_a_number => 1,
+			sqlite_unicode => 1,
+		});
+		$dbh->do($schema);
+	} unless -e config->param('db');
+	do {
+		my $schema = file('db/cache.sql')->slurp;
+		my $dbh = DBI->connect('dbi:SQLite:' . config->param('cache_db'), "", "", {
+			sqlite_allow_multiple_statements => 1,
+			RaiseError => 1,
+			sqlite_see_if_its_a_number => 1,
+			sqlite_unicode => 1,
+		});
+		$dbh->do($schema);
+	} unless -e config->param('cache_db');
 }
 
 sub sk {

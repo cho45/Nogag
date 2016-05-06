@@ -1,5 +1,5 @@
 package Nogag::Test;
-$ENV{PLACK_ENV} = 'test';
+BEGIN { $ENV{PLACK_ENV} = 'test' };
 
 use utf8;
 use strict;
@@ -12,10 +12,17 @@ use Test::TCP;
 use Test::WWW::Mechanize::PSGI;
 
 use Nogag;
-$Nogag::cache->{cache}->Clear;
 
 unlink config->param('db');
+unlink config->param('cache_db');
+
+note config->param('db');
+note config->param('cache_db');
+note "setup_schema";
 Nogag->setup_schema;
+
+note "clear";
+$Nogag::cache->clear;
 
 our @EXPORT = qw(
 	get_entry

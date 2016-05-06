@@ -11,13 +11,13 @@ use HTML::Trim;
 use URI::QueryParam;
 use Digest::MD5 qw(md5_hex);
 use Cache::FileCache;
-use Cache::Invalidatable;
 use Log::Minimal;
 
 use Nogag::Base;
 use Nogag::Time;
 use Nogag::Model::Entry;
 use Nogag::Utils;
+use Cache::Invalidatable::SQLite;
 
 use Nogag::Formatter::Hatena;
 
@@ -25,7 +25,19 @@ use parent qw(Nogag::Base);
 
 our @EXPORT = qw(config throw);
 
-our $cache = Cache::Invalidatable->new(cache => Cache::FileCache->new({ 'namespace' => 'EntryCache-v7' . config->env, default_expires_in => 60 * 60 * 24 * 365 }));
+our $cache = do {
+	my $MessagePack = Data::MessagePack->new;
+	$MessagePack->canonical;
+	Cache::Invalidatable::SQLite->new(
+		db => config->param('cache_db'),
+		serializer => sub {
+			$MessagePack->pack(shift);
+		},
+		deserializer => sub {
+			$MessagePack->unpack(shift);
+		},
+	);
+};
 
 route "/" => \&index;
 route "/login" => \&login;

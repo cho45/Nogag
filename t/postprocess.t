@@ -22,6 +22,7 @@ use Test::HTML::Differences -color;
 my $backend = Nogag::Test::postprocess;
 my $ua = LWP::UserAgent->new( max_redirect => 0 );
 
+no warnings 'redefine';
 sub postprocess {
 	my ($html) = @_;
 	my $res = $ua->post(sprintf('http://127.0.0.1:%d/', $backend->port), Content => encode_utf8 $html);
