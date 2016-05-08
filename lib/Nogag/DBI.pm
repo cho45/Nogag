@@ -12,6 +12,8 @@ package
 use SQL::NamedPlaceholder qw(bind_named);
 use Nogag::Config;
 use Data::Dumper;
+use DBIx::TransactionManager;
+
 
 sub select {
 	my ($self, $sql, $bind) = @_;
@@ -42,6 +44,11 @@ sub update {
 	my ($self, $sql, $bind) = @_;
 	($sql, $bind) = bind_named($sql, $bind || {});
 	$self->prepare_cached($sql)->execute(@$bind);
+}
+
+sub txn_scope {
+	my ($self) = @_;
+	DBIx::TransactionManager->new($self)->txn_scope;
 }
 
 

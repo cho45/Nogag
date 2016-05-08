@@ -96,6 +96,8 @@ subtest login => sub {
 };
 
 subtest edit => sub {
+	local *Nogag::Service::Cache::generate_cache_for_path = sub { note "generate_cache_for_path is disabled in this tests"; };
+
 	my $mech = mechanize();
 	{
 		my $res = $mech->get("/", 'Cache-Control' => 'no-cache');
@@ -158,6 +160,9 @@ subtest edit => sub {
 		my $mech = mechanize();
 		$mech->get_cached_ok($entry->path);
 	};
+};
+
+subtest trackbacks => sub {
 };
 
 done_testing;

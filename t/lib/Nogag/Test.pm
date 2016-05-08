@@ -21,9 +21,6 @@ note config->param('cache_db');
 note "setup_schema";
 Nogag->setup_schema;
 
-note "clear";
-$Nogag::cache->clear;
-
 our @EXPORT = qw(
 	get_entry
 

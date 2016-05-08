@@ -20,24 +20,11 @@ use Nogag::Utils;
 use Cache::Invalidatable::SQLite;
 
 use Nogag::Formatter::Hatena;
+use Nogag::Service::Cache;
 
 use parent qw(Nogag::Base);
 
 our @EXPORT = qw(config throw);
-
-our $cache = do {
-	my $MessagePack = Data::MessagePack->new;
-	$MessagePack->canonical;
-	Cache::Invalidatable::SQLite->new(
-		db => config->param('cache_db'),
-		serializer => sub {
-			$MessagePack->pack(shift);
-		},
-		deserializer => sub {
-			$MessagePack->unpack(shift);
-		},
-	);
-};
 
 route "/" => \&index;
 route "/login" => \&login;
@@ -137,7 +124,8 @@ sub edit {
 					modified_at    => gmtime.q(),
 				});
 
-				$cache->invalidate_related("".$entry->id);
+				Nogag::Service::Cache->invalidate_related("".$entry->id);
+				Nogag::Service::Cache->generate_cache_for_path($entry->path('/'));
 			} else {
 				my $date = localtime;
 				my $now  = gmtime;
@@ -184,10 +172,8 @@ sub edit {
 				});
 
 				$entry->{id} = $r->dbh->sqlite_last_insert_rowid;
-				if (!fork) {
-					$cache->invalidate_related("/");
-					exit;
-				}
+				Nogag::Service::Cache->invalidate_related("/");
+				Nogag::Service::Cache->generate_cache_for_path($entry->path('/'));
 			}
 
 			$entry = $r->dbh->select(q{
@@ -200,6 +186,7 @@ sub edit {
 			Nogag::Model::Entry->bless($entry);
 
 			$r->invalidate_trackback_entries($entry);
+			Nogag::Service::Cache->generate_cache_for_path('/');
 
 			# $r->res->redirect("/" . $entry->path);
 			$r->res->header('X-Entry', $entry->id);
@@ -221,7 +208,7 @@ sub index {
 
 	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->path, $page, $query);
 	unless ($r->has_auth) {
-		if ( (my $cached = $cache->get($cache_key)) && !$r->req->is_super_reload) {
+		if ( (my $cached = Nogag::Service::Cache->get($cache_key)) && !$r->req->is_super_reload) {
 			infof("return cache: %s", $cache_key);
 			$r->{res} = Nogag::Response->new(@$cached);
 			$r->res->header('X-Cache', 'HIT');
@@ -298,7 +285,7 @@ sub index {
 
 	$r->html('index.html');
 	infof("new cache: %s", $cache_key);
-	$cache->set($cache_key => $r->res->finalize, [ "/", map { $_->id } @$entries ]);
+	Nogag::Service::Cache->set($cache_key => $r->res->finalize, [ "/", map { $_->id } @$entries ]);
 }
 
 sub archive {
@@ -403,7 +390,7 @@ sub permalink {
 		join(":", $r->has_auth ? 'a' : 'b', $r->req->path);
 
 	unless ($r->has_auth) {
-		if ( (my $cached = $cache->get($cache_key)) && !$r->req->is_super_reload) {
+		if ( (my $cached = Nogag::Service::Cache->get($cache_key)) && !$r->req->is_super_reload) {
 			infof("return cache: %s", $cache_key);
 			$r->{res} = Nogag::Response->new(@$cached);
 			$r->res->header('X-Cache', 'HIT');
@@ -464,7 +451,7 @@ sub permalink {
 		} else {
 			$r->html('index.html');
 			infof("new cache: %s", $cache_key);
-			$cache->set($cache_key => $r->res->finalize, [ "/", map { $_->id } @$entries ]);
+			Nogag::Service::Cache->set($cache_key => $r->res->finalize, [ "/", map { $_->id } @$entries ]);
 		}
 	} else {
 		my $entry = $r->dbh->select(q{
@@ -526,7 +513,7 @@ sub permalink {
 
 		$r->html('index.html');
 		infof("new cache: %s", $cache_key);
-		$cache->set($cache_key => $r->res->finalize, [ $entry->id ]);
+		Nogag::Service::Cache->set($cache_key => $r->res->finalize, [ $entry->id ]);
 	}
 }
 
@@ -621,7 +608,7 @@ sub fill_trackbacks {
 
 sub invalidate_trackback_entries {
 	my ($r, $entry) = @_;
-	my $paths = [ $entry->formatted_body(1) =~ m{/(\d\d\d\d/\d\d/\d\d/\d+)}g ];
+	my $paths = [ $entry->formatted_body(1) =~ m{(?:lowreal\.net|debug\.cho45\.stfuawsc\.com)/(\d\d\d\d/\d\d/\d\d/\d+)}g ];
 	my $related_entries = $r->dbh->select(q{
 		SELECT * FROM entries
 		WHERE path IN (:paths)
@@ -630,7 +617,9 @@ sub invalidate_trackback_entries {
 	});
 
 	for (@$related_entries) {
-		$cache->invalidate_related("".$_->{id});
+		Nogag::Model::Entry->bless($_);
+		Nogag::Service::Cache->invalidate_related("".$_->{id});
+		Nogag::Service::Cache->generate_cache_for_path($_->path('/'));
 	}
 }
 
