@@ -749,7 +749,7 @@ figure.http:after {
 }
 
 #archive {
-	padding: 2em 20px 2em 0;
+	padding: 10px;
 }
 
 #archive .year {
@@ -774,7 +774,7 @@ figure.http:after {
 #archive .year .months .month {
 	display: block;
 	float: left;
-	width: 8.33333333%;
+	width: 16.66666666%;
 	margin: 0;
 	padding: 0;
 }

@@ -21,6 +21,7 @@ use Cache::Invalidatable::SQLite;
 
 use Nogag::Formatter::Hatena;
 use Nogag::Service::Cache;
+use Nogag::Service::Entry;
 
 use parent qw(Nogag::Base);
 
@@ -41,6 +42,7 @@ route "/test" => \&test;
 route '/{year:[0-9]{4}}/{month:[0-9]{2}}/' => \&archive;
 route '/{year:[0-9]{4}}/{month:[0-9]{2}}/{day:[0-9]{2}}/' => \&archive;
 route '/archive' => \&archive_index;
+route '/:category_name/' => \&category;
 route '/{path:.+}' => \&permalink;
 
 sub login {
@@ -97,95 +99,24 @@ sub edit {
 		}
 
 		when ('POST') {
-			my $formatter = "Nogag::Formatter::" . ($entry->format || 'Hatena');
-			$formatter->use or die $@;
-
 			if ($entry->id) {
-				$r->invalidate_trackback_entries($entry);
-
-				$entry->{body} = $r->req->string_param('body');
-				my $formatted_body = $formatter->format($entry);
-				$formatted_body = Nogag::Utils->postprocess($formatted_body);
-
-				$r->dbh->update(q{
-					UPDATE entries
-					SET
-						title = :title,
-						body = :body,
-						modified_at = :modified_at,
-						formatted_body = :formatted_body
-					WHERE
-						id = :id
-				}, {
-					id             => $entry->id,
+				$entry = $r->service('Nogag::Service::Entry')->update_entry($entry,
 					title          => $r->req->string_param('title'),
 					body           => $r->req->string_param('body'),
-					formatted_body => $formatted_body,
-					modified_at    => gmtime.q(),
-				});
+				);
 
 				Nogag::Service::Cache->invalidate_related("".$entry->id);
 				Nogag::Service::Cache->generate_cache_for_path($entry->path('/'));
 			} else {
-				my $date = localtime;
-				my $now  = gmtime;
-				my $count = $r->dbh->select('SELECT count(*) FROM entries WHERE `date` = ?', { date => $date->strftime('%Y-%m-%d') })->[0]->{'count(*)'};
-				my $path  = $date->strftime('%Y/%m/%d/') . ($count + 1);
-
-				$entry->{path} = $path;
-				$entry->{body} = $r->req->string_param('body');
-				my $formatted_body = $formatter->format($entry);
-				$formatted_body = Nogag::Utils->postprocess($formatted_body);
-
-				$r->dbh->update(q{
-					INSERT INTO entries
-						(
-							`title`,
-							`body`,
-							`formatted_body`,
-							`path`,
-							`format`,
-							`date`,
-							`created_at`,
-							`modified_at`
-						)
-						VALUES
-						(
-							:title,
-							:body,
-							:formatted_body,
-							:path,
-							:format,
-							:date,
-							:created_at,
-							:modified_at
-						)
-				}, {
+				$entry = $r->service('Nogag::Service::Entry')->create_new_entry(
 					title          => $r->req->string_param('title'),
 					body           => $r->req->string_param('body'),
-					formatted_body => $formatted_body,
-					path           => $path,
-					format         => 'Hatena',
-					date           => $date->strftime('%Y-%m-%d'),
-					created_at     => $now,
-					modified_at    => $now,
-				});
-
-				$entry->{id} = $r->dbh->sqlite_last_insert_rowid;
+				);
 				Nogag::Service::Cache->invalidate_related("/");
 				Nogag::Service::Cache->generate_cache_for_path($entry->path('/'));
 			}
 
-			$entry = $r->dbh->select(q{
-				SELECT * FROM entries
-				WHERE id = :id
-			}, {
-				id => $entry->id
-			})->[0];
-
-			Nogag::Model::Entry->bless($entry);
-
-			$r->invalidate_trackback_entries($entry);
+			$r->service('Nogag::Service::Trackback')->update_trackbacks($entry);
 			Nogag::Service::Cache->generate_cache_for_path('/');
 
 			# $r->res->redirect("/" . $entry->path);
@@ -253,7 +184,7 @@ sub index {
 	}
 
 	Nogag::Model::Entry->bless($_) for @$entries;
-	$r->fill_trackbacks($_) for @$entries;
+	$r->service('Nogag::Service::Trackback')->fill_trackbacks($_) for @$entries;
 
 	my $count = $r->dbh->value('SELECT count(*) FROM entries');
 
@@ -380,14 +311,9 @@ sub archive_index {
 sub permalink {
 	my ($r) = @_;
 
-	my $page = $r->req->number_param('page', 100) || 1;
 	my $path = $r->req->param('path');
-	my $is_category = ($path =~ m{^([^/]+)/$});
-	my $category_name = decode_utf8 $1;
 
-	my $cache_key = $is_category ?
-		join(":", $r->has_auth ? 'a' : 'b', $r->req->path, $page):
-		join(":", $r->has_auth ? 'a' : 'b', $r->req->path);
+	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->path);
 
 	unless ($r->has_auth) {
 		if ( (my $cached = Nogag::Service::Cache->get($cache_key)) && !$r->req->is_super_reload) {
@@ -400,120 +326,136 @@ sub permalink {
 		}
 	}
 
-	if ($is_category) {
-		my $name = $category_name;
+	my $entry = $r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE path = :path
+	}, {
+		path => $path,
+	})->[0] or throw code => 404, message => 'Not Found';
 
-		my $entries = $r->dbh->select(q{
-			SELECT * FROM entries
-			WHERE title LIKE :query
-			ORDER BY `date` DESC, `created_at` ASC
-			LIMIT :limit OFFSET :offset
-		}, {
-			query  => "%[$name]%",
-			limit  => config->param('entry_per_page'),
-			offset => ($page - 1) * config->param('entry_per_page'),
-		});
+	Nogag::Model::Entry->bless($entry);
+	$r->service('Nogag::Service::Trackback')->fill_trackbacks($entry);
 
-		Nogag::Model::Entry->bless($_) for @$entries;
-		$r->fill_trackbacks($_) for @$entries;
+	my $etag = md5_hex(join("\n", $entry->modified_at->epoch, -s $r->config->root->file('templates/index.html')));
+	# キャッシュから返す場合だけ304
+	# $r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
+	$r->res->header('ETag' => $etag);
 
-		my $count = $r->dbh->value('SELECT count(*) FROM entries');
+	$r->res->header('Last-Modified' => $entry->modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
 
-		@$entries or $r->res->status(404);
-		$r->stash(mathjax => enable_mathjax(@$entries));
+	my $old_entry = $r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE created_at < :created_at
+		ORDER BY created_at DESC
+		LIMIT 1
+	}, {
+		created_at => $entry->{created_at}
+	})->[0];
 
-		if (@$entries) {
-			my $modified_at = [ sort { $b->modified_at <=> $a->modified_at } @$entries]->[0]->modified_at;
-			my $etag = md5_hex(join("\n", $modified_at->epoch, -s $r->config->root->file('templates/index.html')));
-			# キャッシュから返す場合だけ 304 を返す
-			# $r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
-			$r->res->header('ETag' => $etag);
-			$r->res->header('Last-Modified' => $modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
+	my $new_entry = $r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE created_at > :created_at
+		ORDER BY created_at ASC
+		LIMIT 1
+	}, {
+		created_at => $entry->{created_at}
+	})->[0];
+
+	my $related = $r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE title <> '[photo]'
+		ORDER BY id DESC
+		LIMIT 10
+	});
+
+	Nogag::Model::Entry->bless($_) for @$related;
+
+	$r->stash(related => $related);
+
+	my $entries = [ $entry ];
+
+	$r->stash(mathjax => enable_mathjax(@$entries));
+
+	$r->stash(entries => $entries);
+	$r->stash(entry => $entry);
+	$r->stash(permalink => 1);
+	$r->stash(old_entry => $old_entry);
+	$r->stash(new_entry => $new_entry);
+	$r->stash(title => $entry->title_for_permalink);
+
+	$r->html('index.html');
+	infof("new cache: %s", $cache_key);
+	Nogag::Service::Cache->set($cache_key => $r->res->finalize, [ $entry->id ]);
+}
+
+sub category {
+	my ($r) = @_;
+
+	my $page = $r->req->number_param('page', 100) || 1;
+	my $name = $r->req->param('category_name');
+
+	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->path, $page);
+
+	unless ($r->has_auth) {
+		if ( (my $cached = Nogag::Service::Cache->get($cache_key)) && !$r->req->is_super_reload) {
+			infof("return cache: %s", $cache_key);
+			$r->{res} = Nogag::Response->new(@$cached);
+			$r->res->header('X-Cache', 'HIT');
+			my $etag = $r->res->header('ETag');
+			$r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
+			return;
 		}
+	}
 
-		$r->stash(category => $name);
-		$r->stash(title => sprintf('%s カテゴリー', ucfirst $name));
-		$r->stash(entries => $entries);
-		$r->stash(count => $count);
-		$r->stash(next_page => do {
-			if ($page < 100 && @$entries) {
-				my $uri = $r->req->uri->clone;
-				$uri->query_form(
-					page => $page + 1,
-				);
-				$uri->path_query;
-			}
-		});
+	my $entries = $r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE title LIKE :query
+		ORDER BY `date` DESC, `created_at` ASC
+		LIMIT :limit OFFSET :offset
+	}, {
+		query  => "%[$name]%",
+		limit  => config->param('entry_per_page'),
+		offset => ($page - 1) * config->param('entry_per_page'),
+	});
 
-		my $tmpl = config->root->subdir('templates/category')->file("$name.html");
-		if (-e $tmpl) {
-			return $r->html($tmpl);
-		} else {
-			$r->html('index.html');
-			infof("new cache: %s", $cache_key);
-			Nogag::Service::Cache->set($cache_key => $r->res->finalize, [ "/", map { $_->id } @$entries ]);
-		}
-	} else {
-		my $entry = $r->dbh->select(q{
-			SELECT * FROM entries
-			WHERE path = :path
-		}, {
-			path => $path,
-		})->[0] or throw code => 404, message => 'Not Found';
+	Nogag::Model::Entry->bless($_) for @$entries;
+	$r->service('Nogag::Service::Trackback')->fill_trackbacks($_) for @$entries;
 
-		Nogag::Model::Entry->bless($entry);
-		$r->fill_trackbacks($entry);
+	my $count = $r->dbh->value('SELECT count(*) FROM entries');
 
-		my $etag = md5_hex(join("\n", $entry->modified_at->epoch, -s $r->config->root->file('templates/index.html')));
-		# キャッシュから返す場合だけ304
+	@$entries or $r->res->status(404);
+	$r->stash(mathjax => enable_mathjax(@$entries));
+
+	if (@$entries) {
+		my $modified_at = [ sort { $b->modified_at <=> $a->modified_at } @$entries]->[0]->modified_at;
+		my $etag = md5_hex(join("\n", $modified_at->epoch, -s $r->config->root->file('templates/index.html')));
+		# キャッシュから返す場合だけ 304 を返す
 		# $r->req->if_none_match($etag) or throw code => 304, message => 'Not Modified';
 		$r->res->header('ETag' => $etag);
+		$r->res->header('Last-Modified' => $modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
+	}
 
-		$r->res->header('Last-Modified' => $entry->modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
+	$r->stash(category => $name);
+	$r->stash(title => sprintf('%s カテゴリー', ucfirst $name));
+	$r->stash(entries => $entries);
+	$r->stash(count => $count);
+	$r->stash(next_page => do {
+		if ($page < 100 && @$entries) {
+			my $uri = $r->req->uri->clone;
+			$uri->query_form(
+				page => $page + 1,
+			);
+			$uri->path_query;
+		}
+	});
 
-		my $old_entry = $r->dbh->select(q{
-			SELECT * FROM entries
-			WHERE created_at < :created_at
-			ORDER BY created_at DESC
-			LIMIT 1
-		}, {
-			created_at => $entry->{created_at}
-		})->[0];
-
-		my $new_entry = $r->dbh->select(q{
-			SELECT * FROM entries
-			WHERE created_at > :created_at
-			ORDER BY created_at ASC
-			LIMIT 1
-		}, {
-			created_at => $entry->{created_at}
-		})->[0];
-
-		my $related = $r->dbh->select(q{
-			SELECT * FROM entries
-			WHERE title <> '[photo]'
-			ORDER BY id DESC
-			LIMIT 10
-		});
-
-		Nogag::Model::Entry->bless($_) for @$related;
-
-		$r->stash(related => $related);
-
-		my $entries = [ $entry ];
-
-		$r->stash(mathjax => enable_mathjax(@$entries));
-
-		$r->stash(entries => $entries);
-		$r->stash(entry => $entry);
-		$r->stash(permalink => 1);
-		$r->stash(old_entry => $old_entry);
-		$r->stash(new_entry => $new_entry);
-		$r->stash(title => $entry->title_for_permalink);
-
+	my $tmpl = config->root->subdir('templates/category')->file("$name.html");
+	if (-e $tmpl) {
+		return $r->html($tmpl);
+	} else {
 		$r->html('index.html');
 		infof("new cache: %s", $cache_key);
-		Nogag::Service::Cache->set($cache_key => $r->res->finalize, [ $entry->id ]);
+		Nogag::Service::Cache->set($cache_key => $r->res->finalize, [ "/", map { $_->id } @$entries ]);
 	}
 }
 
@@ -587,40 +529,6 @@ sub like_mathjax {
 sub enable_mathjax {
 	my (@entries) = @_;
 	!!grep { like_mathjax($_->formatted_body(1)) } @entries;
-}
-
-sub fill_trackbacks {
-	my ($r, $entry) = @_;
-	my $trackbacks = $r->dbh->select(q{
-		SELECT * FROM entries
-		WHERE 
-			created_at > :created_at AND
-			body LIKE :trackback
-		ORDER BY id DESC
-	}, {
-		created_at => $entry->{created_at},
-		trackback => '%' . $entry->path . '%',
-	});
-	Nogag::Model::Entry->bless($_) for @$trackbacks;
-	$entry->trackbacks($trackbacks);
-	$entry;
-}
-
-sub invalidate_trackback_entries {
-	my ($r, $entry) = @_;
-	my $paths = [ $entry->formatted_body(1) =~ m{(?:lowreal\.net|debug\.cho45\.stfuawsc\.com)/(\d\d\d\d/\d\d/\d\d/\d+)}g ];
-	my $related_entries = $r->dbh->select(q{
-		SELECT * FROM entries
-		WHERE path IN (:paths)
-	}, {
-		paths => $paths,
-	});
-
-	for (@$related_entries) {
-		Nogag::Model::Entry->bless($_);
-		Nogag::Service::Cache->invalidate_related("".$_->{id});
-		Nogag::Service::Cache->generate_cache_for_path($_->path('/'));
-	}
 }
 
 1;

@@ -63,6 +63,7 @@ sub run {
 			my $action = delete $dest->{action};
 			$r->req->path_parameters(%$dest);
 
+			$r->res->header('X-Dispatch' => $route->{pattern});
 			$r->before_dispatch;
 
 			if (ref($action) eq 'CODE') {
@@ -146,25 +147,26 @@ sub dbh {
 
 sub setup_schema {
 	my ($class) = @_;
-	do {
-		my $schema = file('db/schema.sql')->slurp;
-		my $dbh = DBI->connect('dbi:SQLite:' . config->param('db'), "", "", {
+	my $load_schema = sub {
+		my $db = shift;
+		my $file = shift;
+		my $schema = file($file)->slurp;
+		my $dbh = DBI->connect('dbi:SQLite:' . $db, "", "", {
 			sqlite_allow_multiple_statements => 1,
 			RaiseError => 1,
 			sqlite_see_if_its_a_number => 1,
 			sqlite_unicode => 1,
 		});
 		$dbh->do($schema);
+	};
+
+	do {
+		$load_schema->(config->param('db'), 'db/schema.sql');
+		$load_schema->(config->param('db'), 'db/20160501-trackback.sql');
 	} unless -e config->param('db');
+
 	do {
-		my $schema = file('db/cache.sql')->slurp;
-		my $dbh = DBI->connect('dbi:SQLite:' . config->param('cache_db'), "", "", {
-			sqlite_allow_multiple_statements => 1,
-			RaiseError => 1,
-			sqlite_see_if_its_a_number => 1,
-			sqlite_unicode => 1,
-		});
-		$dbh->do($schema);
+		$load_schema->(config->param('cache_db'), 'db/cache.sql');
 	} unless -e config->param('cache_db');
 }
 
@@ -203,11 +205,11 @@ sub absolute {
 	"$uri";
 }
 
-sub is_smartphone {
-	my ($r) = @_;
-	$r->{_is_smartphone} //= do {
-		my $ua = $r->req->user_agent // '';
-		$ua =~ /Android|iPhone|iPod/;
+sub service {
+	my ($r, $class) = @_;
+	$r->{$class} ||= do {
+		$class->use;
+		$class->new($r);
 	};
 }
 

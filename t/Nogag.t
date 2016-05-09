@@ -13,9 +13,6 @@ use Nogag::Test;
 use Nogag;
 
 my $postprocess = postprocess();
-my $config_guard = config->local(
-	postprocess    => URI->new('http://127.0.0.1:' . $postprocess->port),
-);
 
 subtest base => sub {
 	my $app = Nogag->new(GET('/')->to_psgi);
@@ -160,9 +157,142 @@ subtest edit => sub {
 		my $mech = mechanize();
 		$mech->get_cached_ok($entry->path);
 	};
+
+	subtest category_cache => sub {
+		my $entry_id = $mech->edit(
+			title => '[tech] test',
+			body => 'test',
+			location => '/',
+		);
+		my $entry = get_entry($entry_id);
+
+		{
+			my $mech = mechanize();
+			$mech->get_and_cache_created_ok('/');
+			$mech->get_and_cache_created_ok('/tech/');
+			$mech->get_and_cache_created_ok($entry->path);
+		};
+
+		{
+			$mech->edit(
+				id => $entry->id,
+				title => '[tech] test',
+				body => 'test',
+				location => '/',
+			);
+
+			{
+				my $mech = mechanize();
+				$mech->get_and_cache_created_ok('/');
+				$mech->get_and_cache_created_ok('/tech/');
+				$mech->get_and_cache_created_ok($entry->path);
+			};
+		};
+	};
+};
+
+subtest basic_pages => sub {
+	cleanup_database;
+
+	my $mech = mechanize();
+	$mech->login;
+
+	my $entry1 = get_entry($mech->edit(
+		title => 'test',
+		body => 'test',
+		location => '/',
+	));
+
+	my $entry2 = get_entry($mech->edit(
+		title => '[tech] test',
+		body => 'test',
+		location => '/',
+	));
+
+	my $admin = $mech;
+	my $guest = mechanize();
+
+	my ($res, $tree);
+	for my $m ($admin, $guest) {
+		$m->get_dispatched_ok('/login','/login');
+		$m->get_dispatched_ok('/robots.txt','/robots.txt');
+		$m->get_dispatched_ok('/sitemap.xml','/sitemap.xml');
+		$m->get_dispatched_ok('/archive','/archive');
+
+		$res = $m->get_dispatched_ok('/feed','/feed');
+		unlike $res->content, qr"@{[$entry1->path('/')]}";
+		like $res->content, qr"@{[$entry2->path('/')]}";
+
+		$res = $m->get_dispatched_ok('/','/');
+		$tree = tree($res->content);
+		ok $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
+		ok $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry2->path('/').'")] ');
+
+		$res = $m->get_dispatched_ok('/tech/','/:category_name/');
+		$tree = tree($res->content);
+		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
+		ok $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry2->path('/').'")] ');
+
+		$res = $m->get_dispatched_ok($entry1->path('/'),'/{path:.+}');
+		$tree = tree($res->content);
+		ok $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
+		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry2->path('/').'")] ');
+
+		$res = $m->get_dispatched_ok($entry1->date->strftime('/%Y/%m/%d/'),'/{year:[0-9]{4}}/{month:[0-9]{2}}/{day:[0-9]{2}}/');
+		$tree = tree($res->content);
+		ok $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
+
+		$res = $m->get_dispatched_ok($entry1->date->strftime('/%Y/%m/'),'/{year:[0-9]{4}}/{month:[0-9]{2}}/');
+		$tree = tree($res->content);
+		ok $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
+
+		$res = $m->get_dispatched_ok($entry2->path('/'),'/{path:.+}');
+		$tree = tree($res->content);
+		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
+		ok $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry2->path('/').'")] ');
+	}
 };
 
 subtest trackbacks => sub {
+	cleanup_database;
+	my $mech = mechanize();
+	$mech->login;
+
+	my $entry1 = get_entry($mech->edit(
+		title => 'test',
+		body => 'test',
+		location => '/',
+	));
+
+	my $entry2 = get_entry($mech->edit(
+		title => 'test',
+		body => 'test https://lowreal.net/' . $entry1->path . ' ',
+		location => '/',
+	));
+
+	my $entry3 = get_entry($mech->edit(
+		title => 'test',
+		body => 'test https://lowreal.net/' . $entry1->path . ' ',
+		location => '/',
+	));
+
+	{
+		my $res = $mech->get($entry1->path('/'));
+		ok tree($res->content)->exists('//*[@class="content trackbacks"]//a[contains(@href, "'.$entry2->path('/').'")]');
+		ok tree($res->content)->exists('//*[@class="content trackbacks"]//a[contains(@href, "'.$entry3->path('/').'")]');
+	};
+
+	$entry2 = get_entry($mech->edit(
+		id => $entry2->id,
+		title => 'test',
+		body => 'test removed',
+	));
+
+	{
+		my $res = $mech->get($entry1->path('/'));
+		ok !tree($res->content)->exists('//*[@class="content trackbacks"]//a[contains(@href, "'.$entry2->path('/').'")]');
+		ok tree($res->content)->exists('//*[@class="content trackbacks"]//a[contains(@href, "'.$entry3->path('/').'")]');
+	};
 };
 
 done_testing;
