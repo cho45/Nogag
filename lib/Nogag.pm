@@ -28,6 +28,7 @@ use parent qw(Nogag::Base);
 our @EXPORT = qw(config throw);
 
 route "/" => \&index;
+route "/.page/{page:[0-9]{8}}/{epp:[0-9]}" => \&index;
 route "/login" => \&login;
 route "/logout" => \&logout;
 route "/api/edit" => \&edit;
@@ -43,6 +44,7 @@ route '/{year:[0-9]{4}}/{month:[0-9]{2}}/' => \&archive;
 route '/{year:[0-9]{4}}/{month:[0-9]{2}}/{day:[0-9]{2}}/' => \&archive;
 route '/archive' => \&archive_index;
 route '/:category_name/' => \&category;
+route "/:category_name/.page/{page:[0-9]{14}}/{epp:[0-9]}" => \&category;
 route '/{path:.+}' => \&permalink;
 
 sub login {
@@ -135,8 +137,9 @@ sub edit {
 sub index {
 	my ($r) = @_;
 	my $page = $r->req->date_param('page') || '';
+	my $epp  = $r->req->number_param('epp', 100) || config->param('entry_per_page');
 
-	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->path, $page);
+	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->path, $page, $epp);
 	unless ($r->has_auth) {
 		if ( (my $cached = Nogag::Service::Cache->get($cache_key)) && !$r->req->is_super_reload) {
 			infof("return cache: %s", $cache_key);
@@ -148,7 +151,6 @@ sub index {
 		}
 	}
 
-
 	my $entries;
 	my $dates = $r->dbh->select(q{
 		SELECT `date` FROM entries
@@ -158,11 +160,11 @@ sub index {
 		LIMIT :limit
 	}, {
 		page   => $page ? $page->strftime('%Y-%m-%d') : '9999-99-99',
-		limit  => config->param('entry_per_page') + 1,
+		limit  => $epp + 1,
 	});
 
 	my $next_page;
-	if (@$dates > config->param('entry_per_page')) {
+	if (@$dates > $epp) {
 		$next_page = localtime->from_db((pop @$dates)->{date})->strftime('%Y%m%d');
 	}
 
@@ -192,15 +194,15 @@ sub index {
 		$r->res->header('Last-Modified' => $modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
 	}
 
+	my $title = $page ? sprintf("%d年%d月%d日以前の%d件", $page->strftime('%Y'), $page->strftime('%m'), $page->strftime('%d'), $epp):
+	            "";
+
+	$r->stash(title => $title);
 	$r->stash(entries => $entries);
 	$r->stash(count => $count);
 	$r->stash(next_page => do {
 		if ($next_page) {
-			my $uri = $r->req->uri->clone;
-			$uri->query_form(
-				page => $next_page
-			);
-			$uri->path_query;
+			sprintf('/.page/%s/%s', $next_page, $epp);
 		}
 	});
 
@@ -382,9 +384,10 @@ sub category {
 	my ($r) = @_;
 
 	my $page = $r->req->time_param('page');
-	my $name = $r->req->param('category_name');
+	my $epp  = $r->req->number_param('epp', 100) || config->param("entry_per_page");
+	my $name = lc $r->req->param('category_name');
 
-	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->path, $page);
+	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->path, $page, $epp);
 
 	unless ($r->has_auth) {
 		if ( (my $cached = Nogag::Service::Cache->get($cache_key)) && !$r->req->is_super_reload) {
@@ -405,12 +408,12 @@ sub category {
 	}, {
 		page  => $page ? "$page" : '9999-99-99 99:99:99',
 		query => "%[$name]%",
-		limit => config->param('entry_per_page') + 1,
+		limit => $epp + 1,
 	});
 	Nogag::Model::Entry->bless($_) for @$entries;
 
 	my $next_page;
-	if (@$entries > config->param('entry_per_page')) {
+	if (@$entries > $epp) {
 		$next_page = localtime((pop @$entries)->created_at->epoch)->for_uri;
 	}
 
@@ -430,17 +433,16 @@ sub category {
 		$r->res->header('Last-Modified' => $modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
 	}
 
+	my $title = $page ? sprintf("%s カテゴリー「%s」以前の%d件", ucfirst $name, $entries->[0]->title, $epp):
+	            sprintf('%s カテゴリー', ucfirst $name);
+
 	$r->stash(category => $name);
-	$r->stash(title => sprintf('%s カテゴリー', ucfirst $name));
+	$r->stash(title => $title);
 	$r->stash(entries => $entries);
 	$r->stash(count => $count);
 	$r->stash(next_page => do {
 		if ($next_page) {
-			my $uri = $r->req->uri->clone;
-			$uri->query_form(
-				page => $next_page
-			);
-			$uri->path_query;
+			sprintf('/%s/.page/%s/%s', $name, $next_page, $epp);
 		}
 	});
 
