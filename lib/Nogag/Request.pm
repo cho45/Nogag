@@ -6,6 +6,7 @@ use warnings;
 use parent qw(Plack::Request);
 use Hash::MultiValue;
 use Encode;
+use Nogag::Time;
 
 sub parameters {
 	my $self = shift;
@@ -47,6 +48,28 @@ sub string_param {
 	my ($self, $key) = @_;
 	my $val = $self->param($key) // "";
 	decode_utf8 $val;
+}
+
+sub date_param {
+	my ($self, $key) = @_;
+	my $val = $self->param($key) // "";
+	if ($val =~ qr(^\d\d\d\d\d\d\d\d$)) {
+		localtime->from_uri($val);
+	} else {
+		undef;
+	}
+}
+
+sub time_param {
+	my ($self, $key) = @_;
+	my $val = $self->param($key) // "";
+	my $ret;
+	if ($val) {
+		eval {
+			$ret = localtime->from_uri($val);
+		};
+	}
+	$ret;
 }
 
 sub if_none_match {

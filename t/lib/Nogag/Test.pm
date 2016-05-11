@@ -5,11 +5,13 @@ use utf8;
 use strict;
 use warnings;
 
+use Test::More;
+use Test::TCP;
+use Test::Time;
+
 use Exporter::Lite;
 use Plack::Util;
 use Plack::Request;
-use Test::More;
-use Test::TCP;
 use Test::WWW::Mechanize::PSGI;
 use HTML::TreeBuilder::XPath;
 use Plack::Loader;
@@ -31,10 +33,10 @@ our @EXPORT = qw(
 	$r
 );
 
-
-cleanup_database();
+Nogag->setup_schema;
 
 our $r = Nogag->new({});
+cleanup_database();
 
 no warnings 'redefine';
 sub import {
@@ -63,13 +65,9 @@ sub mechanize {
 };
 
 sub cleanup_database {
-	unlink config->param('db');
-	unlink config->param('cache_db');
-
-	note config->param('db');
-	note config->param('cache_db');
-	note "setup_schema";
-	Nogag->setup_schema;
+	$r->dbh->do('DELETE FROM entries');
+	$r->dbh->do('DELETE FROM options');
+	$r->dbh->do('DELETE FROM trackbacks');
 }
 
 sub get_entry {

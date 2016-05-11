@@ -134,10 +134,9 @@ sub edit {
 
 sub index {
 	my ($r) = @_;
-	my $page = $r->req->number_param('page', 100) || 1;
-	my $query = $r->req->string_param('query') || '';
+	my $page = $r->req->date_param('page') || '';
 
-	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->path, $page, $query);
+	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->path, $page);
 	unless ($r->has_auth) {
 		if ( (my $cached = Nogag::Service::Cache->get($cache_key)) && !$r->req->is_super_reload) {
 			infof("return cache: %s", $cache_key);
@@ -151,37 +150,29 @@ sub index {
 
 
 	my $entries;
+	my $dates = $r->dbh->select(q{
+		SELECT `date` FROM entries
+		WHERE `date` <= :page
+		GROUP BY `date`
+		ORDER BY `date` DESC
+		LIMIT :limit
+	}, {
+		page   => $page ? $page->strftime('%Y-%m-%d') : '9999-99-99',
+		limit  => config->param('entry_per_page') + 1,
+	});
 
-	if ($r->has_auth && $query) {
-		$entries = $r->dbh->select(q{
-			SELECT * FROM entries
-			WHERE title LIKE :query OR formatted_body LIKE :query
-			ORDER BY `date` DESC, `created_at` ASC
-			LIMIT :limit OFFSET :offset
-		}, {
-			query  => "%$query%",
-			limit  => config->param('entry_per_page'),
-			offset => ($page - 1) * config->param('entry_per_page'),
-		});
-	} else {
-		my $dates = $r->dbh->select(q{
-			SELECT `date` FROM entries
-			GROUP BY `date`
-			ORDER BY `date` DESC
-			LIMIT :limit OFFSET :offset
-		}, {
-			limit  => config->param('entry_per_page'),
-			offset => ($page - 1) * config->param('entry_per_page'),
-		});
-
-		$entries = $r->dbh->select(q{
-			SELECT * FROM entries
-			WHERE `date` IN (:dates)
-			ORDER BY `date` DESC, `created_at` ASC
-		}, {
-			dates => [ map { $_->{date} } @$dates ]
-		});
+	my $next_page;
+	if (@$dates > config->param('entry_per_page')) {
+		$next_page = localtime->from_db((pop @$dates)->{date})->strftime('%Y%m%d');
 	}
+
+	$entries = $r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE `date` IN (:dates)
+		ORDER BY `date` DESC, `created_at` ASC
+	}, {
+		dates => [ map { $_->{date} } @$dates ]
+	});
 
 	Nogag::Model::Entry->bless($_) for @$entries;
 	$r->service('Nogag::Service::Trackback')->fill_trackbacks($_) for @$entries;
@@ -204,11 +195,10 @@ sub index {
 	$r->stash(entries => $entries);
 	$r->stash(count => $count);
 	$r->stash(next_page => do {
-		if ($page < 100 && @$entries) {
+		if ($next_page) {
 			my $uri = $r->req->uri->clone;
 			$uri->query_form(
-				page => $page + 1,
-				query => $query ? $query : (),
+				page => $next_page
 			);
 			$uri->path_query;
 		}
@@ -391,7 +381,7 @@ sub permalink {
 sub category {
 	my ($r) = @_;
 
-	my $page = $r->req->number_param('page', 100) || 1;
+	my $page = $r->req->time_param('page');
 	my $name = $r->req->param('category_name');
 
 	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->path, $page);
@@ -409,16 +399,21 @@ sub category {
 
 	my $entries = $r->dbh->select(q{
 		SELECT * FROM entries
-		WHERE title LIKE :query
+		WHERE `created_at` <= :page AND title LIKE :query
 		ORDER BY `date` DESC, `created_at` ASC
-		LIMIT :limit OFFSET :offset
+		LIMIT :limit
 	}, {
-		query  => "%[$name]%",
-		limit  => config->param('entry_per_page'),
-		offset => ($page - 1) * config->param('entry_per_page'),
+		page  => $page ? "$page" : '9999-99-99 99:99:99',
+		query => "%[$name]%",
+		limit => config->param('entry_per_page') + 1,
 	});
-
 	Nogag::Model::Entry->bless($_) for @$entries;
+
+	my $next_page;
+	if (@$entries > config->param('entry_per_page')) {
+		$next_page = localtime((pop @$entries)->created_at->epoch)->for_uri;
+	}
+
 	$r->service('Nogag::Service::Trackback')->fill_trackbacks($_) for @$entries;
 
 	my $count = $r->dbh->value('SELECT count(*) FROM entries');
@@ -440,10 +435,10 @@ sub category {
 	$r->stash(entries => $entries);
 	$r->stash(count => $count);
 	$r->stash(next_page => do {
-		if ($page < 100 && @$entries) {
+		if ($next_page) {
 			my $uri = $r->req->uri->clone;
 			$uri->query_form(
-				page => $page + 1,
+				page => $next_page
 			);
 			$uri->path_query;
 		}

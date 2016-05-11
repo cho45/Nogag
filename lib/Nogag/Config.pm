@@ -11,7 +11,7 @@ use constant root => dir(".")->absolute;
 common +{
 	appname        => 'nogag',
 	sitename       => '氾濫原',
-	entry_per_page => 4,
+	entry_per_page => 3,
 	base_uri       => URI->new('https://lowreal.net'),
 	postprocess    => URI->new('http://127.0.0.1:13370'),
 	version        => scalar time,

@@ -23,6 +23,23 @@ use lib config->root->subdir('lib')->absolute.q();
 
 POSIX::setlocale(&POSIX::LC_ALL, "C");
 
+#{
+#	use Parallel::Prefork;
+#	my $name = $0;
+#	my $orig_new = \&Parallel::Prefork::new;
+#	no warnings 'redefine';
+#	*Parallel::Prefork::new = sub {
+#		my ($class, $opts) = @_;
+#		$opts->{before_fork} = sub {
+#			$0 = "$name (worker)"
+#		};
+#		$opts->{after_fork} = sub {
+#			$0 = "$name (master)"
+#		};
+#		$orig_new->($class, $opts);
+#	};
+#};
+
 Nogag->setup_schema;
 
 builder {

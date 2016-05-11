@@ -1,16 +1,20 @@
 use strict;
 use warnings;
 use lib 't/lib';
+
+use Test::Time;
 use Test::More;
 use Test::Name::FromLine;
+use Nogag::Test;
 
 use HTTP::Request::Common;
 use HTTP::Message::PSGI;
 use Router::Simple;
 use JSON;
+use Time::Seconds;
 
-use Nogag::Test;
 use Nogag;
+use Nogag::Time;
 
 my $postprocess = postprocess();
 
@@ -294,5 +298,102 @@ subtest trackbacks => sub {
 		ok tree($res->content)->exists('//*[@class="content trackbacks"]//a[contains(@href, "'.$entry3->path('/').'")]');
 	};
 };
+
+subtest pager => sub {
+	cleanup_database;
+	my $guard = config->local(entry_per_page => 2);
+
+	local $Test::Time::time = localtime->strptime('2016-05-01', '%Y-%m-%d')->epoch;
+
+	my $mech = mechanize();
+	$mech->login;
+
+	# 2016-05-01
+	my $entry1 = get_entry($mech->edit(
+		title => '[tech] test',
+		body => 'test',
+		location => '/',
+	));
+	note "entry1->created_at ". $entry1->created_at;
+
+	sleep ONE_DAY;
+
+	# 2016-05-02
+	my $entry2 = get_entry($mech->edit(
+		title => '[tech] test',
+		body => 'test',
+		location => '/',
+	));
+	note "entry2->created_at ". $entry2->created_at;
+
+	sleep ONE_DAY;
+
+	# 2016-05-03
+	my $entry3 = get_entry($mech->edit(
+		title => '[tech] test',
+		body => 'test',
+		location => '/',
+	));
+	note "entry3->created_at ". $entry3->created_at;
+
+	sleep ONE_DAY;
+
+	# 2016-05-04
+	my $entry4 = get_entry($mech->edit(
+		title => '[tech] test',
+		body => 'test',
+		location => '/',
+	));
+	note "entry4->created_at ". $entry4->created_at;
+
+	subtest 'index' => sub {
+		my ($res, $tree);
+
+		$res = $mech->get_dispatched_ok('/','/');
+		$tree = tree($res->content);
+		ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry4->path('/').'")] ');
+		ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry3->path('/').'")] ');
+		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry2->path('/').'")] ');
+		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
+		is $tree->findvalue('//a[@rel="next"]/@href'), '/?page=20160502';
+
+		$res = $mech->get_dispatched_ok('/?page=20160503','/');
+		$tree = tree($res->content);
+		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry4->path('/').'")] ');
+		ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry3->path('/').'")] ');
+		ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry2->path('/').'")] ');
+		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
+		is $tree->findvalue('//a[@rel="next"]/@href'), '/?page=20160501';
+
+		$res = $mech->get_dispatched_ok('/?page=20160502','/');
+		$tree = tree($res->content);
+		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry4->path('/').'")] ');
+		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry3->path('/').'")] ');
+		ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry2->path('/').'")] ');
+		ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
+		ok !$tree->exists('//a[@rel="next"]/@href');
+	};
+
+	subtest 'category' => sub {
+		my ($res, $tree);
+
+		$res = $mech->get_dispatched_ok('/tech/','/:category_name/');
+		$tree = tree($res->content);
+		ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry4->path('/').'")] ');
+		ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry3->path('/').'")] ');
+		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry2->path('/').'")] ');
+		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
+		is $tree->findvalue('//a[@rel="next"]/@href'), '/tech/?page=20160502000000';
+
+		$res = $mech->get_dispatched_ok('/tech/?page=20160502000000','/:category_name/');
+		$tree = tree($res->content);
+		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry4->path('/').'")] ');
+		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry3->path('/').'")] ');
+		ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry2->path('/').'")] ');
+		ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
+		ok !$tree->exists('//a[@rel="next"]/@href');
+	};
+};
+
 
 done_testing;

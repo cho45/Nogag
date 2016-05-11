@@ -24,17 +24,13 @@ sub create_cache {
 	}
 	my $elapsed = tv_interval($t0);
 	infof("created for %s with %d", $path, $elapsed * 1000);
+	$res;
 }
 
 my $target = shift @ARGV || ':all';
 
 if ($target eq ':all' || $target eq ':index') {
 	create_cache('/');
-	for my $page (2..30) {
-		eval {
-			create_cache("/?page=$page");
-		};
-	}
 }
 
 
