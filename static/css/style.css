@@ -379,7 +379,7 @@ body > * {
 .entries article {
 	clear: both;
 	padding: 1em 0;
-	margin: 0 0 10em 0;
+	margin: 0 0 1em 0;
 }
 
 .entries .date {
@@ -388,7 +388,7 @@ body > * {
 	font-family: 'Merriweather', serif;
 	font-weight: 400;
 	font-size: 80%;
-	margin: 0;
+	margin: 10em 0 0;
 	text-align: center;
 	border-width: 0 0 1px 0;
 	border-style: solid;
@@ -396,6 +396,10 @@ body > * {
 	padding: 3px 0;
 	width: 1024px;
 	color: #333;
+}
+
+.entries .date:first-child {
+	margin: 0;
 }
 
 .entries .date a {
@@ -813,6 +817,35 @@ figure.http:after {
 .adsense-responsive {
 	display: block;
 	width: 728px; height: 90px;
+}
+
+ol[itemtype*="BreadcrumbList"] {
+	display: block;
+	list-style: none;
+	font-size: 80%;
+	margin: 0;
+	padding: 10px 0;
+}
+
+ol[itemtype*="BreadcrumbList"] a:link ,
+ol[itemtype*="BreadcrumbList"] a:visited {
+	color: #666;
+	text-decoration: none;
+}
+
+ol[itemtype*="BreadcrumbList"] li {
+	display: inline;
+	margin: 0;
+	padding: 0;
+}
+
+ol[itemtype*="BreadcrumbList"] li:before {
+	display: inline;
+	content: "›";
+}
+
+ol[itemtype*="BreadcrumbList"] li:first-child:before {
+	content: "";
 }
 
 @media only screen and (max-width : 1100px) {

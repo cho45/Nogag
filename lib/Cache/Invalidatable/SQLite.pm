@@ -46,6 +46,7 @@ sub set {
 	}
 
 	$dbh->commit;
+	undef $dbh;
 
 	$value;
 }
@@ -56,6 +57,7 @@ sub get {
 	my $cache = $dbh->selectall_arrayref(q{
 		SELECT * FROM cache WHERE cache_key = ?
 	}, { Slice => {} }, $key)->[0];
+	undef $dbh;
 
 	if ($cache) {
 		$self->{deserializer}->($cache->{content});
@@ -72,6 +74,7 @@ sub remove {
 		DELETE FROM cache WHERE cache_key = ?
 	})->execute($key);
 	$dbh->commit;
+	undef $dbh;
 	undef;
 }
 
@@ -83,6 +86,7 @@ sub invalidate_related {
 		DELETE FROM cache_relation WHERE source_id = ?
 	})->execute($src);
 	$dbh->commit;
+	undef $dbh;
 }
 
 sub clear {
@@ -92,6 +96,7 @@ sub clear {
 	$dbh->do('DELETE FROM cache');
 	$dbh->do('DELETE FROM cache_relation');
 	$dbh->commit;
+	undef $dbh;
 }
 
 

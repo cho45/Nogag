@@ -56,6 +56,10 @@ my $XSLATE = Text::Xslate->new(
 		}
 	};
 	$XSLATE->load_file($_) for qw{
+		feed.xml
+		sitemap.xml
+		robots.txt
+		form.html
 		index.html
 		_article.html
 		_adsense.html

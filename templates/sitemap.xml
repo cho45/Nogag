@@ -5,17 +5,33 @@
 		<priority>1.0</priority>
 	</url>
 	<url>
+		<loc>[% r.absolute('/tech/') %]</loc>
+		<changefreq>always</changefreq>
+		<priority>1.0</priority>
+	</url>
+	<url>
+		<loc>[% r.absolute('/photo/') %]</loc>
+		<changefreq>always</changefreq>
+		<priority>1.0</priority>
+	</url>
+	<url>
 		<loc>[% r.absolute('/archive') %]</loc>
 		<changefreq>monthly</changefreq>
-		<priority>0.1</priority>
+		<priority>0.5</priority>
 	</url>
 
-	[% FOR year IN archive %]
-	[% FOR month IN year.months %]
-	[% IF month.count %]
-	<url><loc>[% r.absolute(month.link) %]</loc></url>
+	[% FOR date IN dates %]
+	<url>
+		<loc>[% r.absolute(date.date) %]</loc>
+		<priority>0.5</priority>
+	</url>
 	[% END %]
-	[% END %]
+
+	[% FOR month IN months %]
+	<url>
+		<loc>[% r.absolute(month.month) %]</loc>
+		<priority>0.5</priority>
+	</url>
 	[% END %]
 
 	[% FOR entry IN entries %]
@@ -24,6 +40,10 @@
 		<loc>[% r.absolute('/' _ entry.path) %]</loc>
 		[% IF 0 %]<lastmod>[% entry.lastmod %]</lastmod>[% END %]
 		<priority>[% priority < 0.1 ? 0.1 : priority %]</priority>
+	</url>
+	<url>
+		<loc>[% r.absolute('/.page/' _ entry.date _ '/' _ r.config_param('entry_per_page') ) %]</loc>
+		<priority>0.5</priority>
 	</url>
 	[% END %]
 </urlset>

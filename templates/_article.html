@@ -1,4 +1,4 @@
-[% entry_uri = r.absolute('/' _ entry.path) %]
+[% canonical = r.absolute('/' _ entry.path) %]
 <article
 	id="post-[% entry.created_at.epoch %]"
 	class="[% entry.tags.join(' ') %] [% IF is_first %]first[% END %]"
@@ -74,6 +74,23 @@
 
 	<div class="content" itemprop="articleBody">
 		[% entry.formatted_body(permalink) | raw %]
+
+		[% FOR tag IN entry.tags %]
+		<ol itemscope itemtype="http://schema.org/BreadcrumbList"
+			><li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem"
+				><a itemprop="item" href="/"><span itemprop="name">トップ</span></a>
+				<meta itemprop="position" content="1"/>
+			</li>
+			<li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+				<a itemprop="item" href="/[% tag %]/"><span itemprop="name">[% tag %]</span></a>
+				<meta itemprop="position" content="2"/>
+			</li>
+			<li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+				<a itemprop="item" href="[% canonical %]"><span itemprop="name">[%entry.title || '✖' %]</span></a>
+				<meta itemprop="position" content="3"/>
+			</li>
+		</ol>
+		[% END %]
 	</div>
 
 	[% IF permalink %]
@@ -103,7 +120,6 @@
 	[% END %]
 
 	<div class="social">
-		[% canonical = r.absolute('/' _ entry.path) %]
 		<span class="hatena-star"></span>
 		<p class="share-buttons">
 			<a class="share-button" style="background: #3b5998" target="_blank" rel="nofollow"

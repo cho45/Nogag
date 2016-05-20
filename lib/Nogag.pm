@@ -33,7 +33,6 @@ route "/login" => \&login;
 route "/logout" => \&logout;
 route "/api/edit" => \&edit;
 route "/sitemap.xml" => \&sitemap;
-route "/mobilesitemap.xml" => \&mobilesitemap;
 route "/feed" => \&feed;
 route "/robots.txt" => \&robots_txt;
 route "/api/kousei" => "Nogag::API kousei";
@@ -137,7 +136,7 @@ sub edit {
 sub index {
 	my ($r) = @_;
 	my $page = $r->req->date_param('page') || '';
-	my $epp  = $r->req->number_param('epp', 100) || config->param('entry_per_page');
+	my $epp  = $r->req->number_param('epp', 30) || config->param('entry_per_page');
 
 	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->path, $page, $epp);
 	unless ($r->has_auth) {
@@ -194,7 +193,7 @@ sub index {
 		$r->res->header('Last-Modified' => $modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
 	}
 
-	my $title = $page ? sprintf("%d年%d月%d日以前の%d件", $page->strftime('%Y'), $page->strftime('%m'), $page->strftime('%d'), $epp):
+	my $title = $page ? sprintf("%d年%d月%d日以前の%d日", $page->strftime('%Y'), $page->strftime('%m'), $page->strftime('%d'), $epp):
 	            "";
 
 	$r->stash(title => $title);
@@ -208,7 +207,7 @@ sub index {
 
 	$r->html('index.html');
 	infof("new cache: %s", $cache_key);
-	Nogag::Service::Cache->set($cache_key => $r->res->finalize, [ "/", map { $_->id } @$entries ]);
+	Nogag::Service::Cache->set($cache_key => $r->res->finalize, [ ($page ? () : "/"), map { $_->id } @$entries ]);
 }
 
 sub archive {
@@ -384,7 +383,7 @@ sub category {
 	my ($r) = @_;
 
 	my $page = $r->req->time_param('page');
-	my $epp  = $r->req->number_param('epp', 100) || config->param("entry_per_page");
+	my $epp  = $r->req->number_param('epp', 30) || config->param("entry_per_page");
 	my $name = lc $r->req->param('category_name');
 
 	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->path, $page, $epp);
@@ -433,7 +432,7 @@ sub category {
 		$r->res->header('Last-Modified' => $modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
 	}
 
-	my $title = $page ? sprintf("%s カテゴリー「%s」以前の%d件", ucfirst $name, $entries->[0]->title, $epp):
+	my $title = $page ? sprintf("%s カテゴリー「%s」以前の%d件", ucfirst $name, $entries->[0]->title || $entries->[0]->path, $epp):
 	            sprintf('%s カテゴリー', ucfirst $name);
 
 	$r->stash(category => $name);
@@ -452,7 +451,7 @@ sub category {
 	} else {
 		$r->html('index.html');
 		infof("new cache: %s", $cache_key);
-		Nogag::Service::Cache->set($cache_key => $r->res->finalize, [ "/", map { $_->id } @$entries ]);
+		Nogag::Service::Cache->set($cache_key => $r->res->finalize, [ ($page ? () : "/"), map { $_->id } @$entries ]);
 	}
 }
 
@@ -460,29 +459,35 @@ sub sitemap {
 	my ($r) = @_;
 
 	my $entries = $r->dbh->select(q{
-		SELECT path, strftime('%Y-%m-%dT%H:%M:%SZ', modified_at) as lastmod FROM entries ORDER BY `date` DESC
+		SELECT
+			path,
+			strftime('%Y%m%d', date) as date,
+			strftime('%Y-%m-%dT%H:%M:%SZ', modified_at) as lastmod
+		FROM entries
+		ORDER BY `date` DESC
+	});
+
+	my $dates = $r->dbh->select(q{
+		SELECT
+			strftime('/%Y/%m/%d/', date) as date
+		FROM entries
+		GROUP BY date
+	});
+
+	my $months = $r->dbh->select(q{
+		SELECT
+			strftime('/%Y/%m/', date) as month
+		FROM entries
+		GROUP BY month
 	});
 
 	$r->stash(entries => $entries);
-	archive_index($r, stash => 1);
+	$r->stash(dates => $dates);
+	$r->stash(months => $months);
+
 	$r->res->content_type('application/xml; charset=utf-8');
 	$r->res->content(encode_utf8 $r->render('sitemap.xml'));
 }
-
-sub mobilesitemap {
-	my ($r) = @_;
-
-	my $entries = $r->dbh->select(q{
-		SELECT path, strftime('%Y-%m-%dT%H:%M:%SZ', modified_at) as lastmod FROM entries ORDER BY `date` DESC
-	});
-
-	$r->stash(entries => $entries);
-	$r->stash(mobile => 1);
-	archive_index($r, stash => 1);
-	$r->res->content_type('application/xml; charset=utf-8');
-	$r->res->content(encode_utf8 $r->render('mobilesitemap.xml'));
-}
-
 
 sub feed {
 	my ($r) = @_;
