@@ -21,8 +21,9 @@ common +{
 config development => {
 	db => root->file('db/development.db'),
 	cache_db => root->file('db/development-cache.db'),
+	tfidf_db => root->file('db/development-tfidf.db'),
 	postprocess    => URI->new('http://127.0.0.1:13371'),
-	explain => 1,
+	explain => 0,
 };
 
 config test => {
@@ -36,6 +37,7 @@ config test => {
 config production => {
 	db => root->file('db/data.db'),
 	cache_db => root->file('db/cache.db'),
+	tfidf_db => root->file('db/tfidf.db'),
 };
 
 config default => { parent('development') };

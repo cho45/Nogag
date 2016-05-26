@@ -168,6 +168,10 @@ sub setup_schema {
 	do {
 		$load_schema->(config->param('cache_db'), 'db/cache.sql');
 	} unless -e config->param('cache_db');
+
+	do {
+		$load_schema->(config->param('tfidf_db'), 'db/tfidf.sql');
+	} unless -e config->param('tfidf_db');
 }
 
 sub sk {

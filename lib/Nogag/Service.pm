@@ -14,6 +14,7 @@ sub new {
 	$self;
 }
 
+sub r   { $_[0]->{r} }
 sub dbh { $_[0]->{r}->dbh }
 
 

@@ -15,10 +15,19 @@ sub bless {
 
 sub trackbacks {
 	my ($self, $val) = @_;
-	if (defined $val) {
-		$self->{trackbacks} = $val;
-	}
+	defined $val and $self->{trackbacks} = $val;
 	$self->{trackbacks};
+}
+
+sub similar_entries {
+	my ($self, $val) = @_;
+	defined $val and $self->{similar_entries} = $val;
+	$self->{similar_entries};
+}
+
+sub data {
+	my ($self, $key) = @_;
+	$self->{$key};
 }
 
 sub id             { $_[0]->{id} }

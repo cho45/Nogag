@@ -177,6 +177,7 @@ sub index {
 
 	Nogag::Model::Entry->bless($_) for @$entries;
 	$r->service('Nogag::Service::Trackback')->fill_trackbacks($_) for @$entries;
+	$r->service('Nogag::Service::SimilarEntry')->fill_similar_entries($_) for @$entries;
 
 	my $count = $r->dbh->value('SELECT count(*) FROM entries');
 
@@ -326,6 +327,7 @@ sub permalink {
 
 	Nogag::Model::Entry->bless($entry);
 	$r->service('Nogag::Service::Trackback')->fill_trackbacks($entry);
+	$r->service('Nogag::Service::SimilarEntry')->fill_similar_entries($entry);
 
 	my $etag = md5_hex(join("\n", $entry->modified_at->epoch, -s $r->config->root->file('templates/index.html')));
 	# キャッシュから返す場合だけ304
@@ -417,6 +419,7 @@ sub category {
 	}
 
 	$r->service('Nogag::Service::Trackback')->fill_trackbacks($_) for @$entries;
+	$r->service('Nogag::Service::SimilarEntry')->fill_similar_entries($_) for @$entries;
 
 	my $count = $r->dbh->value('SELECT count(*) FROM entries');
 
