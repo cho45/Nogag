@@ -61,6 +61,7 @@ my $XSLATE = Text::Xslate->new(
 		robots.txt
 		form.html
 		index.html
+		_similar.html
 		_article.html
 		_adsense.html
 		_images.html

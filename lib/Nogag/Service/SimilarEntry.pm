@@ -8,6 +8,7 @@ use DBI;
 use Text::TinySegmenter;
 use List::Util qw(reduce);
 use Log::Minimal;
+use Time::HiRes qw(gettimeofday tv_interval);
 
 use Nogag::Config;
 use Nogag::Model::Entry;
@@ -68,7 +69,15 @@ sub update {
 	}
 	$dbh->commit;
 	if (!$opts{skip_recalculate}) {
-		$self->recalculate_tfidf_for_terms([ keys %$words ]);
+		$self->recalculate_tfidf_for_all_entries($id);
+		my $terms = [
+			map {
+				$_->{term}
+			}
+			@{ $self->get_tfidf($id, 100) }
+		];
+
+		$self->recalculate_tfidf_for_terms($terms);
 	}
 }
 
@@ -80,12 +89,14 @@ sub recalculate_tfidf_for_terms {
 	while (my @part = splice @$terms, 0, 50) {
 		my $ph = join(',', ('?') x scalar @part);
 		my $results = $dbh->selectall_arrayref(qq{
-			SELECT DISTINCT(entry_id) as entry_id FROM tfidf WHERE term IN ($ph)
+			SELECT DISTINCT(entry_id) as entry_id FROM tfidf
+				WHERE term IN ($ph) AND tfidf > 1.0
 		}, { Slice => {} }, @part);
 		$entry_ids->{$_->{entry_id}}++ for @$results;
 	}
+	infof("recalculate_tfidf_for_terms target entry count", scalar keys %$entry_ids);
 	$self->recalculate_tfidf_for_all_entries(keys %$entry_ids);
-	$self->recalculate_similar_entry($_) for keys %$entry_ids;
+	$self->recalculate_similar_entry(keys %$entry_ids);
 }
 
 sub recalculate_tfidf_for_all_entries {
@@ -132,18 +143,18 @@ sub recalculate_tfidf_for_all_entries {
 	});
 	my $sql = q{
 		UPDATE tfidf SET tfidf = IFNULL(
-			/* tf */
+			-- tf
 			(
-				LOG(CAST(term_count AS REAL) + 1) /* term_count in an entry */
+				LOG(CAST(term_count AS REAL) + 1) -- term_count in an entry
 				/
-				(SELECT cnt FROM entry_term_counts WHERE entry_term_counts.entry_id = tfidf.entry_id) /* total term count in an entry */
+				(SELECT cnt FROM entry_term_counts WHERE entry_term_counts.entry_id = tfidf.entry_id) -- total term count in an entry
 			)
 			*
-			/* idf */
+			-- idf
 			(1 + LOG(
-				(SELECT value FROM entry_total) /* total */
+				(SELECT value FROM entry_total) -- total
 				/
-				(SELECT cnt FROM term_counts WHERE term_counts.term = tfidf.term) /* term entry count */
+				(SELECT cnt FROM term_counts WHERE term_counts.term = tfidf.term) -- term entry count
 			))
 		, 0.0)
 	};
@@ -159,129 +170,198 @@ sub recalculate_tfidf_for_all_entries {
 	$dbh->commit;
 }
 
-#sub search_similar_entry {
+
+#sub recalculate_similar_entry {
 #	my ($self, $entry_id) = @_;
+#	infof('recalculate_similar_entry %d', $entry_id);
 #	my $dbh = $self->_dbh;
-#	$dbh->func(1, "enable_load_extension");
-#	$dbh->do('SELECT load_extension("/tmp/libsqlitefunctions.so")');
-#	my $scores = $dbh->selectall_arrayref(qq{
+#	$dbh->sqlite_enable_load_extension(1);
+#	$dbh->do("SELECT load_extension('@{[ config->root->file('assets/libsqlitefunctions.so') ]}')");
+#
+#	my $t0 = [gettimeofday];
+#	my $targets = $dbh->selectall_arrayref(qq{
 #		SELECT
-#			eid,
-#			(
-#				SELECT
-#					SUM(a.tfidf * b.tfidf)
-#					/
-#					(SQRT(SUM(a.tfidf * a.tfidf)) * SQRT(SUM(b.tfidf * b.tfidf)))
-#				FROM
-#					(SELECT term, tfidf FROM tfidf WHERE entry_id = ? ORDER BY tfidf DESC LIMIT 1000) as a
-#					LEFT JOIN
-#					(SELECT term, tfidf FROM tfidf WHERE entry_id = eid) as b
-#					ON
-#					a.term = b.term
-#			) as score,
+#			entry_id,
 #			cnt
 #		FROM
 #			(
-#				SELECT entry_id as eid, COUNT(*) as cnt FROM tfidf
-#				WHERE term IN (
-#					SELECT term FROM tfidf WHERE entry_id = ?
-#					ORDER BY tfidf DESC
-#					LIMIT 100
-#				)
+#				SELECT entry_id, COUNT(*) as cnt FROM tfidf
+#				WHERE
+#					entry_id > ? AND
+#					term IN (
+#						SELECT term FROM tfidf WHERE entry_id = ?
+#						ORDER BY tfidf DESC
+#						LIMIT 100
+#					)
 #				GROUP BY entry_id
+#				HAVING cnt > 5
+#				ORDER BY cnt DESC
+#				LIMIT 100
 #			)
-#		ORDER BY score DESC
-#		LIMIT 30
-#	}, { Slice => {} }, $entry_id, $entry_id);
-#	use Data::Dumper;
-#	warn Dumper $scores ;
-#	warn Dumper scalar @$scores ;
+#	}, { Slice => {} }, $entry_id - 1000, $entry_id);
+#	infof('retrieve targets %f', tv_interval($t0));
+#
+#	my $t0 = [gettimeofday];
+#	my $scores = [];
+#	for my $target (@$targets) {
+#		my $score = $dbh->selectall_arrayref(qq{
+#			SELECT
+#				SUM(a_tfidf * b_tfidf)
+#				/
+#				(SQRT(SUM(a_tfidf * a_tfidf)) * SQRT(SUM(b_tfidf * b_tfidf)))
+#				as score,
+#				SUM(a_tfidf * b_tfidf),
+#				SQRT(SUM(a_tfidf * a_tfidf)),
+#				SQRT(SUM(b_tfidf * b_tfidf))
+#			FROM
+#				(
+#					SELECT a.term, a.tfidf AS a_tfidf, b.tfidf AS b_tfidf FROM (
+#						(SELECT term, tfidf FROM tfidf WHERE entry_id = ? ORDER BY tfidf DESC ) as a
+#						LEFT JOIN
+#						(SELECT term, tfidf FROM tfidf WHERE entry_id = ?) as b
+#						ON
+#						a.term = b.term
+#					) UNION
+#					SELECT a.term, a.tfidf AS a_tfidf, b.tfidf AS b_tfidf FROM (
+#						(SELECT term, tfidf FROM tfidf WHERE entry_id = ? ORDER BY tfidf DESC ) as b
+#						LEFT JOIN
+#						(SELECT term, tfidf FROM tfidf WHERE entry_id = ?) as a
+#						ON
+#						a.term = b.term
+#					)
+#				)
+#		}, { Slice => {} }, $entry_id, $target->{entry_id}, $target->{entry_id}, $entry_id)->[0];
+##	use Data::Dumper;
+##	warn Dumper $score ;
+##		use Data::Dumper;
+##		warn Dumper $dbh->selectall_arrayref(qq{
+##			SELECT
+##				entry_id,
+##				SQRT(SUM(tfidf * tfidf))
+##			FROM
+##				tfidf
+##			WHERE entry_id IN (?)
+##		}, { Slice => {} }, $target->{entry_id})->[0];
+#		push @$scores, {
+#			eid => $target->{entry_id},
+#			score => $score->{score},
+#			cnt => $target->{cnt},
+#		};
+#	}
+#	infof('retrieve score %f', tv_interval($t0));
+#
+#	$scores = [
+#		grep { defined && $_->{score} != 1.0 }
+#		(
+#			sort { $b->{score} <=> $a->{score} }
+#			map { $_->{score} //= 0; $_ }
+#			@$scores
+#		)[1..10]
+#	];
+#
+#	$dbh->begin_work;
+#	$dbh->prepare_cached(q{
+#		DELETE FROM related_entries WHERE entry_id = ?
+#	})->execute($entry_id);
+#	for my $score (@$scores) {
+#		$dbh->prepare_cached(q{
+#			INSERT INTO related_entries (`entry_id`, `related_entry_id`, `score`)
+#				VALUES (?, ?, ?)
+#		})->execute($entry_id, $score->{eid}, $score->{score});
+#	}
+#	$dbh->commit;
+#
 #	$scores;
 #}
 
 sub recalculate_similar_entry {
-	my ($self, $entry_id) = @_;
-	infof('recalculate_similar_entry %d', $entry_id);
+	my ($self, @entry_ids) = @_;
+	infof('recalculate_similar_entry %d', join(',', @entry_ids));
 	my $dbh = $self->_dbh;
 	$dbh->sqlite_enable_load_extension(1);
 	$dbh->do("SELECT load_extension('@{[ config->root->file('assets/libsqlitefunctions.so') ]}')");
 
-	my $targets = $dbh->selectall_arrayref(qq{
-		SELECT
-			entry_id,
-			cnt
-		FROM
-			(
-				SELECT entry_id, COUNT(*) as cnt FROM tfidf
-				WHERE
-					entry_id > ? AND
-					term IN (
-						SELECT term FROM tfidf WHERE entry_id = ?
-						ORDER BY tfidf DESC
+	$dbh->prepare_cached(qq{
+		CREATE TEMPORARY TABLE similar_candidate_tfidf_sum AS
+			SELECT
+				entry_id,
+				SQRT(SUM(tfidf * tfidf)) AS sum
+			FROM
+				tfidf
+			GROUP BY entry_id
+	})->execute();
+
+	my $scores;
+	for my $entry_id (@entry_ids) {
+		my $t0 = [gettimeofday];
+		$dbh->prepare_cached(q{DROP TABLE IF EXISTS similar_candidate})->execute;
+		$dbh->prepare_cached(qq{
+			CREATE TEMPORARY TABLE similar_candidate AS
+				SELECT
+					entry_id,
+					cnt
+				FROM
+					(
+						SELECT entry_id, COUNT(*) as cnt FROM tfidf
+						WHERE
+							entry_id > ? AND
+							term IN (
+								SELECT term FROM tfidf WHERE entry_id = ?
+								ORDER BY tfidf DESC
+								LIMIT 100
+							)
+						GROUP BY entry_id
+						HAVING cnt > 5
+						ORDER BY cnt DESC
 						LIMIT 100
 					)
-				GROUP BY entry_id
-				HAVING cnt > 5
-				ORDER BY cnt DESC
-				LIMIT 100
-			)
-	}, { Slice => {} }, $entry_id - 1000, $entry_id);
+		})->execute($entry_id - 1000, $entry_id);
 
-	my $scores = [];
-	for my $target (@$targets) {
-		my $score = $dbh->selectall_arrayref(qq{
-			SELECT
-				SUM(a_tfidf * b_tfidf)
-				/
-				(SQRT(SUM(a_tfidf * a_tfidf)) * SQRT(SUM(b_tfidf * b_tfidf)))
-				as score
-			FROM
-				(
-					SELECT a.tfidf AS a_tfidf, b.tfidf AS b_tfidf FROM (
-						(SELECT term, tfidf FROM tfidf WHERE entry_id = ? ORDER BY tfidf DESC LIMIT 1000) as a
-						LEFT JOIN
-						(SELECT term, tfidf FROM tfidf WHERE entry_id = ?) as b
-						ON
-						a.term = b.term
-					) UNION
-					SELECT a.tfidf AS a_tfidf, b.tfidf AS b_tfidf FROM (
-						(SELECT term, tfidf FROM tfidf WHERE entry_id = ? ORDER BY tfidf DESC LIMIT 1000) as b
-						LEFT JOIN
-						(SELECT term, tfidf FROM tfidf WHERE entry_id = ?) as a
-						ON
-						a.term = b.term
-					)
-				)
-		}, { Slice => {} }, $entry_id, $target->{entry_id}, $target->{entry_id}, $entry_id)->[0];
-		push @$scores, {
-			eid => $target->{entry_id},
-			score => $score->{score},
-			cnt => $target->{cnt},
-		};
-	}
+		# 正確には full outer join が必要
+		# ただし inner join しても分子は変わらない。
+		# 分母の要素を別途先に計算しておくことで inner join した結果をもって内積を計算する (ただし集計対象には差がでてしまう)
+#use Data::Dumper;
+#warn Dumper $dbh->selectall_arrayref(qq{SELECT * FROM similar_candidate_tfidf}, { Slice => {} });
 
-	$scores = [
-		grep { defined && $_->{score} != 1.0 }
-		(
-			sort { $b->{score} <=> $a->{score} }
-			map { $_->{score} //= 0; $_ }
-			@$scores
-		)[1..10]
-	];
-	use Data::Dumper;
-	warn Dumper $scores ;
+		$scores = $dbh->selectall_arrayref(qq{
+				SELECT
+					x.entry_id AS eid,
+					sum(a_tfidf * b_tfidf) / (max(y.sum) * (select sum from similar_candidate_tfidf_sum where entry_id = ?)) as score
+				FROM
+					(
+						SELECT entry_id, a.tfidf AS a_tfidf, b.tfidf AS b_tfidf FROM (
+							(SELECT term, tfidf FROM tfidf WHERE entry_id = ? ORDER BY tfidf DESC LIMIT 100) as a
+							INNER JOIN
+							(SELECT entry_id, term, tfidf FROM tfidf WHERE entry_id IN (SELECT entry_id FROM similar_candidate)) as b
+							ON
+							a.term = b.term
+						)
+					) as x
+					LEFT JOIN
+					similar_candidate_tfidf_sum as y
+					ON y.entry_id = x.entry_id
+				WHERE eid != ?
+				GROUP BY x.entry_id
+				ORDER BY score DESC
+				LIMIT 10
+		}, { Slice => {} }, $entry_id, $entry_id, $entry_id);
+		infof('retrieve score %d, %f', $entry_id, tv_interval($t0));
+#use Data::Dumper;
+#warn Dumper $scores ;
+#exit 1;
 
-	$dbh->begin_work;
-	$dbh->prepare_cached(q{
-		DELETE FROM related_entries WHERE entry_id = ?
-	})->execute($entry_id);
-	for my $score (@$scores) {
+		$dbh->begin_work;
 		$dbh->prepare_cached(q{
-			INSERT INTO related_entries (`entry_id`, `related_entry_id`, `score`)
-				VALUES (?, ?, ?)
-		})->execute($entry_id, $score->{eid}, $score->{score});
+			DELETE FROM related_entries WHERE entry_id = ?
+		})->execute($entry_id);
+		for my $score (@$scores) {
+			$dbh->prepare_cached(q{
+				INSERT INTO related_entries (`entry_id`, `related_entry_id`, `score`)
+					VALUES (?, ?, ?)
+			})->execute($entry_id, $score->{eid}, $score->{score});
+		}
+		$dbh->commit;
 	}
-	$dbh->commit;
 
 	$scores;
 }
@@ -311,9 +391,7 @@ sub recalculate_similar_entry_for_all_entries {
 			ORDER BY `date` DESC, `path` ASC
 		});
 
-	for my $row (@$rows) {
-		$self->recalculate_similar_entry($row->{id});
-	}
+	$self->recalculate_similar_entry(map { $_->{id} } @$rows);
 }
 
 sub get_similar_entries {
@@ -360,14 +438,13 @@ sub get_similar_entries {
 		}
 		@$entries
 	];
-	use Data::Dumper;
-	warn Dumper $entries ;
 
 	$entries;
 }
 
 sub get_tfidf {
-	my ($self, $entry_id) = @_;
+	my ($self, $entry_id, $limit) = @_;
+	$limit ||= 100;
 	my $dbh = $self->_dbh;
 	$dbh->selectall_arrayref(qq{
 		SELECT
@@ -377,8 +454,8 @@ sub get_tfidf {
 		WHERE
 			entry_id = ?
 		ORDER BY tfidf DESC
-		LIMIT 20
-	}, { Slice => {} }, $entry_id);
+		LIMIT ?
+	}, { Slice => {} }, $entry_id, $limit);
 }
 
 sub fill_similar_entries {

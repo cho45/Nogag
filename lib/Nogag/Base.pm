@@ -12,6 +12,8 @@ use Digest::HMAC_SHA1 qw(hmac_sha1_hex);
 use URI::Escape;
 
 use Plack::Session;
+use TheSchwartz::Simple;
+use TheSchwartz::Simple::Job;
 
 use Nogag::Config;
 use Nogag::DBI;
@@ -145,6 +147,33 @@ sub dbh {
 	};
 }
 
+sub worker_dbh {
+	$_[0]->{worker_dbh} //= do {
+		DBI->connect('dbi:SQLite:' . config->param('worker_db'), "", "", {
+			RaiseError => 1,
+			sqlite_see_if_its_a_number => 1,
+			sqlite_unicode => 1,
+		});
+	};
+}
+
+sub worker {
+	$_[0]->{worker} //= do {
+		TheSchwartz::Simple->new([ $_[0]->worker_dbh ]);
+	};
+}
+
+sub work_job {
+	my ($self, $funcname, $arg, %opts) = @_;
+
+	my $job = TheSchwartz::Simple::Job->new(
+		funcname => $funcname,
+		arg => $arg,
+		%opts,
+	);
+	$self->worker->insert($job);
+}
+
 sub setup_schema {
 	my ($class) = @_;
 	my $load_schema = sub {
@@ -172,6 +201,10 @@ sub setup_schema {
 	do {
 		$load_schema->(config->param('tfidf_db'), 'db/tfidf.sql');
 	} unless -e config->param('tfidf_db');
+
+	do {
+		$load_schema->(config->param('worker_db'), 'db/theschwartz.sql');
+	} unless -e config->param('worker_db');
 }
 
 sub sk {

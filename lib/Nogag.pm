@@ -31,12 +31,14 @@ route "/" => \&index;
 route "/.page/{page:[0-9]{8}}/{epp:[0-9]}" => \&index;
 route "/login" => \&login;
 route "/logout" => \&logout;
-route "/api/edit" => \&edit;
 route "/sitemap.xml" => \&sitemap;
 route "/feed" => \&feed;
 route "/robots.txt" => \&robots_txt;
-route "/api/kousei" => "Nogag::API kousei";
 route "/test" => \&test;
+
+route "/api/edit" => \&edit;
+route "/api/kousei" => "Nogag::API kousei";
+route "/api/similar" => \&similar;
 
 # route '/{year:[0-9]{4}}/' => \&archive;
 route '/{year:[0-9]{4}}/{month:[0-9]{2}}/' => \&archive;
@@ -100,25 +102,26 @@ sub edit {
 		}
 
 		when ('POST') {
+			my $invalidate_target = '/';
 			if ($entry->id) {
 				$entry = $r->service('Nogag::Service::Entry')->update_entry($entry,
 					title          => $r->req->string_param('title'),
 					body           => $r->req->string_param('body'),
 				);
 
-				Nogag::Service::Cache->invalidate_related("".$entry->id);
-				Nogag::Service::Cache->generate_cache_for_path($entry->path('/'));
+				$invalidate_target = "".$entry->id;;
 			} else {
 				$entry = $r->service('Nogag::Service::Entry')->create_new_entry(
 					title          => $r->req->string_param('title'),
 					body           => $r->req->string_param('body'),
 				);
-				Nogag::Service::Cache->invalidate_related("/");
-				Nogag::Service::Cache->generate_cache_for_path($entry->path('/'));
+				$invalidate_target = '/';
 			}
 
-			$r->service('Nogag::Service::Trackback')->update_trackbacks($entry);
-			Nogag::Service::Cache->generate_cache_for_path('/');
+			$r->work_job('Nogag::Worker::PostEntry', {
+				entry => $entry,
+				invalidate_target => $invalidate_target,
+			}, uniqkey => 'postentry');
 
 			# $r->res->redirect("/" . $entry->path);
 			$r->res->header('X-Entry', $entry->id);
@@ -177,7 +180,7 @@ sub index {
 
 	Nogag::Model::Entry->bless($_) for @$entries;
 	$r->service('Nogag::Service::Trackback')->fill_trackbacks($_) for @$entries;
-	$r->service('Nogag::Service::SimilarEntry')->fill_similar_entries($_) for @$entries;
+	# $r->service('Nogag::Service::SimilarEntry')->fill_similar_entries($_) for @$entries;
 
 	my $count = $r->dbh->value('SELECT count(*) FROM entries');
 
@@ -327,7 +330,7 @@ sub permalink {
 
 	Nogag::Model::Entry->bless($entry);
 	$r->service('Nogag::Service::Trackback')->fill_trackbacks($entry);
-	$r->service('Nogag::Service::SimilarEntry')->fill_similar_entries($entry);
+	# $r->service('Nogag::Service::SimilarEntry')->fill_similar_entries($entry);
 
 	my $etag = md5_hex(join("\n", $entry->modified_at->epoch, -s $r->config->root->file('templates/index.html')));
 	# キャッシュから返す場合だけ304
@@ -419,7 +422,7 @@ sub category {
 	}
 
 	$r->service('Nogag::Service::Trackback')->fill_trackbacks($_) for @$entries;
-	$r->service('Nogag::Service::SimilarEntry')->fill_similar_entries($_) for @$entries;
+	# $r->service('Nogag::Service::SimilarEntry')->fill_similar_entries($_) for @$entries;
 
 	my $count = $r->dbh->value('SELECT count(*) FROM entries');
 
@@ -512,6 +515,25 @@ sub feed {
 	$r->stash(entries => $entries);
 	$r->res->content_type('application/atom+xml; charset=utf-8');
 	$r->res->content(encode_utf8 $r->render('feed.xml'));
+}
+
+sub similar {
+	my ($r) = @_;
+	my @ids = $r->req->param('id');
+
+	my $result = {
+		map {
+			my $entries = $r->service('Nogag::Service::SimilarEntry')->get_similar_entries($_);
+			my $html = $r->render('_similar.html', {
+				similar_entries => $entries,
+			});
+			($_ => $html)
+		} @ids
+	};
+
+	$r->json({
+		result => $result
+	});
 }
 
 sub robots_txt {

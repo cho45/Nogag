@@ -73,6 +73,8 @@
 			document.querySelector('link[href*="fonts.googleapis.com"').rel = 'stylesheet';
 		</script>
 
+		<link rel="preload" href="/api/similar?[% FOR entry IN entries %]id=[% entry.id %];[% END %]" id="preload-similar-entries">
+
 		<!-- htmlmin:ignore -->
 		<!--
 		<rdf:RDF

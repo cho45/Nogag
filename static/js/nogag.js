@@ -68,6 +68,24 @@ Nogag = {
 //			}, 10);
 //		}).scroll();
 
+		var similar = document.getElementById('preload-similar-entries').href;
+		var req = new XMLHttpRequest();
+		req.open("GET", similar, false);
+		req.onload = function (e) {
+			var data = JSON.parse(req.responseText);
+			console.log(data);
+			for (var key in data.result) if (data.result.hasOwnProperty(key)) {
+				var val = data.result[key];
+				if (!val) continue;
+
+				var container = document.querySelector('article[data-id="' + key + '"] .similar-entries');
+				container.innerHTML = val;
+			}
+		};
+		req.onerror = function (e) {
+		};
+		req.send(null);
+
 		if (Nogag.data('auth')) {
 			var button = document.querySelector('.nogag-new');
 			if (button) {

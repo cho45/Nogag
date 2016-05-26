@@ -16,10 +16,20 @@ requires 'Data::MessagePack';
 requires 'DBD::SQLite';
 requires 'Cache::LRU';
 
+requires 'Starlet';
+requires 'Log::Minimal';
+
 requires 'Router::Simple';
 
 requires 'Text::Xslate';
 requires 'Text::Xslate::Bridge::TT2Like';
+
+# worker
+requires 'Module::Find';
+requires 'TheSchwartz';
+requires 'DBIx::DisconnectAll';
+requires 'Parallel::Prefork';
+requires 'TheSchwartz::Simple';
 
 test_requires 'Test::WWW::Mechanize::PSGI';
 

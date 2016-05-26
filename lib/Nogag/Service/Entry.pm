@@ -18,7 +18,7 @@ sub retrieve_entry_by_id {
 	}, {
 		id => $id
 	})->[0];
-	Nogag::Model::Entry->bless($entry);
+	$entry ? Nogag::Model::Entry->bless($entry) : undef;
 }
 
 sub create_new_entry {

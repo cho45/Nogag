@@ -12,3 +12,7 @@ diary-*
 node_modules
 service/postprocess-js-daemon/log/main
 static/js/MathJax
+nytprof
+MYMETA.json
+sketch.*
+
