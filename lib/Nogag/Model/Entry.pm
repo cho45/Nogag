@@ -10,7 +10,7 @@ use Text::Overflow qw(ellipsis);
 
 sub bless {
 	my ($class, $hash) = @_;
-	bless $hash, $class;
+	$hash ? bless $hash, $class : undef;
 }
 
 sub trackbacks {

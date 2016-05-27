@@ -512,32 +512,46 @@ body > * {
 	width: auto;
 }
 
-.entries article .content.trackbacks {
+.entries article .content.trackbacks ,
+.entries article .content.similar-entries {
 }
 
-.entries article .content.trackbacks ul {
+.entries article .content.trackbacks ul ,
+.entries article .content.similar-entries ul {
 	list-style: none;
 	margin: 0;
 	padding: 0;
 }
 
-.entries article .content.trackbacks ul li {
+.entries article .content.trackbacks ul li ,
+.entries article .content.similar-entries ul li {
 	margin: 0;
 	padding: 0;
 }
 
-.entries article .content.trackbacks ul li a:link {
+.entries article .content.trackbacks ul li a:link ,
+.entries article .content.similar-entries ul li a:link {
 	display: block;
 	margin: 0;
 	padding: 0.5em 0;
 	text-decoration: none;
 }
 
-.entries article .content.trackbacks ul li a:link b {
+.entries article .content.trackbacks ul li a:link b ,
+.entries article .content.similar-entries ul li a:link b {
 	text-decoration: underline;
 }
 
-.entries article .content.trackbacks ul li time {
+.entries article .content.trackbacks ul li .summary ,
+.entries article .content.similar-entries ul li .summary {
+	display: block;
+	font-size: 80%;
+	color: #444;
+	line-height: 1.66;
+}
+
+.entries article .content.trackbacks ul li time ,
+.entries article .content.similar-entries ul li time {
 	display: block;
 }
 

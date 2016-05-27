@@ -15,6 +15,8 @@ use Plack::Request;
 use Test::WWW::Mechanize::PSGI;
 use HTML::TreeBuilder::XPath;
 use Plack::Loader;
+use TheSchwartz;
+use UNIVERSAL::require;
 
 use Nogag;
 
@@ -25,6 +27,8 @@ our @EXPORT = qw(
 	get_entry
 	create_entry
 	cleanup_database
+
+	work
 
 	mechanize
 	postprocess
@@ -55,6 +59,16 @@ sub import {
 
 sub tree {
 	HTML::TreeBuilder::XPath->new_from_content($_[0]);
+}
+
+sub work {
+	my ($funcname) = @_;
+	note "work $funcname";
+	$funcname->use;
+	my $databases = [ { dsn => 'dbi:SQLite:' . config->param('worker_db'), user => '', pass => '' } ];
+	my $client = TheSchwartz->new( databases => $databases );
+	$client->can_do($funcname);
+	$client->work_until_done;
 }
 
 sub mechanize {
@@ -190,7 +204,9 @@ sub edit {
 			sk => $mech->{sk},
 		});
 		is($res->code, 302);
+		Nogag::Test::work('Nogag::Worker::PostEntry');
 		my $entry_id = $res->header('X-Entry');
+		return $entry_id;
 	}
 }
 

@@ -70,7 +70,7 @@ Nogag = {
 
 		var similar = document.getElementById('preload-similar-entries').href;
 		var req = new XMLHttpRequest();
-		req.open("GET", similar, false);
+		req.open("GET", similar);
 		req.onload = function (e) {
 			var data = JSON.parse(req.responseText);
 			console.log(data);
@@ -78,8 +78,25 @@ Nogag = {
 				var val = data.result[key];
 				if (!val) continue;
 
-				var container = document.querySelector('article[data-id="' + key + '"] .similar-entries');
+				var article = document.querySelector('article[data-id="' + key + '"]');
+				var container = article.querySelector('.similar-entries');
 				container.innerHTML = val;
+
+				var trackbacks = article.querySelector('.content.trackbacks');
+				if (trackbacks) {
+					var links = trackbacks.getElementsByTagName('li');
+					for (var i = 0, it; (it = links[i]); i++) {
+						var duplicate = container.querySelector('li[data-id="' + it.getAttribute('data-id') + '"]');
+						if (duplicate) {
+							duplicate.parentNode.removeChild(duplicate);
+						}
+					}
+					if (!container.getElementsByTagName('li').length) {
+						container.parentNode.removeChild(container);
+					}
+				}
+
+				DateRelative.updateAll(container);
 			}
 		};
 		req.onerror = function (e) {

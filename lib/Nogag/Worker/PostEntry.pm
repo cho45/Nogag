@@ -5,6 +5,8 @@ use strict;
 use warnings;
 
 use Nogag;
+use Nogag::Service::Trackback;
+use Nogag::Service::Cache;
 
 use parent qw(TheSchwartz::Worker);
 
@@ -17,11 +19,12 @@ sub work {
 
 	my $r = Nogag->new({});
 	$r->service('Nogag::Service::Trackback')->update_trackbacks($entry);
-	Nogag::Service::Cache->invalidate_related($invalidate_target);
-	Nogag::Service::Cache->generate_cache_for_path($entry->path('/'));
-	Nogag::Service::Cache->generate_cache_for_path('/');
-
-	$r->service('Nogag::Service::SimilarEntry')->update($entry);
+	$r->service('Nogag::Service::Cache')->invalidate_related($invalidate_target);
+	$r->service('Nogag::Service::Cache')->generate_cache_for_path($entry->path('/'));
+	$r->service('Nogag::Service::Cache')->generate_cache_for_path('/');
+	for my $tag (@{ $entry->tags }) {
+		$r->service('Nogag::Service::Cache')->generate_cache_for_path('/'.$tag.'/');
+	}
 
 	$job->completed;
 }

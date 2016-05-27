@@ -118,10 +118,12 @@ sub edit {
 				$invalidate_target = '/';
 			}
 
+			$r->service('Nogag::Service::SimilarEntry')->update($entry);
+
 			$r->work_job('Nogag::Worker::PostEntry', {
 				entry => $entry,
 				invalidate_target => $invalidate_target,
-			}, uniqkey => 'postentry');
+			}, uniqkey => 'postentry-' . $entry->id);
 
 			# $r->res->redirect("/" . $entry->path);
 			$r->res->header('X-Entry', $entry->id);
@@ -140,6 +142,8 @@ sub index {
 	my ($r) = @_;
 	my $page = $r->req->date_param('page') || '';
 	my $epp  = $r->req->number_param('epp', 30) || config->param('entry_per_page');
+
+	$r->res->header('Cache-Control' => 'public, max-age=0, must-revalidate');
 
 	my $cache_key = join(":", $r->has_auth ? 'a' : 'b', $r->req->path, $page, $epp);
 	unless ($r->has_auth) {
@@ -357,17 +361,6 @@ sub permalink {
 		created_at => $entry->{created_at}
 	})->[0];
 
-	my $related = $r->dbh->select(q{
-		SELECT * FROM entries
-		WHERE title <> '[photo]'
-		ORDER BY id DESC
-		LIMIT 10
-	});
-
-	Nogag::Model::Entry->bless($_) for @$related;
-
-	$r->stash(related => $related);
-
 	my $entries = [ $entry ];
 
 	$r->stash(mathjax => enable_mathjax(@$entries));
@@ -387,7 +380,7 @@ sub permalink {
 sub category {
 	my ($r) = @_;
 
-	my $page = $r->req->time_param('page');
+	my $page = $r->req->time_param('page') || '';
 	my $epp  = $r->req->number_param('epp', 30) || config->param("entry_per_page");
 	my $name = lc $r->req->param('category_name');
 
@@ -521,6 +514,7 @@ sub similar {
 	my ($r) = @_;
 	my @ids = $r->req->param('id');
 
+
 	my $result = {
 		map {
 			my $entries = $r->service('Nogag::Service::SimilarEntry')->get_similar_entries($_);
@@ -531,6 +525,7 @@ sub similar {
 		} @ids
 	};
 
+	$r->res->header('Cache-Control' => 'max-age=3600');
 	$r->json({
 		result => $result
 	});

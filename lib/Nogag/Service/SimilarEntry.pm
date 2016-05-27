@@ -70,27 +70,30 @@ sub update {
 	$dbh->commit;
 	if (!$opts{skip_recalculate}) {
 		$self->recalculate_tfidf_for_all_entries($id);
+		$self->recalculate_similar_entry($id);
+
 		my $terms = [
 			map {
 				$_->{term}
 			}
-			@{ $self->get_tfidf($id, 100) }
+			@{ $self->get_tfidf($id, 1000) }
 		];
-
-		$self->recalculate_tfidf_for_terms($terms);
+		$self->r->work_job('Nogag::Worker::RecalculateTFIDF', {
+			terms => $terms
+		});
 	}
 }
 
 sub recalculate_tfidf_for_terms {
 	my ($self, $terms) = @_;
-	infof("recalculate_tfidf_for_terms %s", $terms);
+	infof("recalculate_tfidf_for_terms %s", join(',', @$terms));
 	my $dbh = $self->_dbh;
 	my $entry_ids = {};
 	while (my @part = splice @$terms, 0, 50) {
 		my $ph = join(',', ('?') x scalar @part);
 		my $results = $dbh->selectall_arrayref(qq{
 			SELECT DISTINCT(entry_id) as entry_id FROM tfidf
-				WHERE term IN ($ph) AND tfidf > 1.0
+				WHERE term IN ($ph) AND tfidf > 2.0
 		}, { Slice => {} }, @part);
 		$entry_ids->{$_->{entry_id}}++ for @$results;
 	}
@@ -103,25 +106,8 @@ sub recalculate_tfidf_for_all_entries {
 	my ($self, @entry_ids) = @_;
 	infof("recalculate_tfidf_for_all_entries %s", scalar @entry_ids);
 
-#	my $sql = q{
-#		UPDATE tfidf SET tfidf = 
-#			/* tf */
-#			(
-#				LOG(CAST(term_count AS REAL) + 1) /* term_count in an entry */
-#				/
-#				LOG(CAST((SELECT SUM(term_count) FROM tfidf as y WHERE y.entry_id = entry_id) AS REAL)) /* total term count in an entry */
-#			)
-#			*
-#			/* idf */
-#			(1 + LOG(
-#				CAST((SELECT COUNT(DISTINCT entry_id) FROM tfidf) AS REAL) /* total */
-#				/
-#				CAST((SELECT COUNT(DISTINCT entry_id) FROM tfidf as y WHERE y.term = term) AS REAL) /* term entry count */
-#			))
-#	};
-
 	my $dbh = $self->_dbh;
-	$dbh->func(1, "enable_load_extension");
+	$dbh->sqlite_enable_load_extension(1);
 	$dbh->do("SELECT load_extension('@{[ config->root->file('assets/libsqlitefunctions.so') ]}')");
 	$dbh->do(q{
 		CREATE TEMPORARY TABLE entry_total AS
@@ -170,113 +156,9 @@ sub recalculate_tfidf_for_all_entries {
 	$dbh->commit;
 }
 
-
-#sub recalculate_similar_entry {
-#	my ($self, $entry_id) = @_;
-#	infof('recalculate_similar_entry %d', $entry_id);
-#	my $dbh = $self->_dbh;
-#	$dbh->sqlite_enable_load_extension(1);
-#	$dbh->do("SELECT load_extension('@{[ config->root->file('assets/libsqlitefunctions.so') ]}')");
-#
-#	my $t0 = [gettimeofday];
-#	my $targets = $dbh->selectall_arrayref(qq{
-#		SELECT
-#			entry_id,
-#			cnt
-#		FROM
-#			(
-#				SELECT entry_id, COUNT(*) as cnt FROM tfidf
-#				WHERE
-#					entry_id > ? AND
-#					term IN (
-#						SELECT term FROM tfidf WHERE entry_id = ?
-#						ORDER BY tfidf DESC
-#						LIMIT 100
-#					)
-#				GROUP BY entry_id
-#				HAVING cnt > 5
-#				ORDER BY cnt DESC
-#				LIMIT 100
-#			)
-#	}, { Slice => {} }, $entry_id - 1000, $entry_id);
-#	infof('retrieve targets %f', tv_interval($t0));
-#
-#	my $t0 = [gettimeofday];
-#	my $scores = [];
-#	for my $target (@$targets) {
-#		my $score = $dbh->selectall_arrayref(qq{
-#			SELECT
-#				SUM(a_tfidf * b_tfidf)
-#				/
-#				(SQRT(SUM(a_tfidf * a_tfidf)) * SQRT(SUM(b_tfidf * b_tfidf)))
-#				as score,
-#				SUM(a_tfidf * b_tfidf),
-#				SQRT(SUM(a_tfidf * a_tfidf)),
-#				SQRT(SUM(b_tfidf * b_tfidf))
-#			FROM
-#				(
-#					SELECT a.term, a.tfidf AS a_tfidf, b.tfidf AS b_tfidf FROM (
-#						(SELECT term, tfidf FROM tfidf WHERE entry_id = ? ORDER BY tfidf DESC ) as a
-#						LEFT JOIN
-#						(SELECT term, tfidf FROM tfidf WHERE entry_id = ?) as b
-#						ON
-#						a.term = b.term
-#					) UNION
-#					SELECT a.term, a.tfidf AS a_tfidf, b.tfidf AS b_tfidf FROM (
-#						(SELECT term, tfidf FROM tfidf WHERE entry_id = ? ORDER BY tfidf DESC ) as b
-#						LEFT JOIN
-#						(SELECT term, tfidf FROM tfidf WHERE entry_id = ?) as a
-#						ON
-#						a.term = b.term
-#					)
-#				)
-#		}, { Slice => {} }, $entry_id, $target->{entry_id}, $target->{entry_id}, $entry_id)->[0];
-##	use Data::Dumper;
-##	warn Dumper $score ;
-##		use Data::Dumper;
-##		warn Dumper $dbh->selectall_arrayref(qq{
-##			SELECT
-##				entry_id,
-##				SQRT(SUM(tfidf * tfidf))
-##			FROM
-##				tfidf
-##			WHERE entry_id IN (?)
-##		}, { Slice => {} }, $target->{entry_id})->[0];
-#		push @$scores, {
-#			eid => $target->{entry_id},
-#			score => $score->{score},
-#			cnt => $target->{cnt},
-#		};
-#	}
-#	infof('retrieve score %f', tv_interval($t0));
-#
-#	$scores = [
-#		grep { defined && $_->{score} != 1.0 }
-#		(
-#			sort { $b->{score} <=> $a->{score} }
-#			map { $_->{score} //= 0; $_ }
-#			@$scores
-#		)[1..10]
-#	];
-#
-#	$dbh->begin_work;
-#	$dbh->prepare_cached(q{
-#		DELETE FROM related_entries WHERE entry_id = ?
-#	})->execute($entry_id);
-#	for my $score (@$scores) {
-#		$dbh->prepare_cached(q{
-#			INSERT INTO related_entries (`entry_id`, `related_entry_id`, `score`)
-#				VALUES (?, ?, ?)
-#		})->execute($entry_id, $score->{eid}, $score->{score});
-#	}
-#	$dbh->commit;
-#
-#	$scores;
-#}
-
 sub recalculate_similar_entry {
 	my ($self, @entry_ids) = @_;
-	infof('recalculate_similar_entry %d', join(',', @entry_ids));
+	infof('recalculate_similar_entry %d (%s)', scalar @entry_ids, join(',', @entry_ids));
 	my $dbh = $self->_dbh;
 	$dbh->sqlite_enable_load_extension(1);
 	$dbh->do("SELECT load_extension('@{[ config->root->file('assets/libsqlitefunctions.so') ]}')");
@@ -346,9 +228,6 @@ sub recalculate_similar_entry {
 				LIMIT 10
 		}, { Slice => {} }, $entry_id, $entry_id, $entry_id);
 		infof('retrieve score %d, %f', $entry_id, tv_interval($t0));
-#use Data::Dumper;
-#warn Dumper $scores ;
-#exit 1;
 
 		$dbh->begin_work;
 		$dbh->prepare_cached(q{

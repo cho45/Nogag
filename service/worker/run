@@ -1,0 +1,9 @@
+#!/bin/sh
+
+exec 2>&1
+export PERL=/home/cho45/perl5/perlbrew/perls/perl-5.14.2
+export PLACK_ENV=production
+cd /srv/www/lowreal.net/Nogag
+
+exec setuidgid cho45 $PERL/bin/perl script/worker.pl
+

@@ -73,7 +73,10 @@
 			document.querySelector('link[href*="fonts.googleapis.com"').rel = 'stylesheet';
 		</script>
 
-		<link rel="preload" href="/api/similar?[% FOR entry IN entries %]id=[% entry.id %];[% END %]" id="preload-similar-entries">
+		[% MACRO __api_similar BLOCK %]/api/similar?[% FOR entry IN entries %]id=[% entry.id %];[% END %][% END %]
+		[% SET api_similar = __api_similar() %]
+		[% r.preload(api_similar) %]
+		<link rel="preload" href="[% api_similar %]" id="preload-similar-entries">
 
 		<!-- htmlmin:ignore -->
 		<!--
@@ -105,7 +108,7 @@
 		] %]
 
 		[% FOR j IN js %]
-		[% r.preload(j, 'script', 'nopush') %]
+		[% r.preload(j, 'script') %]
 		<script src="[% j %]" defer></script>
 		[% END %]
 
@@ -202,31 +205,6 @@
 
 				[% END %]
 			</div>
-
-			[% IF permalink %]
-			<div class="related" style="font-size:80%">
-				<h3>最近のエントリ</h3>
-				<ul>
-				[% FOR entry IN related %]
-				[% IF entry.summary | raw %]
-				[% LAST IF loop.count > 5 %]
-					<li>
-						<a href="/[% entry.path %]">
-							[% IF entry.title %]
-							<b>[% entry.title %]</b><br/>
-							[% END %]
-							[% entry.summary(80) %]
-
-							<time data-epoch="[% entry.created_at.epoch %]" datetime="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z" itemprop="datePublished">
-								[% entry.created_at.offset(9).strftime('%H:%M') %]
-							</time>
-						</a>
-					</li>
-				[% END %]
-				[% END %]
-				</ul>
-			</div>
-			[% END %]
 
 			[% UNLESS permalink %]
 			<div class="adsense">

@@ -102,12 +102,10 @@
 		<h3>このエントリを参照するエントリ</h3>
 		[% FOR entry IN entry.trackbacks %]
 		<ul>
-			<li>
+			<li data-id="[% entry.id %]">
 				<a href="/[% entry.path %]">
-					[% IF entry.title %]
-					<b>[% entry.title %]</b><br/>
-					[% END %]
-					[% entry.summary(80) %]
+					<b>[% entry.title || '✖' %]</b><br/>
+					<span class="summary">[% entry.summary(140) %]</span>
 
 					<time data-epoch="[% entry.created_at.epoch %]" datetime="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z" itemprop="datePublished">
 						[% entry.created_at.offset(9).strftime('%H:%M') %]

@@ -27,6 +27,10 @@ my $cache = do {
 	);
 };
 
+sub __cache {
+	$cache;
+}
+
 sub invalidate_related {
 	$cache->invalidate_related($_[1]);
 }
