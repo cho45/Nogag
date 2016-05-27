@@ -184,25 +184,28 @@ sub recalculate_similar_entry {
 	infof('recalculate_similar_entry %d (%s)', scalar @entry_ids, join(',', @entry_ids));
 	my $dbh = $self->_dbh;
 
+	my $drop_similar_candinate_stmt = $dbh->prepare_cached(q{DROP TABLE IF EXISTS similar_candidate});
+	my $create_similar_candinate_stmt = $dbh->prepare_cached(qq{
+		CREATE TEMPORARY TABLE similar_candidate AS
+			SELECT entry_id, COUNT(*) as cnt FROM tfidf
+			WHERE
+				entry_id > ? AND
+				term IN (
+					SELECT term FROM tfidf WHERE entry_id = ?
+					ORDER BY tfidf DESC
+					LIMIT 50
+				)
+			GROUP BY entry_id
+			HAVING cnt > 3
+			ORDER BY cnt DESC
+			LIMIT 100
+	});
+
 	my $scores;
 	for my $entry_id (@entry_ids) {
 		my $t0 = [gettimeofday];
-		$dbh->prepare_cached(q{DROP TABLE IF EXISTS similar_candidate})->execute;
-		$dbh->prepare_cached(qq{
-			CREATE TEMPORARY TABLE similar_candidate AS
-				SELECT entry_id, COUNT(*) as cnt FROM tfidf
-				WHERE
-					entry_id > ? AND
-					term IN (
-						SELECT term FROM tfidf WHERE entry_id = ?
-						ORDER BY tfidf DESC
-						LIMIT 50
-					)
-				GROUP BY entry_id
-				HAVING cnt > 3
-				ORDER BY cnt DESC
-				LIMIT 100
-		})->execute($entry_id - 1000, $entry_id);
+		$drop_similar_candinate_stmt->execute;
+		$create_similar_candinate_stmt->execute($entry_id - 1000, $entry_id);
 
 		$scores = $dbh->selectall_arrayref(qq{
 				SELECT
@@ -219,26 +222,6 @@ sub recalculate_similar_entry {
 				GROUP BY entry_id
 				ORDER BY score DESC
 				LIMIT 10
-				/*
-				SELECT
-					x.entry_id AS eid,
-					SUM(a_tfidf * b_tfidf)
-					AS score
-				FROM
-					(
-						SELECT entry_id, a.tfidf AS a_tfidf, b.tfidf AS b_tfidf FROM (
-							(SELECT term, tfidf FROM tfidf WHERE entry_id = ? ORDER BY tfidf DESC LIMIT 50) as a
-							INNER JOIN
-							(SELECT entry_id, term, tfidf FROM tfidf WHERE entry_id IN (SELECT entry_id FROM similar_candidate)) as b
-							ON
-							a.term = b.term
-						)
-					) as x
-				WHERE eid != ?
-				GROUP BY x.entry_id
-				ORDER BY score DESC
-				LIMIT 10
-				*/
 		}, { Slice => {} }, $entry_id, $entry_id);
 		infof('retrieve score %d, %f', $entry_id, tv_interval($t0));
 
