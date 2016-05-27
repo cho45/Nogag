@@ -127,7 +127,19 @@ sub recalculate_tfidf_for_all_entries {
 	$dbh->do(q{
 		CREATE INDEX temp.entry_term_counts_entry_id ON entry_term_counts (entry_id)
 	});
-	my $sql = q{
+
+	my $where;
+	my $binds;
+	if (@entry_ids) {
+		my $placeholder = join(',', ('?') x scalar @entry_ids);
+		$where = " WHERE entry_id IN ($placeholder)";
+		$binds = [ @entry_ids ];
+	} else {
+		$where = "";
+		$binds = [];
+	}
+
+	my $calc_tfidf_sql = qq{
 		UPDATE tfidf SET tfidf = IFNULL(
 			-- tf
 			(
@@ -143,16 +155,27 @@ sub recalculate_tfidf_for_all_entries {
 				(SELECT cnt FROM term_counts WHERE term_counts.term = tfidf.term) -- term entry count
 			))
 		, 0.0)
+		$where
 	};
+	my $calc_tfidf_size_sql = qq{
+		CREATE TEMPORARY TABLE tfidf_size AS
+			SELECT entry_id, SQRT(SUM(tfidf * tfidf)) AS size FROM tfidf
+			$where
+			GROUP BY entry_id
+	};
+	my $tfidf_size_index_sql = qq{
+		CREATE INDEX temp.tfidf_size_entry_id ON tfidf_size (entry_id)
+	};
+	my $normalize_tfidf_sql = qq{
+		UPDATE tfidf SET tfidf_n = IFNULL(tfidf / (SELECT size FROM tfidf_size WHERE entry_id = tfidf.entry_id), 0.0)
+		$where
+	};
+
 	$dbh->begin_work;
-	if (@entry_ids) {
-		my $stmt = $dbh->prepare_cached($sql . " WHERE entry_id = ?");
-		for my $entry_id (@entry_ids) {
-			$stmt->execute($entry_id);
-		}
-	} else {
-		$dbh->prepare_cached($sql)->execute();
-	}
+	$dbh->prepare_cached($calc_tfidf_sql)->execute(@$binds);
+	$dbh->prepare_cached($calc_tfidf_size_sql)->execute(@$binds);
+	$dbh->prepare_cached($tfidf_size_index_sql)->execute();
+	$dbh->prepare_cached($normalize_tfidf_sql)->execute(@$binds);
 	$dbh->commit;
 }
 
@@ -160,18 +183,6 @@ sub recalculate_similar_entry {
 	my ($self, @entry_ids) = @_;
 	infof('recalculate_similar_entry %d (%s)', scalar @entry_ids, join(',', @entry_ids));
 	my $dbh = $self->_dbh;
-	$dbh->sqlite_enable_load_extension(1);
-	$dbh->do("SELECT load_extension('@{[ config->root->file('assets/libsqlitefunctions.so') ]}')");
-
-	$dbh->prepare_cached(qq{
-		CREATE TEMPORARY TABLE similar_candidate_tfidf_sum AS
-			SELECT
-				entry_id,
-				SQRT(SUM(tfidf * tfidf)) AS sum
-			FROM
-				tfidf
-			GROUP BY entry_id
-	})->execute();
 
 	my $scores;
 	for my $entry_id (@entry_ids) {
@@ -179,54 +190,56 @@ sub recalculate_similar_entry {
 		$dbh->prepare_cached(q{DROP TABLE IF EXISTS similar_candidate})->execute;
 		$dbh->prepare_cached(qq{
 			CREATE TEMPORARY TABLE similar_candidate AS
-				SELECT
-					entry_id,
-					cnt
-				FROM
-					(
-						SELECT entry_id, COUNT(*) as cnt FROM tfidf
-						WHERE
-							entry_id > ? AND
-							term IN (
-								SELECT term FROM tfidf WHERE entry_id = ?
-								ORDER BY tfidf DESC
-								LIMIT 100
-							)
-						GROUP BY entry_id
-						HAVING cnt > 5
-						ORDER BY cnt DESC
-						LIMIT 100
+				SELECT entry_id, COUNT(*) as cnt FROM tfidf
+				WHERE
+					entry_id > ? AND
+					term IN (
+						SELECT term FROM tfidf WHERE entry_id = ?
+						ORDER BY tfidf DESC
+						LIMIT 50
 					)
+				GROUP BY entry_id
+				HAVING cnt > 3
+				ORDER BY cnt DESC
+				LIMIT 100
 		})->execute($entry_id - 1000, $entry_id);
-
-		# 正確には full outer join が必要
-		# ただし inner join しても分子は変わらない。
-		# 分母の要素を別途先に計算しておくことで inner join した結果をもって内積を計算する (ただし集計対象には差がでてしまう)
-#use Data::Dumper;
-#warn Dumper $dbh->selectall_arrayref(qq{SELECT * FROM similar_candidate_tfidf}, { Slice => {} });
 
 		$scores = $dbh->selectall_arrayref(qq{
 				SELECT
+					entry_id AS eid,
+					SUM(a.tfidf * b.tfidf) AS score
+				FROM (
+					(SELECT term, tfidf FROM tfidf WHERE entry_id = ? ORDER BY tfidf DESC LIMIT 50) as a
+					INNER JOIN
+					(SELECT entry_id, term, tfidf FROM tfidf WHERE entry_id IN (SELECT entry_id FROM similar_candidate)) as b
+					ON
+					a.term = b.term
+				)
+				WHERE eid != ?
+				GROUP BY entry_id
+				ORDER BY score DESC
+				LIMIT 10
+				/*
+				SELECT
 					x.entry_id AS eid,
-					sum(a_tfidf * b_tfidf) / (max(y.sum) * (select sum from similar_candidate_tfidf_sum where entry_id = ?)) as score
+					SUM(a_tfidf * b_tfidf)
+					AS score
 				FROM
 					(
 						SELECT entry_id, a.tfidf AS a_tfidf, b.tfidf AS b_tfidf FROM (
-							(SELECT term, tfidf FROM tfidf WHERE entry_id = ? ORDER BY tfidf DESC LIMIT 100) as a
+							(SELECT term, tfidf FROM tfidf WHERE entry_id = ? ORDER BY tfidf DESC LIMIT 50) as a
 							INNER JOIN
 							(SELECT entry_id, term, tfidf FROM tfidf WHERE entry_id IN (SELECT entry_id FROM similar_candidate)) as b
 							ON
 							a.term = b.term
 						)
 					) as x
-					LEFT JOIN
-					similar_candidate_tfidf_sum as y
-					ON y.entry_id = x.entry_id
 				WHERE eid != ?
 				GROUP BY x.entry_id
 				ORDER BY score DESC
 				LIMIT 10
-		}, { Slice => {} }, $entry_id, $entry_id, $entry_id);
+				*/
+		}, { Slice => {} }, $entry_id, $entry_id);
 		infof('retrieve score %d, %f', $entry_id, tv_interval($t0));
 
 		$dbh->begin_work;

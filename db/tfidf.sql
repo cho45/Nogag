@@ -4,7 +4,8 @@ CREATE TABLE tfidf (
 	`term` TEXT NOT NULL,
 	`entry_id` INTEGER NOT NULL,
 	`term_count` INTEGER NOT NULL DEFAULT 0,
-	`tfidf` FLOAT NOT NULL DEFAULT 0
+	`tfidf` FLOAT NOT NULL DEFAULT 0,
+	`tfidf_n` FLOAT NOT NULL DEFAULT 0
 );
 CREATE UNIQUE INDEX index_tf_term ON tfidf (`term`, `entry_id`);
 CREATE INDEX index_tf_entry_id ON tfidf (`entry_id`);
