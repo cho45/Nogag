@@ -13,40 +13,40 @@ DateRelative.prototype = {
 		if (future) diff = -diff;
 		if (diff < 60) {
 			this.number   = diff;
-			this.unit     = 'second';
+			this.unit     = '\u79d2';
 			this.isFuture = future;
 			return this;
 		}
 		diff = Math.floor(diff / 60);
 		if (diff < 60) {
 			this.number   = diff;
-			this.unit     = 'minute';
+			this.unit     = '\u5206';
 			this.isFuture = future;
 			return this;
 		}
 		diff = Math.floor(diff / 60);
 		if (diff < 24) {
 			this.number   = diff;
-			this.unit     = 'hour';
+			this.unit     = '\u6642\u9593';
 			this.isFuture = future;
 			return this;
 		}
 		diff = Math.floor(diff / 24);
 		if (diff < 31) {
 			this.number   = diff;
-			this.unit     = 'day';
+			this.unit     = '\u65e5';
 			this.isFuture = future;
 			return this;
 		}
 		if (diff < 365) {
 			this.number   = Math.floor(diff / 30);
-			this.unit     = 'month';
+			this.unit     = '\u30f6\u6708';
 			this.isFuture = future;
 			return this;
 		}
 		diff = Math.floor(diff / 365);
 		this.number   = diff;
-		this.unit     = 'year';
+		this.unit     = '\u5e74';
 		this.isFuture = future;
 		return this;
 	},
@@ -64,9 +64,9 @@ DateRelative.update = function (target) {
 
 	// var locale = navigator.userAgent.split(/[();]\s*/)[4];
 	var format;
-	format = dtrl.number + ' ' +
-		dtrl.unit + (dtrl.number === 0 || dtrl.number > 1 ? 's ' : ' ') +
-		(dtrl.isFuture ? 'after' : 'ago');
+	format = dtrl.number +
+		dtrl.unit +
+		(dtrl.isFuture ? '\u5f8c' : '\u524d');
 	target.innerHTML = format;
 };
 DateRelative.updateAll = function (parent) {
