@@ -92,7 +92,7 @@ sub recalculate_tfidf_for_terms {
 	while (my @part = splice @$terms, 0, 50) {
 		my $ph = join(',', ('?') x scalar @part);
 		my $results = $dbh->selectall_arrayref(qq{
-			SELECT DISTINCT(entry_id) as entry_id FROM tfidf
+			SELECT DISTINCT(entry_id) AS entry_id FROM tfidf
 				WHERE term IN ($ph) AND tfidf > 2.0
 		}, { Slice => {} }, @part);
 		$entry_ids->{$_->{entry_id}}++ for @$results;
@@ -141,14 +141,14 @@ sub recalculate_tfidf_for_all_entries {
 
 	my $calc_tfidf_sql = qq{
 		UPDATE tfidf SET tfidf = IFNULL(
-			-- tf
+			-- tf (normalized with Harman method)
 			(
 				LOG(CAST(term_count AS REAL) + 1) -- term_count in an entry
 				/
 				(SELECT cnt FROM entry_term_counts WHERE entry_term_counts.entry_id = tfidf.entry_id) -- total term count in an entry
 			)
 			*
-			-- idf
+			-- idf (normalized with Sparck Jones method)
 			(1 + LOG(
 				(SELECT value FROM entry_total) -- total
 				/

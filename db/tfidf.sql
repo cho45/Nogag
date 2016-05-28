@@ -3,9 +3,9 @@ CREATE TABLE tfidf (
 	`id` INTEGER PRIMARY KEY,
 	`term` TEXT NOT NULL,
 	`entry_id` INTEGER NOT NULL,
-	`term_count` INTEGER NOT NULL DEFAULT 0,
-	`tfidf` FLOAT NOT NULL DEFAULT 0,
-	`tfidf_n` FLOAT NOT NULL DEFAULT 0
+	`term_count` INTEGER NOT NULL DEFAULT 0, -- エントリ内でのターム出現回数
+	`tfidf` FLOAT NOT NULL DEFAULT 0, -- 正規化前の TF-IDF
+	`tfidf_n` FLOAT NOT NULL DEFAULT 0 -- ベクトル正規化した TF-IDF
 );
 CREATE UNIQUE INDEX index_tf_term ON tfidf (`term`, `entry_id`);
 CREATE INDEX index_tf_entry_id ON tfidf (`entry_id`);
