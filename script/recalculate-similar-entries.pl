@@ -13,6 +13,7 @@ use DBI;
 use Log::Minimal;
 
 use Nogag;
+Nogag->setup_schema;
 use Nogag::Service::SimilarEntry;
 my $r = Nogag->new({});
 my $index = $r->service('Nogag::Service::SimilarEntry');

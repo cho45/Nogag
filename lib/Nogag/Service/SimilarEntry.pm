@@ -4,7 +4,7 @@ use utf8;
 use strict;
 use warnings;
 
-use DBI;
+use DBI qw(:sql_types);
 use Text::TinySegmenter;
 use List::Util qw(reduce);
 use Log::Minimal;
@@ -61,11 +61,15 @@ sub update {
 		}
 
 		my $count = $words->{$term};
-		$dbh->prepare_cached(q{
+		my $stmt = $dbh->prepare_cached(q{
 			INSERT INTO tfidf
 				(`term`, `entry_id`, `term_count`)
 			VALUES (?, ?, ?);
-		})->execute($term, $id, $count);
+		});
+		$stmt->bind_param(1, $term, { TYPE => SQL_VARCHAR });
+		$stmt->bind_param(2, $id, { TYPE => SQL_INTEGER });
+		$stmt->bind_param(3, $count, { TYPE => SQL_INTEGER });
+		$stmt->execute();
 	}
 	$dbh->commit;
 	if (!$opts{skip_recalculate}) {
@@ -192,7 +196,7 @@ sub recalculate_similar_entry {
 				entry_id > ? AND
 				term IN (
 					SELECT term FROM tfidf WHERE entry_id = ?
-					ORDER BY tfidf DESC
+					ORDER BY tfidf_n DESC
 					LIMIT 50
 				)
 			GROUP BY entry_id
@@ -210,11 +214,11 @@ sub recalculate_similar_entry {
 		$scores = $dbh->selectall_arrayref(qq{
 				SELECT
 					entry_id AS eid,
-					SUM(a.tfidf * b.tfidf) AS score
+					SUM(a.tfidf_n * b.tfidf_n) AS score
 				FROM (
-					(SELECT term, tfidf FROM tfidf WHERE entry_id = ? ORDER BY tfidf DESC LIMIT 50) as a
+					(SELECT term, tfidf_n FROM tfidf WHERE entry_id = ? ORDER BY tfidf_n DESC LIMIT 50) as a
 					INNER JOIN
-					(SELECT entry_id, term, tfidf FROM tfidf WHERE entry_id IN (SELECT entry_id FROM similar_candidate)) as b
+					(SELECT entry_id, term, tfidf_n FROM tfidf WHERE entry_id IN (SELECT entry_id FROM similar_candidate)) as b
 					ON
 					a.term = b.term
 				)
@@ -229,11 +233,19 @@ sub recalculate_similar_entry {
 		$dbh->prepare_cached(q{
 			DELETE FROM related_entries WHERE entry_id = ?
 		})->execute($entry_id);
-		for my $score (@$scores) {
-			$dbh->prepare_cached(q{
+
+		if (@$scores) {
+			my $placeholder = join(',', ("(?,?,?)") x scalar @$scores);
+
+			$dbh->prepare_cached(qq{
 				INSERT INTO related_entries (`entry_id`, `related_entry_id`, `score`)
-					VALUES (?, ?, ?)
-			})->execute($entry_id, $score->{eid}, $score->{score});
+					VALUES $placeholder
+			})->execute(
+				map {
+					($entry_id, $_->{eid}, $_->{score})
+				}
+				@$scores
+			);
 		}
 		$dbh->commit;
 	}
@@ -328,7 +340,7 @@ sub get_tfidf {
 			tfidf
 		WHERE
 			entry_id = ?
-		ORDER BY tfidf DESC
+		ORDER BY tfidf_n DESC
 		LIMIT ?
 	}, { Slice => {} }, $entry_id, $limit);
 }
