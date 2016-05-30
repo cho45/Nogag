@@ -505,11 +505,14 @@ body > * {
 }
 
 .entries article .content img ,
-.entries article .content svg ,
-.entries article .content iframe {
+.entries article .content svg {
 	max-width: 100%;
 	height: auto;
 	width: auto;
+}
+
+.entries article .content iframe {
+	max-width: 100%;
 }
 
 .entries article .content.trackbacks ,
