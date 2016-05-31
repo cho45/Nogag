@@ -4,9 +4,27 @@
 	<head>
 		<meta charset="utf-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-
 		<title>編集</title>
 
+		<link rel="preload" href="/js/bower_components/polymer/polymer.html">
+		<link rel="preload" href="/js/bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+		<link rel="preload" href="/js/bower_components/iron-icons/av-icons.html">
+		<link rel="preload" href="/js/bower_components/iron-icons/device-icons.html">
+		<link rel="preload" href="/js/bower_components/iron-icons/hardware-icons.html">
+		<link rel="preload" href="/js/bower_components/iron-icons/image-icons.html">
+		<link rel="preload" href="/js/bower_components/iron-icons/editor-icons.html">
+		<link rel="preload" href="/js/bower_components/iron-icons/iron-icons.html">
+		<link rel="preload" href="/js/bower_components/iron-icons/notification-icons.html">
+		<link rel="preload" href="/js/bower_components/paper-button/paper-button.html">
+		<link rel="preload" href="/js/bower_components/paper-icon-button/paper-icon-button.html">
+		<link rel="preload" href="/js/bower_components/paper-material/paper-material.html">
+		<link rel="preload" href="/js/bower_components/paper-styles/shadow.html">
+		<link rel="preload" href="/js/bower_components/paper-dialog/paper-dialog.html">
+		<link rel="preload" href="/js/bower_components/paper-item/paper-icon-item.html">
+		<link rel="preload" href="/js/bower_components/paper-item/paper-item-body.html">
+		<link rel="preload" href="/js/bower_components/paper-item/paper-item.html">
+		<link rel="preload" href="/js/bower_components/paper-progress/paper-progress.html">
+		<link rel="preload" href="/js/bower_components/iron-localstorage/iron-localstorage.html">
 		<script src="/js/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
 
 		<link rev="made" href="mailto:cho45@lowreal.net"/>
