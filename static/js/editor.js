@@ -132,11 +132,13 @@ Nogag.Editor = {
 				setOAuthToken(Nogag.Editor.google_access_token).
 				// setOrigin(window.location.protocol + '//' + window.location.host).
 				setDeveloperKey(Nogag.Editor.google_developer_key).
-				addView(google.picker.ViewId.PHOTOS).
 				addView(new google.picker.PhotosView().setType('camerasync')).
+				addView(google.picker.ViewId.PHOTOS).
 				addView(google.picker.ViewId.PHOTO_UPLOAD).
 				addView(google.picker.ViewId.YOUTUBE).
 				// addView(google.picker.ViewId.MAPS).
+				enableFeature(google.picker.Feature.MULTISELECT_ENABLED).
+				setSize(window.innerWidth, window.innerHeight).
 				setCallback(function (data) {
 					console.log('openPicker', data);
 					callback(data);
@@ -201,24 +203,25 @@ Nogag.Editor = {
 		var actions = {
 			photo : function () {
 				Nogag.Editor.openPicker( (data) => {
-					console.log('data', data);
 					if (data[google.picker.Response.ACTION] !== google.picker.Action.PICKED) return;
 
-					var syntax;
+					var syntax = '';
 
-					console.log(data);
-					var doc = data[google.picker.Response.DOCUMENTS][0];
-					if (doc.type === 'photo') {
-						var it = {
-							url : doc.url,
-							image : doc.thumbnails[3].url.replace(/\/s\d+\//, '/s2048/')
-						};
-						var template = document.getElementById('images-template').innerText;
-						syntax    = template.replace(/\{\{(\w+)\}\}/g, function (_, name) { return it[name] }).replace(/\s+/g, ' ');
-					} else
-					if (doc.type === 'location') {
-						console.log(doc.thumbnails[3]);
-						syntax = '<img src+"' + doc.thumbnails[3].url + '" alt="[MAP]"/>';
+					var docs = data[google.picker.Response.DOCUMENTS];
+
+					for (var i = 0, doc; (doc = docs[i]); i++) {
+						if (doc.type === 'photo') {
+							var it = {
+								url : doc.url,
+								image : doc.thumbnails[3].url.replace(/\/s\d+\//, '/s2048/')
+							};
+							var template = document.getElementById('images-template').innerText;
+							syntax    += template.replace(/\{\{(\w+)\}\}/g, function (_, name) { return it[name] }).replace(/\s+/g, ' ') + '\n';
+						} else
+						if (doc.type === 'location') {
+							console.log(doc.thumbnails[3]);
+							syntax += '<img src+"' + doc.thumbnails[3].url + '" alt="[MAP]"/>' + '\n';
+						}
 					}
 
 					if (syntax) {

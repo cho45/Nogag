@@ -36,6 +36,7 @@ route "/feed" => \&feed;
 route "/robots.txt" => \&robots_txt;
 route "/test" => \&test;
 
+route "/edit" => \&edit_form;
 route "/api/edit" => \&edit;
 route "/api/kousei" => "Nogag::API kousei";
 route "/api/similar" => \&similar;
@@ -136,6 +137,12 @@ sub edit {
 			});
 		}
 	}
+}
+
+sub edit_form {
+	my ($r) = @_;
+
+	$r->html('edit.tt');
 }
 
 sub index {
