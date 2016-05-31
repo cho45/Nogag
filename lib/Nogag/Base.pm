@@ -250,5 +250,10 @@ sub service {
 	};
 }
 
+sub time {
+	my ($r) = @_;
+	scalar time;
+}
+
 1;
 __END__

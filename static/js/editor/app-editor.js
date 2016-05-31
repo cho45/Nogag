@@ -1,0 +1,345 @@
+Polymer({
+	is: "app-editor",
+	properties: {
+		saving : {
+			type: Boolean,
+			value: false
+		},
+
+		entryJson : {
+			type: String,
+			value: ''
+		},
+
+		sk : {
+			type: String,
+			value: ''
+		},
+
+		// DB 側の値
+		entry : {
+			type: Object,
+			value: {
+				id: null,
+				title: '',
+				body: ''
+			}
+		},
+
+		// 編集中の値
+		form : {
+			type: Object,
+			value: {
+				id: null,
+				title: '',
+				body: ''
+			}
+		},
+
+		backup : {
+			type: Object,
+			value: {
+				new: {}
+			}
+		},
+		existingBackup : {
+			type: Object,
+			value: {}
+		}
+	},
+
+	created: function () {
+		this.google_client_id =  '980119139173.apps.googleusercontent.com';
+		this.google_developer_key = 'AIzaSyCDevJrf8SOEfeSeYDOGT9e6jjGDNT6lM4';
+		this.googleAPI = null;
+
+
+		var loadScript = function (url) {
+			return new Promise( function (resolve, reject) {
+				var script = document.createElement('script');
+				script.onload = resolve;
+				script.onerror = reject;
+				script.src = url;
+				document.body.appendChild(script);
+			});
+		};
+
+		var initGoogleAPI = new Promise( (resolve, reject) => {
+			window['Nogag.Editor.initGoogleAPI'] = () => {
+				delete window['Nogag.Editor.initGoogleAPI'];
+				resolve();
+			};
+			loadScript('https://apis.google.com/js/api.js?onload=Nogag.Editor.initGoogleAPI').
+				catch(reject);
+		});
+
+		var loadGoogle = function (name) {
+			return new Promise( (resolve, reject) => {
+				gapi.load(name, {'callback': resolve } );
+			});
+		};
+
+		this.googleAPI = initGoogleAPI.
+			then( () => {
+				console.log('Google API Loaded');
+			}).
+			then( () => Promise.all([
+				loadGoogle('auth'),
+				loadGoogle('picker')
+			])).
+			then( () => {
+				console.log('Google API Loaded / auth, picker');
+			}).
+			catch( (e) => alert(e) );
+	},
+
+	ready : function () {
+		if (location.hash.match(/#openDialog-(.+)/)) {
+			this.openDialog(this.$[RegExp.$1]);
+		}
+
+		this.entry = JSON.parse(this.entryJson);
+
+		this.set('form.id', this.entry.id);
+		this.set('form.title', this.entry.title);
+		this.set('form.body', this.entry.body);
+
+		this.$.body.insertText = function (text, select) {
+			var selectionStart = body.selectionStart;
+			var selectionEnd = body.selectionEnd;
+			body.value =
+				body.value.substring(0, selectionStart) +
+				text +
+				body.value.substring(selectionEnd);
+			body.selectionStart = selectionStart;
+			if (typeof select === 'boolean' && select) {
+				body.selectionEnd   = selectionStart + text.length;
+			} else
+			if (typeof select === 'number') {
+				body.selectionStart = selectionStart + select;
+				body.selectionEnd   = selectionStart + select;
+			} else {
+				body.selectionEnd   = selectionStart;
+			}
+		};
+
+		this.$.body.addEventListener('keydown', function (e) {
+			var key = (e.altKey?"Alt-":"")+(e.ctrlKey?"Control-":"")+(e.metaKey?"Meta-":"")+(e.shiftKey?"Shift-":"")+e.key;   
+			console.log(key);
+			if (key === 'Control-t') {
+				body.insertText('\\(  \\)', 3); 
+				e.preventDefault();
+				e.stopPropagation();
+			}
+		});
+	},
+
+	attached: function () {
+		this.$.backup.reload();
+
+		var key = this.backupKeyForEntry(this.entry);
+		var existingBackup = this.backup[key];
+		// DBとバックアップが違う場合だけバックアップが存在することにする
+		if (
+			existingBackup &&
+			(
+				this.entry.title !== existingBackup.title ||
+				this.entry.body  !== existingBackup.body
+			)
+		) {
+			this.set('existingBackup', existingBackup);
+		} else {
+			// 保存時に消しているはずだが念のため
+			delete this.backup[key];
+			this.set('existingBackup', null);
+		}
+
+		setInterval( () => {
+			// DBから変更がある場合はバックアップをとる
+			if (
+				this.entry.title !== this.form.title ||
+				this.entry.body  !== this.form.body
+			) {
+				console.log('update backup');
+				// update 
+				this.backup[key] = {
+					title : this.form.title,
+					body  : this.form.body,
+					time  : new Date().getTime()
+				};
+				this.$.backup.save();
+				// 変更されたら復元可能状態から抜ける (復元ボタンを消す)
+				this.set('existingBackup', null);
+			}
+		}, 3000);
+	},
+
+	saveEntry : function () {
+		this.set('saving', true);
+
+		var data = new FormData();
+		data.set('id', this.form.id);
+		data.set('title', this.form.title);
+		data.set('body', this.form.body);
+		data.set('sk', this.sk);
+
+		var req = new XMLHttpRequest();
+		req.open("POST", '/api/edit');
+		req.onload = (e) => {
+			// 保存したらバックアップは削除
+			var key = this.backupKeyForEntry(this.entry);
+			delete this.backup[key];
+			this.$.backup.save();
+
+			var data = JSON.parse(req.responseText);
+			location.href = data.location;
+		};
+		req.onerror = function (e) {
+			alert('error ' + e);
+			this.set('saving', false);
+		};
+		req.send(data);
+	},
+
+	initializeBackup : function () {
+		this.backup = {};
+	},
+
+	backupKeyForEntry : function (entry) {
+		return entry.id || 'new';
+	},
+
+	restoreBackup : function () {
+		this.set('form.title', this.existingBackup.title);
+		this.set('form.body', this.existingBackup.body);
+	},
+
+	openRestoreDialog : function () {
+		this.openDialog(this.$.restoreDialog);
+	},
+
+	openTagDialog : function () {
+		this.openDialog(this.$.tagDialog);
+	},
+
+	insertTag : function (e) {
+		var tag = this.getDataArgFromEvent(e, 'data-tag');
+		this.set('form.title',  '[' + tag + ']' + this.form.title);
+		this.$.tagDialog.close();
+		this.async( () => {
+			this.$.title.focus();
+		});
+	},
+
+	getDataArgFromEvent : function (e, name) {
+		var target = Polymer.dom(e).path.filter(function (i) {
+			return i.getAttribute && i.getAttribute(name);
+		})[0];
+		if (!target) {
+			return null;
+		}
+		return target.getAttribute(name);
+	},
+
+	openDialog : function (dialog) {
+		dialog.open();
+		dialog.style.visibility = 'hidden';
+		this.async( () => {
+			dialog.refit();
+			dialog.style.visibility = 'visible';
+		}, 10);
+	},
+
+	oauthGoogle : function () {
+		if (!this.google_access_token) {
+			return new Promise( (resolve, reject) => {
+				gapi.auth.authorize(
+					{
+						'client_id': this.google_client_id,
+						'scope': [
+							'https://www.googleapis.com/auth/photos',
+							'https://www.googleapis.com/auth/drive.readonly',
+							'https://www.googleapis.com/auth/photos.upload',
+							'https://www.googleapis.com/auth/youtube'
+						],
+						'immediate': false
+					},
+					(result) => {
+						console.log(result);
+						if (result && !result.error) {
+							this.google_access_token = result.access_token;
+							resolve(result);
+						} else {
+							alert(result.error);
+							reject(result);
+						}
+					}
+				);
+			});
+		} else {
+			return Promise.resolve();
+		}
+	},
+
+	openGooglePicker : function () {
+		var openPicker = (callback) => {
+			return this.oauthGoogle().
+			then(() => {
+				console.log('google_access_token', this.google_access_token);
+				var picker = new google.picker.PickerBuilder().
+					setOAuthToken(this.google_access_token).
+					// setOrigin(window.location.protocol + '//' + window.location.host).
+					setDeveloperKey(this.google_developer_key).
+					addView(new google.picker.PhotosView().setType('camerasync')).
+					addView(google.picker.ViewId.PHOTOS).
+					addView(google.picker.ViewId.PHOTO_UPLOAD).
+					addView(google.picker.ViewId.YOUTUBE).
+					// addView(google.picker.ViewId.MAPS).
+					enableFeature(google.picker.Feature.MULTISELECT_ENABLED).
+					setSize(window.innerWidth, window.innerHeight).
+					setCallback(function (data) {
+						console.log('openPicker', data);
+						callback(data);
+					}).
+					build();
+
+				picker.setVisible(true);
+			});
+		};
+
+		openPicker( (data) => {
+			if (data[google.picker.Response.ACTION] !== google.picker.Action.PICKED) return;
+
+			var syntax = '';
+
+			var docs = data[google.picker.Response.DOCUMENTS];
+
+			for (var i = 0, doc; (doc = docs[i]); i++) {
+				if (doc.type === 'photo') {
+					var it = {
+						url : doc.url,
+						image : doc.thumbnails[3].url.replace(/\/s\d+\//, '/s2048/')
+					};
+					var template = this.$.imagesTemplate.textContent;
+					syntax    += template.replace(/@@(\w+)@@/g, function (_, name) { return it[name] }).replace(/\s+/g, ' ') + '\n';
+				} else
+				if (doc.type === 'location') {
+					console.log(doc.thumbnails[3]);
+					syntax += '<img src+"' + doc.thumbnails[3].url + '" alt="[MAP]"/>' + '\n';
+				}
+			}
+
+			if (syntax) {
+				this.$.body.insertText(syntax, true);
+				this.set('form.body', this.$.body.value.replace(/\r\n/g, '\n'));
+			}
+		});
+	},
+
+	strftime: function (format, date, locale) {
+		if (typeof date === 'number') {
+			date = new Date(date);
+		}
+		return strftime(format, date, locale);
+	}
+});

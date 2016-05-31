@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html
+	>
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+
+		<title>編集</title>
+
+		<script src="/js/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+
+		<link rev="made" href="mailto:cho45@lowreal.net"/>
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+	</head>
+
+	<body style="margin: 0; padding: 0; height: 100vh; width: 100vw; background: #f7f8f9">
+		<style>
+		@-webkit-keyframes spin{
+			0%{-webkit-transform: rotate(0deg);}
+			100%{-webkit-transform: rotate(1080deg);}
+		}
+		@keyframes spin{
+			0%{transform: rotate(0deg);}
+			100%{transform: rotate(1080deg);}
+		}
+		.loading{
+			-webkit-box-sizing: border-box;
+			-moz-box-sizing: border-box;
+			-ms-box-sizing: border-box;
+			box-sizing: border-box;
+			display: block;
+			width: 36px;
+			height: 36px;
+			margin: auto;
+			border-width: 4px;
+			border-style: solid;
+			border-color: transparent #000;
+			border-radius: 18px;
+			-webkit-animation: spin 2s ease-in-out infinite;
+			animation: spin 2s ease-in-out infinite;
+		}
+		</style>
+
+		<div class='loading'></div>
+
+		<style>
+			.loading {
+				margin: 100px auto;
+			}
+		</style>
+
+		<app-editor
+			sk="[% r.sk %]"
+			entry-json="[% entry_json %]"
+			></app-editor>
+
+		<script>
+			requestAnimationFrame(function () {
+				var link = document.createElement('link');
+				link.rel = "import";
+				link.href = "/js/editor/app-editor.html";
+				link.addEventListener('load', function () {
+					var loading = document.querySelector('.loading');
+					loading.parentNode.removeChild(loading);
+				});
+				document.body.appendChild(link);
+			});
+		</script>
+	</body>
+</html>
+
+

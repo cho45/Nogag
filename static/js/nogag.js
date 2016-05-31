@@ -107,9 +107,7 @@ Nogag = {
 			var button = document.querySelector('.nogag-new');
 			if (button) {
 				button.addEventListener('click', function () {
-					Nogag.loadEditor().then(function () {
-						Nogag.Editor.newEntry();
-					});
+					location.href = "/edit";
 				});
 			}
 		}
@@ -120,9 +118,7 @@ Nogag = {
 			var button = entry.querySelector('.nogag-edit');
 			if (button) {
 				button.addEventListener('click', function () {
-					Nogag.loadEditor().then(function () {
-						Nogag.Editor.editEntry(entry);
-					});
+					location.href = "/edit?id=" + entry.getAttribute('data-id')
 				});
 			}
 		}
@@ -136,19 +132,6 @@ Nogag = {
 			script.src = url;
 			document.body.appendChild(script);
 		});
-	},
-
-	loadEditor : function () {
-		return Promise.all([
-			Nogag.loadScript('/js/keyboard.js'),
-			Nogag.loadScript('/js/editor.js')
-		]).
-			then(function () {
-				Nogag.Editor.init();
-			}).
-			then(function () {
-				console.log('loadEditor done');
-			});
 	}
 };
 

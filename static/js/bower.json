@@ -1,0 +1,25 @@
+{
+  "name": "nogag",
+  "homepage": "https://github.com/cho45/Nogag",
+  "authors": [
+    "cho45 <cho45@lowreal.net>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+	  "polymer": "Polymer/polymer#^1.4.0",
+	  "iron-elements": "PolymerElements/iron-elements#^1.0.0",
+	  "paper-elements": "PolymerElements/paper-elements#^1.0.0",
+	  "strftime": "~0.9.2"
+  }
+}
+

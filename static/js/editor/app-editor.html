@@ -1,0 +1,168 @@
+<link rel="import" href="/js/bower_components/polymer/polymer.html">
+
+<link rel="import" href="/js/bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="/js/bower_components/iron-icons/av-icons.html">
+<link rel="import" href="/js/bower_components/iron-icons/device-icons.html">
+<link rel="import" href="/js/bower_components/iron-icons/hardware-icons.html">
+<link rel="import" href="/js/bower_components/iron-icons/image-icons.html">
+<link rel="import" href="/js/bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="/js/bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="/js/bower_components/iron-icons/notification-icons.html">
+<link rel="import" href="/js/bower_components/paper-button/paper-button.html">
+<link rel="import" href="/js/bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="/js/bower_components/paper-material/paper-material.html">
+<link rel="import" href="/js/bower_components/paper-styles/shadow.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html">
+
+
+<dom-module id="app-editor">
+	<style is="custom-style" include="iron-flex iron-flex-factors iron-positioning">
+		:host {
+			display: block;
+			height: 100%;
+			width: 100%;
+			background: #f7f8f9;
+		}
+
+		.container {
+			height: 100%;
+			width: 100%;
+		}
+
+		.container .main {
+			overflow: auto;
+			padding: 10px;
+		}
+
+		.container .main > .title {
+		}
+
+		.container .main > .body {
+		}
+
+		.container .global-actions {
+			background: #fff;
+			padding: 14px 10px 10px;
+			@apply(--shadow-elevation-2dp);
+		}
+
+		paper-button {
+			color: #fff;
+			background: var(--paper-cyan-600);
+		}
+
+		.toolbar {
+			padding: 10px 0;
+		}
+
+		.toolbar paper-icon-button {
+			border-radius: 3px;
+			background: #fff;
+			color: #333;
+		}
+
+		input,
+		textarea {
+			margin: 0;
+			font-family: inherit;
+			line-height: normal;
+			ackground-clip: padding-box;
+			border: 1px solid #dfe5e7;
+			box-sizing: border-box;
+			width: 100%;
+			padding: 5px;
+			border-radius: 3px;
+			font-size: 110%;
+		}
+
+		paper-dialog {
+			width: 100%;
+			max-width: 600px;
+			box-sizing: border-box;
+			max-height: 100%;
+			overflow-y: auto;
+		}
+
+		#restore {
+			background: var(--paper-grey-600);
+		}
+
+		*[hide] {
+			display: none;
+		}
+	</style>
+
+	<template>
+		<form id="form" class="container layout vertical">
+			<div class="flex relative">
+				<div class="main fit layout vertical">
+					<div class="title">
+						<input id="title" type="text" placeholder="タイトル" value="{{form.title::input}}"/>
+					</div>
+					<div class="toolbar">
+						<paper-icon-button icon="icons:loyalty" on-tap="openTagDialog"></paper-icon-button>
+						<paper-icon-button icon="editor:insert-photo" on-tap="openGooglePicker"></paper-icon-button>
+					</div>
+					<div class="flex relative">
+						<div class="body fit">
+							<textarea id="body" style="height: 100%" placeholder="本文" required value="{{form.body::input}}"></textarea>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="global-actions relative">
+				<input id="entryId" type="hidden" name="id" value="{{form.id}}">
+				<input type="hidden" name="sk" value="{{sk}}">
+				<paper-progress id="progress" disabled$="{{!saving}}" indeterminate style="width: 100%; position: absolute; top: 0; left: 0"></paper-progress>
+				<paper-button on-tap="saveEntry" disabled$="{{saving}}">更新</paper-button>
+				<paper-button id="restore" on-tap="openRestoreDialog" disabled$="{{saving}}" hide$="{{!existingBackup}}">復元...</paper-button>
+			</div>
+		</form>
+
+		<iron-localstorage
+			id="backup"
+			name="nogag-backup" 
+			value="{{backup}}"
+			on-iron-localstorage-load-empty="initializeBackup"></iron-localstorage>
+
+
+		<paper-dialog id="tagDialog" with-backdrop>
+			<paper-item on-tap="insertTag" data-tag="tech">tech</paper-item>
+			<paper-item on-tap="insertTag" data-tag="photo">photo</paper-item>
+		</paper-dialog>
+
+		<paper-dialog id="restoreDialog" with-backdrop>
+			<h2>自動バックアップの復元</h2>
+			<p>
+			<span>{{strftime("%Y年%m月%d日%H時", existingBackup.time)}}</span>
+				に保存されたバックアップを復元しますか?
+				復元によって現在記入中の内容は失われます。
+			</p>
+			<p>
+			<input value="{{existingBackup.title}}">
+			<textarea readonly rows="10">{{existingBackup.body}}</textarea>
+			</p>
+			<div class="buttons">
+				<paper-button dialog-dismiss>キャンセル</paper-button>
+				<paper-button dialog-confirm on-tap="restoreBackup">復元</paper-button>
+			</div>
+		</paper-dialog>
+
+		<script type="application/x-template" id="imagesTemplate">
+			<span itemscope itemtype="http://schema.org/Photograph">
+				<a href="@@url@@" class="picasa" itemprop="url"><img src="@@image@@" alt="photo" itemprop="image"/></a>
+			</span>
+		</script>
+
+	</template>
+</dom-module>
+
+<script src="/js/bower_components/strftime/strftime.js"></script>
+<script src="/js/keyboard.js"></script>
+<script src="app-editor.js"></script>

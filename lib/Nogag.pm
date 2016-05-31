@@ -12,6 +12,7 @@ use URI::QueryParam;
 use Digest::MD5 qw(md5_hex);
 use Cache::FileCache;
 use Log::Minimal;
+use JSON::XS;
 
 use Nogag::Base;
 use Nogag::Time;
@@ -126,9 +127,12 @@ sub edit {
 				invalidate_target => $invalidate_target,
 			}, uniqkey => 'postentry-' . $entry->id);
 
-			# $r->res->redirect("/" . $entry->path);
+
 			$r->res->header('X-Entry', $entry->id);
-			$r->res->redirect(scalar $r->req->param('location'));
+			$r->json(+{
+				id => $entry->id,
+				location => $entry->path('/')
+			});
 		}
 
 		default {
@@ -141,6 +145,27 @@ sub edit {
 
 sub edit_form {
 	my ($r) = @_;
+
+	my $entry;
+	if (my $id = $r->req->param('id')) {
+		$entry = $r->dbh->select(q{
+			SELECT * FROM entries
+			WHERE id = :id
+		}, {
+			id => $id
+		})->[0];
+	};
+
+	$r->stash(entry_json => encode_json($entry ? {
+		id => $entry->{id},
+		title => $entry->{title},
+		body => $entry->{body},
+	} : {
+		id => '',
+		title => '',
+		body  => '',
+	}));
+
 
 	$r->html('edit.tt');
 }
