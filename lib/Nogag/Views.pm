@@ -64,7 +64,6 @@ my $XSLATE = Text::Xslate->new(
 		_similar.html
 		_article.html
 		_adsense.html
-		_images.html
 	};
 };
 
