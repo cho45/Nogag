@@ -16,6 +16,11 @@ Polymer({
 			value: ''
 		},
 
+		progress : {
+			type: String,
+			value: ''
+		},
+
 		// DB 側の値
 		entry : {
 			type: Object,
@@ -46,6 +51,7 @@ Polymer({
 			type: Object,
 			value: {}
 		}
+		
 	},
 
 	created: function () {
@@ -176,6 +182,7 @@ Polymer({
 
 	saveEntry : function () {
 		this.set('saving', true);
+		this.set('progress', '');
 
 		var data = new FormData();
 		data.set('id', this.form.id);
@@ -199,6 +206,31 @@ Polymer({
 			this.set('saving', false);
 		};
 		req.send(data);
+
+		(function progress () {
+			var req = new XMLHttpRequest();
+			req.open("GET", '/api/edit/progress');
+			var timeout = setTimeout(function () {
+				if (req.readyState !== 4) {
+					req.abort();
+					progress();
+				}
+			}, 5000);
+			req.onload = (e) => {
+				clearTimeout(timeout);
+
+				var data = JSON.parse(req.responseText);
+
+				this.set('progress', data.progress);
+				setTimeout(() => {
+					progress();
+				}, 500);
+			};
+			req.onerror = (e) => {
+				progress();
+			};
+			req.send(null);
+		}).call(this);
 	},
 
 	initializeBackup : function () {
@@ -282,58 +314,80 @@ Polymer({
 	},
 
 	openGooglePicker : function () {
-		var openPicker = (callback) => {
-			return this.oauthGoogle().
-			then(() => {
-				console.log('google_access_token', this.google_access_token);
-				var picker = new google.picker.PickerBuilder().
-					setOAuthToken(this.google_access_token).
-					// setOrigin(window.location.protocol + '//' + window.location.host).
-					setDeveloperKey(this.google_developer_key).
-					addView(new google.picker.PhotosView().setType('camerasync')).
-					addView(google.picker.ViewId.PHOTOS).
-					addView(google.picker.ViewId.PHOTO_UPLOAD).
-					addView(google.picker.ViewId.YOUTUBE).
-					// addView(google.picker.ViewId.MAPS).
-					enableFeature(google.picker.Feature.MULTISELECT_ENABLED).
-					setSize(window.innerWidth, window.innerHeight).
-					setCallback(function (data) {
-						console.log('openPicker', data);
-						callback(data);
-					}).
-					build();
+		// hide software keyboard
+		this.$.body.blur();
+		this.$.title.blur();
 
-				picker.setVisible(true);
-			});
-		};
+		this.async( () => {
 
-		openPicker( (data) => {
-			if (data[google.picker.Response.ACTION] !== google.picker.Action.PICKED) return;
+			var openPicker = (callback) => {
+				return this.oauthGoogle().
+				then(() => {
+					console.log('google_access_token', this.google_access_token);
+					var picker = new google.picker.PickerBuilder().
+						setOAuthToken(this.google_access_token).
+						// setOrigin(window.location.protocol + '//' + window.location.host).
+						setDeveloperKey(this.google_developer_key).
+						addView(new google.picker.PhotosView().setType('camerasync')).
+						addView(google.picker.ViewId.PHOTOS).
+						addView(google.picker.ViewId.PHOTO_UPLOAD).
+						addView(google.picker.ViewId.YOUTUBE).
+						// addView(google.picker.ViewId.MAPS).
+						enableFeature(google.picker.Feature.MULTISELECT_ENABLED).
+						setSize(window.innerWidth, window.innerHeight).
+						setCallback(function (data) {
+							console.log('openPicker', data);
+							callback(data);
+						}).
+						build();
 
-			var syntax = '';
+					picker.setVisible(true);
+				});
+			};
 
-			var docs = data[google.picker.Response.DOCUMENTS];
+			openPicker( (data) => {
+				if (data[google.picker.Response.ACTION] !== google.picker.Action.PICKED) return;
 
-			for (var i = 0, doc; (doc = docs[i]); i++) {
-				if (doc.type === 'photo') {
-					var it = {
-						url : doc.url,
-						image : doc.thumbnails[3].url.replace(/\/s\d+\//, '/s2048/')
-					};
-					var template = this.$.imagesTemplate.textContent;
-					syntax    += template.replace(/@@(\w+)@@/g, function (_, name) { return it[name] }).replace(/\s+/g, ' ') + '\n';
-				} else
-				if (doc.type === 'location') {
-					console.log(doc.thumbnails[3]);
-					syntax += '<img src+"' + doc.thumbnails[3].url + '" alt="[MAP]"/>' + '\n';
+				var syntax = '';
+
+				var docs = data[google.picker.Response.DOCUMENTS];
+
+				for (var i = 0, doc; (doc = docs[i]); i++) {
+					if (doc.type === 'photo') {
+						var it = {
+							url : doc.url,
+							image : doc.thumbnails[3].url.replace(/\/s\d+\//, '/s2048/')
+						};
+						var template = this.$.imagesTemplate.textContent;
+						syntax    += template.replace(/@@(\w+)@@/g, function (_, name) { return it[name] }).replace(/\s+/g, ' ') + '\n';
+					} else
+					if (doc.type === 'location') {
+						console.log(doc.thumbnails[3]);
+						syntax += '<img src+"' + doc.thumbnails[3].url + '" alt="[MAP]"/>' + '\n';
+					}
 				}
-			}
 
-			if (syntax) {
-				this.$.body.insertText(syntax, true);
-				this.set('form.body', this.$.body.value.replace(/\r\n/g, '\n'));
-			}
-		});
+				if (syntax) {
+					this.$.body.insertText(syntax, true);
+					this.set('form.body', this.$.body.value.replace(/\r\n/g, '\n'));
+				}
+
+				this.$.body.focus();
+			});
+		}, 100);
+	},
+
+	progressString : function () {
+		if (this.progress) {
+			return {
+				'saving' : '保存中',
+				'update-similar-entries': '関連エントリを構築中',
+				'posting-new-job' : 'ジョブを投入中',
+				'done' : '完了'
+			}[this.progress] || this.progress;
+		} else {
+			return 'リクエスト中';
+		}
 	},
 
 	strftime: function (format, date, locale) {

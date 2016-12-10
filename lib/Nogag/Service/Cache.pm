@@ -16,6 +16,7 @@ use parent qw(Nogag::Service);
 my $cache = do {
 	my $MessagePack = Data::MessagePack->new;
 	$MessagePack->canonical;
+	$MessagePack->utf8(0);
 	Cache::Invalidatable::SQLite->new(
 		db => config->param('cache_db'),
 		serializer => sub {

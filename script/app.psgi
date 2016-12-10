@@ -14,9 +14,9 @@ use Data::MessagePack;
 use Plack::Builder;
 use Plack::Session::State::Cookie;
 use Plack::Session::Store::File;
+use Plack::Session::Store::Cache;
 
-my $MessagePack = Data::MessagePack->new;
-$MessagePack->canonical;
+use Cache::Memcached::Fast::Safe;
 
 use Nogag;
 use lib config->root->subdir('lib')->absolute.q();
@@ -47,50 +47,14 @@ builder {
 		path => qr{^/(images|js|css)/},
 		root => config->root->subdir('static');
 
-
-#	enable "Plack::Middleware::StaticShared",
-#		cache => Cache::Null->new,
-#		base => config->root->subdir('static'),
-#		binds => [
-#			{
-#				prefix       => '/.shared.js',
-#				content_type => 'text/javascript; charset=utf-8',
-#			},
-#			{
-#				prefix       => '/.shared.css',
-#				content_type => 'text/css; charset=utf-8',
-#				filter       => sub {
-#					s{\s+}{ }g;
-#					$_;
-#				}
-#			},
-#		],
-#		verifier => sub {
-#			my ($version, $prefix) = @_;
-#			$version =~ /^[0-9a-z]+$/
-#		};
-
 	enable "Plack::Middleware::ReverseProxy";
 	enable "Plack::Middleware::Session",
 		state => Plack::Session::State::Cookie->new(
 			session_key => 's',
-			expires => 60 * 60 * 24 * 365,
+			expires => undef,
 		),
-		store => Plack::Session::Store::File->new(
-			dir => config->root->subdir('session').q(),
-			serializer   => sub {
-				my ($session, $file) = @_;
-				return unless %$session;
-				my $fh = file($file)->openw;
-				print $fh $MessagePack->pack($session);
-				close $fh;
-			},
-			deserializer => sub {
-				my ($file) = @_;
-				eval {
-					$MessagePack->unpack(scalar file($file)->slurp)
-				} || +{}
-			},
+		store => Plack::Session::Store::Cache->new(
+			cache => Cache::Memcached::Fast::Safe->new(config->param('session')),
 		);
 
 	sub {

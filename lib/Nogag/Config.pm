@@ -19,6 +19,12 @@ common +{
 };
 
 config development => {
+	session => {
+		servers => [
+			'127.0.0.1:11211'
+		],
+		namespace => 'nogag-dev',
+	},
 	db => root->file('db/development.db'),
 	cache_db => root->file('db/development-cache.db'),
 	tfidf_db => root->file('db/development-tfidf.db'),
@@ -28,6 +34,12 @@ config development => {
 };
 
 config test => {
+	session => {
+		servers => [
+			'127.0.0.1:11211'
+		],
+		namespace => 'nogag-test',
+	},
 	username       => 'test',
 	password       => 'test',
 	postprocess    => URI->new('http://127.0.0.1:13371'),
@@ -38,6 +50,12 @@ config test => {
 };
 
 config production => {
+	session => {
+		servers => [
+			'127.0.0.1:11211'
+		],
+		namespace => 'nogag-',
+	},
 	db => root->file('db/data.db'),
 	cache_db => root->file('db/cache.db'),
 	tfidf_db => root->file('db/tfidf.db'),

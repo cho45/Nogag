@@ -38,6 +38,8 @@
 		.container .main {
 			overflow: auto;
 			padding: 10px;
+			max-width: 40em;
+			margin: 0 auto;
 		}
 
 		.container .main > .title {
@@ -50,6 +52,11 @@
 			background: #fff;
 			padding: 14px 10px 10px;
 			@apply(--shadow-elevation-2dp);
+		}
+
+		.container .global-actions .buttons {
+			max-width: 40em;
+			margin: 0 auto;
 		}
 
 		paper-button {
@@ -96,6 +103,10 @@
 		*[hide] {
 			display: none;
 		}
+
+		*[disabled] {
+			opacity: 0.5;
+		}
 	</style>
 
 	<template>
@@ -117,11 +128,16 @@
 				</div>
 			</div>
 			<div class="global-actions relative">
-				<input id="entryId" type="hidden" name="id" value="{{form.id}}">
-				<input type="hidden" name="sk" value="{{sk}}">
-				<paper-progress id="progress" disabled$="{{!saving}}" indeterminate style="width: 100%; position: absolute; top: 0; left: 0"></paper-progress>
-				<paper-button on-tap="saveEntry" disabled$="{{saving}}">更新</paper-button>
-				<paper-button id="restore" on-tap="openRestoreDialog" disabled$="{{saving}}" hide$="{{!existingBackup}}">復元...</paper-button>
+				<div class="buttons">
+					<input id="entryId" type="hidden" name="id" value="{{form.id}}">
+					<input type="hidden" name="sk" value="{{sk}}">
+					<paper-progress id="progress" disabled$="{{!saving}}" indeterminate style="width: 100%; position: absolute; top: 0; left: 0"></paper-progress>
+					<paper-button on-tap="saveEntry" disabled$="{{saving}}">
+						<span hide$="{{saving}}">更新</span>
+						<span hide$="{{!saving}}">{{progressString(progress)}}</span>
+					</paper-button>
+					<paper-button id="restore" on-tap="openRestoreDialog" disabled$="{{saving}}" hide$="{{!existingBackup}}">復元...</paper-button>
+				</div>
 			</div>
 		</form>
 

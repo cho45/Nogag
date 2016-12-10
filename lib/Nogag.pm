@@ -19,6 +19,7 @@ use Nogag::Time;
 use Nogag::Model::Entry;
 use Nogag::Utils;
 use Cache::Invalidatable::SQLite;
+use Compress::Zlib;
 
 use Nogag::Formatter::Hatena;
 use Nogag::Service::Cache;
@@ -39,6 +40,7 @@ route "/test" => \&test;
 
 route "/edit" => \&edit_form;
 route "/api/edit" => \&edit;
+route "/api/edit/progress" => \&edit_progress;
 route "/api/kousei" => "Nogag::API kousei";
 route "/api/similar" => \&similar;
 
@@ -95,52 +97,59 @@ sub edit {
 
 	$r->stash(entry => $entry);
 
-	given ($r->req->method) {
-		when ('GET') {
-			$r->json(+{
-				html => $r->render('form.html'),
-				sk => $r->sk,
-			});
+	if ($r->req->method eq 'GET') {
+		$r->json(+{
+			html => $r->render('form.html'),
+			sk => $r->sk,
+		});
+	} elsif ($r->req->method eq 'POST') {
+		$r->service('Nogag::Service::Cache')->set('progress', => 'saving');
+
+		my $invalidate_target = '/';
+		if ($entry->id) {
+			$entry = $r->service('Nogag::Service::Entry')->update_entry($entry,
+				title          => $r->req->string_param('title'),
+				body           => $r->req->string_param('body'),
+			);
+
+			$invalidate_target = "".$entry->id;;
+		} else {
+			$entry = $r->service('Nogag::Service::Entry')->create_new_entry(
+				title          => $r->req->string_param('title'),
+				body           => $r->req->string_param('body'),
+			);
+			$invalidate_target = '/';
 		}
 
-		when ('POST') {
-			my $invalidate_target = '/';
-			if ($entry->id) {
-				$entry = $r->service('Nogag::Service::Entry')->update_entry($entry,
-					title          => $r->req->string_param('title'),
-					body           => $r->req->string_param('body'),
-				);
+		$r->service('Nogag::Service::Cache')->set('progress', => 'update-similar-entries');
+		$r->service('Nogag::Service::SimilarEntry')->update($entry);
 
-				$invalidate_target = "".$entry->id;;
-			} else {
-				$entry = $r->service('Nogag::Service::Entry')->create_new_entry(
-					title          => $r->req->string_param('title'),
-					body           => $r->req->string_param('body'),
-				);
-				$invalidate_target = '/';
-			}
-
-			$r->service('Nogag::Service::SimilarEntry')->update($entry);
-
-			$r->work_job('Nogag::Worker::PostEntry', {
-				entry => $entry,
-				invalidate_target => $invalidate_target,
-			}, uniqkey => 'postentry-' . $entry->id);
+		$r->service('Nogag::Service::Cache')->set('progress', => 'posting-new-job');
+		$r->work_job('Nogag::Worker::PostEntry', {
+			entry => $entry,
+			invalidate_target => $invalidate_target,
+		}, uniqkey => 'postentry-' . $entry->id);
 
 
-			$r->res->header('X-Entry', $entry->id);
-			$r->json(+{
-				id => $entry->id,
-				location => $entry->path('/')
-			});
-		}
-
-		default {
-			$r->json(+{
-				error => 'Invalid request method'
-			});
-		}
+		$r->service('Nogag::Service::Cache')->set('progress', => '');
+		$r->res->header('X-Entry', $entry->id);
+		$r->json(+{
+			id => $entry->id,
+			location => $entry->path('/')
+		});
+	} else {
+		$r->json(+{
+			error => 'Invalid request method'
+		});
 	}
+}
+
+sub edit_progress {
+	my ($r) = @_;
+	my $progress = $r->service('Nogag::Service::Cache')->get('progress');
+	$r->json(+{
+		progress => $progress
+	});
 }
 
 sub edit_form {
@@ -247,6 +256,12 @@ sub index {
 
 	$r->html('index.html');
 	infof("new cache: %s", $cache_key);
+	if (my $compressed = Compress::Zlib::memGzip($r->res->body)) {
+		$r->res->header('Content-Encoding', 'gzip');
+		$r->res->body($compressed);
+	} else {
+		warn "Cannot compress: $gzerrno\n";
+	}
 	Nogag::Service::Cache->set($cache_key => $r->res->finalize, [ ($page ? () : "/"), map { $_->id } @$entries ]);
 }
 
@@ -406,6 +421,12 @@ sub permalink {
 
 	$r->html('index.html');
 	infof("new cache: %s", $cache_key);
+	if (my $compressed = Compress::Zlib::memGzip($r->res->body)) {
+		$r->res->header('Content-Encoding', 'gzip');
+		$r->res->body($compressed);
+	} else {
+		warn "Cannot compress: $gzerrno\n";
+	}
 	Nogag::Service::Cache->set($cache_key => $r->res->finalize, [ $entry->id ]);
 }
 
@@ -482,6 +503,12 @@ sub category {
 	} else {
 		$r->html('index.html');
 		infof("new cache: %s", $cache_key);
+		if (my $compressed = Compress::Zlib::memGzip($r->res->body)) {
+			$r->res->header('Content-Encoding', 'gzip');
+			$r->res->body($compressed);
+		} else {
+			warn "Cannot compress: $gzerrno\n";
+		}
 		Nogag::Service::Cache->set($cache_key => $r->res->finalize, [ ($page ? () : "/"), map { $_->id } @$entries ]);
 	}
 }
@@ -571,8 +598,25 @@ sub robots_txt {
 
 sub test {
 	my ($r) = @_;
-	$r->stash(test => 1);
-	$r->res->content(encode_utf8 $r->render('index.html'));
+	$r->res->streaming(sub {
+		my $responder = shift;
+		my $writer = $responder->([ 200, [ 'Content-Type', 'multipart/x-mixed-replace; boundary=boundary' ]]);
+		warn "foo:1";
+		$writer->write("--boundary\r\n");
+		$writer->write("Content-Type: application/json\r\n");
+		$writer->write("\r\n");
+		$writer->write("{foo:1}");
+		$writer->write("\r\n\r\n");
+		sleep 3;
+		warn "bar:2";
+		$writer->write("--boundary\r\n");
+		$writer->write("Content-Type: application/json\r\n");
+		$writer->write("\r\n");
+		$writer->write("{bar:2}");
+		$writer->write("\r\n\r\n");
+		sleep 3;
+		$writer->close;
+	});
 }
 
 sub like_mathjax {

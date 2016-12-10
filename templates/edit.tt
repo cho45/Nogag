@@ -6,26 +6,58 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 		<title>編集</title>
 
-		<link rel="preload" href="/js/bower_components/polymer/polymer.html">
-		<link rel="preload" href="/js/bower_components/iron-flex-layout/iron-flex-layout-classes.html">
-		<link rel="preload" href="/js/bower_components/iron-icons/av-icons.html">
-		<link rel="preload" href="/js/bower_components/iron-icons/device-icons.html">
-		<link rel="preload" href="/js/bower_components/iron-icons/hardware-icons.html">
-		<link rel="preload" href="/js/bower_components/iron-icons/image-icons.html">
-		<link rel="preload" href="/js/bower_components/iron-icons/editor-icons.html">
-		<link rel="preload" href="/js/bower_components/iron-icons/iron-icons.html">
-		<link rel="preload" href="/js/bower_components/iron-icons/notification-icons.html">
-		<link rel="preload" href="/js/bower_components/paper-button/paper-button.html">
-		<link rel="preload" href="/js/bower_components/paper-icon-button/paper-icon-button.html">
-		<link rel="preload" href="/js/bower_components/paper-material/paper-material.html">
-		<link rel="preload" href="/js/bower_components/paper-styles/shadow.html">
-		<link rel="preload" href="/js/bower_components/paper-dialog/paper-dialog.html">
-		<link rel="preload" href="/js/bower_components/paper-item/paper-icon-item.html">
-		<link rel="preload" href="/js/bower_components/paper-item/paper-item-body.html">
-		<link rel="preload" href="/js/bower_components/paper-item/paper-item.html">
-		<link rel="preload" href="/js/bower_components/paper-progress/paper-progress.html">
-		<link rel="preload" href="/js/bower_components/iron-localstorage/iron-localstorage.html">
-		<script src="/js/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+		<link rel="preload" href="/js/editor/app-editor.html"/>
+		<link rel="preload" href="/js/bower_components/polymer/polymer.html"/>
+		<link rel="preload" href="/js/bower_components/polymer/polymer-mini.html"/>
+		<link rel="preload" href="/js/bower_components/polymer/polymer-micro.html"/>
+		<link rel="preload" href="/js/bower_components/iron-flex-layout/iron-flex-layout-classes.html"/>
+		<link rel="preload" href="/js/bower_components/iron-icons/av-icons.html"/>
+		<link rel="preload" href="/js/bower_components/iron-icon/iron-icon.html"/>
+		<link rel="preload" href="/js/bower_components/iron-meta/iron-meta.html"/>
+		<link rel="preload" href="/js/bower_components/iron-flex-layout/iron-flex-layout.html"/>
+		<link rel="preload" href="/js/bower_components/iron-iconset-svg/iron-iconset-svg.html"/>
+		<link rel="preload" href="/js/bower_components/iron-icons/device-icons.html"/>
+		<link rel="preload" href="/js/bower_components/iron-icons/hardware-icons.html"/>
+		<link rel="preload" href="/js/bower_components/iron-icons/image-icons.html"/>
+		<link rel="preload" href="/js/bower_components/iron-icons/editor-icons.html"/>
+		<link rel="preload" href="/js/bower_components/iron-icons/iron-icons.html"/>
+		<link rel="preload" href="/js/bower_components/iron-icons/notification-icons.html"/>
+		<link rel="preload" href="/js/bower_components/paper-button/paper-button.html"/>
+		<link rel="preload" href="/js/bower_components/paper-behaviors/paper-button-behavior.html"/>
+		<link rel="preload" href="/js/bower_components/iron-behaviors/iron-button-state.html"/>
+		<link rel="preload" href="/js/bower_components/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html"/>
+		<link rel="preload" href="/js/bower_components/iron-behaviors/iron-control-state.html"/>
+		<link rel="preload" href="/js/bower_components/paper-behaviors/paper-ripple-behavior.html"/>
+		<link rel="preload" href="/js/bower_components/paper-ripple/paper-ripple.html"/>
+		<link rel="preload" href="/js/bower_components/paper-material/paper-material.html"/>
+		<link rel="preload" href="/js/bower_components/paper-styles/shadow.html"/>
+		<link rel="preload" href="/js/bower_components/paper-material/paper-material-shared-styles.html"/>
+		<link rel="preload" href="/js/bower_components/paper-icon-button/paper-icon-button.html"/>
+		<link rel="preload" href="/js/bower_components/paper-behaviors/paper-inky-focus-behavior.html"/>
+		<link rel="preload" href="/js/bower_components/paper-styles/default-theme.html"/>
+		<link rel="preload" href="/js/bower_components/paper-styles/color.html"/>
+		<link rel="preload" href="/js/bower_components/paper-dialog/paper-dialog.html"/>
+		<link rel="preload" href="/js/bower_components/neon-animation/neon-animation-runner-behavior.html"/>
+		<link rel="preload" href="/js/bower_components/neon-animation/neon-animatable-behavior.html"/>
+		<link rel="preload" href="/js/bower_components/paper-dialog-behavior/paper-dialog-behavior.html"/>
+		<link rel="preload" href="/js/bower_components/iron-overlay-behavior/iron-overlay-behavior.html"/>
+		<link rel="preload" href="/js/bower_components/iron-fit-behavior/iron-fit-behavior.html"/>
+		<link rel="preload" href="/js/bower_components/iron-resizable-behavior/iron-resizable-behavior.html"/>
+		<link rel="preload" href="/js/bower_components/iron-overlay-behavior/iron-overlay-manager.html"/>
+		<link rel="preload" href="/js/bower_components/iron-overlay-behavior/iron-overlay-backdrop.html"/>
+		<link rel="preload" href="/js/bower_components/paper-dialog-behavior/paper-dialog-shared-styles.html"/>
+		<link rel="preload" href="/js/bower_components/paper-styles/typography.html"/>
+		<link rel="preload" href="/js/bower_components/font-roboto/roboto.html"/>
+		<link rel="preload" href="/js/bower_components/paper-item/paper-icon-item.html"/>
+		<link rel="preload" href="/js/bower_components/paper-item/paper-item-behavior.html"/>
+		<link rel="preload" href="/js/bower_components/paper-item/paper-item-shared-styles.html"/>
+		<link rel="preload" href="/js/bower_components/paper-item/paper-item-body.html"/>
+		<link rel="preload" href="/js/bower_components/paper-item/paper-item.html"/>
+		<link rel="preload" href="/js/bower_components/paper-progress/paper-progress.html"/>
+		<link rel="preload" href="/js/bower_components/iron-range-behavior/iron-range-behavior.html"/>
+		<link rel="preload" href="/js/bower_components/iron-localstorage/iron-localstorage.html"/>
+
+		<script src="/js/bower_components/webcomponentsjs/webcomponents-lite.min.js" async></script>
 
 		<link rev="made" href="mailto:cho45@lowreal.net"/>
 		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>

@@ -36,7 +36,7 @@ my $XSLATE = Text::Xslate->new(
 );
 {
 	no warnings 'redefine';
-	*Text::Xslate::slurp_template = sub {
+	local *Text::Xslate::slurp_template = sub {
 		my ($self, $input_layer, $fullpath) = @_;
 		my $source = sub {
 			if (ref $fullpath eq 'SCALAR') {

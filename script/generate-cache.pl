@@ -49,7 +49,7 @@ if ($target eq ':all') {
 	for my $url (@$urls) {  
 		$n++;
 		my $path = URI->new($url)->path;
-		next if $path =~ qr{^/\d\d\d\d/\d\d/(\d\d/)?};
+		next if $path =~ qr{^/\d\d\d\d/\d\d/(\d\d/)?$};
 
 		my $t0 = [ gettimeofday ];
 		create_cache($path);

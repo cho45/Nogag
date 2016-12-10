@@ -9,7 +9,7 @@ use Plack::Runner;
 
 my $runner = Plack::Runner->new;
 $runner->parse_options(
-	'--server', 'HTTP::Server::Simple',
+	'--server', 'Starlet',
 	'--port', 5000,
 	'--Reload', join(',', glob('modules/*/lib'), 'lib'),
 	'--loader', 'Shotgun',

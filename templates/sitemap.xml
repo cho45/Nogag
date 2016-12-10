@@ -41,9 +41,11 @@
 		[% IF 0 %]<lastmod>[% entry.lastmod %]</lastmod>[% END %]
 		<priority>[% priority < 0.1 ? 0.1 : priority %]</priority>
 	</url>
+	[% IF 0 %]
 	<url>
 		<loc>[% r.absolute('/.page/' _ entry.date _ '/' _ r.config_param('entry_per_page') ) %]</loc>
 		<priority>0.5</priority>
 	</url>
+	[% END %]
 	[% END %]
 </urlset>

@@ -1,5 +1,17 @@
 @charset "UTF-8";
 
+@font-face {
+	font-family: "MyYuGothicM";
+	font-weight: normal;
+	src: local("YuGothic-Medium"), local("Yu Gothic Medium"), local("YuGothic-Regular");
+}
+
+@font-face  {
+	font-family: "MyYuGothicM";
+	font-weight: bold;
+	src: local("YuGothic-Bold"), local("Yu Gothic");
+}
+
 a:link {
 	color: #222;
 }
@@ -199,6 +211,7 @@ article section h6 {
 	font-weight: bold;
 	color: #333;
 	margin: 3em 0 0em;
+	font-feature-settings: "palt";
 }
 
 html {
@@ -216,13 +229,19 @@ body {
 	padding: 0 20px;
 	background: #fff;
 	line-height: 1.9;
-	font-family: 'Myriad Pro', 'Hiragino Kaku Gothic Pro', 'ヒラギノ角ゴ Pro W3', メイリオ, Meiryo, 'ＭＳ Ｐゴシック', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-family:
+		'Noto Sans Japanese',
+		-apple-system,
+		BlinkMacSystemFont,
+		"Hiragino Kaku Gothic ProN",
+		MyYuGothicM,
+		Meiryo,
+		sans-serif;
 	font-synthesis: none;
-	text-rendering: optimizeLegibility;
+	/* text-rendering: optimizeLegibility; */
 	word-wrap: break-word;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	-moz-font-feature-settings: 'liga', 'kern';
 }
 
 body > * {
@@ -230,7 +249,12 @@ body > * {
 }
 
 #global-header {
-	font-family: 'Merriweather', serif;
+	font-family:
+		'Merriweather', 
+		YuMincho,
+		"Hiragino Mincho ProN",
+		"HG明朝E",
+		serif;
 	display: block;
 	position: relative;
 	margin: 0;
@@ -352,7 +376,12 @@ body > * {
 #category-header {
 	margin: 20px 0;
 	padding: 0;
-	font-family: 'Merriweather', serif;
+	font-family:
+		'Merriweather', 
+		YuMincho,
+		"Hiragino Mincho ProN",
+		"HG明朝E",
+		serif;
 }
 
 #category-header h1 ,
@@ -385,7 +414,12 @@ body > * {
 .entries .date {
 	display: block;
 	clear: both;
-	font-family: 'Merriweather', serif;
+	font-family:
+		'Merriweather', 
+		YuMincho,
+		"Hiragino Mincho ProN",
+		"HG明朝E",
+		serif;
 	font-weight: 400;
 	font-size: 80%;
 	margin: 10em 0 0;
@@ -422,7 +456,12 @@ body > * {
 .entries article header h1 ,
 .entries article header h2 {
 	flex: auto;
-	font-family: 'Merriweather', serif;
+	font-family:
+		'Merriweather', 
+		YuMincho,
+		"Hiragino Mincho ProN",
+		"HG明朝E",
+		serif;
 	font-weight: 400;
 	/*
 	height: 30px;
@@ -445,7 +484,12 @@ body > * {
 .entries article header .metadata {
 	display: block;
 	text-align: center;
-	font-family: 'Merriweather', serif;
+	font-family:
+		'Merriweather', 
+		YuMincho,
+		"Hiragino Mincho ProN",
+		"HG明朝E",
+		serif;
 	font-weight: 400;
 	padding: 0 20px;
 	margin: 0;
@@ -543,6 +587,7 @@ body > * {
 .entries article .content.trackbacks ul li a:link b ,
 .entries article .content.similar-entries ul li a:link b {
 	text-decoration: underline;
+	font-feature-settings: "palt";
 }
 
 .entries article .content.trackbacks ul li .summary ,
