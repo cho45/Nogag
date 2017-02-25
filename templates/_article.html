@@ -30,7 +30,7 @@
 			[% END %]
 
 			<div style="display: none">
-				<meta itemscope itemprop="mainEntityOfPage"  itemType="https://schema.org/WebPage" content="/[% entry.path %]"/>
+				<meta itemscope itemprop="mainEntityOfPage"  itemType="https://schema.org/WebPage" content="/[% entry.path %]">
 				<span itemprop="headline">[% entry.summary(100) %]</span>
 
 				<span itemprop="author" itemscope itemtype="https://schema.org/Person">
@@ -48,8 +48,8 @@
 					<meta itemprop="name" content="cho45">
 				</div>
 
-				<meta itemprop="datePublished" content="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z"/>
-				<meta itemprop="dateModified" content="[% entry.modified_at.strftime('%Y-%m-%d') _ 'T' _ entry.modified_at.strftime('%H:%M:%S') %]Z"/>
+				<meta itemprop="datePublished" content="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z">
+				<meta itemprop="dateModified" content="[% entry.modified_at.strftime('%Y-%m-%d') _ 'T' _ entry.modified_at.strftime('%H:%M:%S') %]Z">
 
 				[% IF entry.image %]
 				<div itemprop="image" itemscope itemtype="https://schema.org/ImageObject">
@@ -79,15 +79,15 @@
 		<ol itemscope itemtype="http://schema.org/BreadcrumbList"
 			><li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem"
 				><a itemprop="item" href="/"><span itemprop="name">トップ</span></a>
-				<meta itemprop="position" content="1"/>
+				<meta itemprop="position" content="1">
 			</li>
 			<li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
 				<a itemprop="item" href="/[% tag %]/"><span itemprop="name">[% tag %]</span></a>
-				<meta itemprop="position" content="2"/>
+				<meta itemprop="position" content="2">
 			</li>
 			<li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
 				<a itemprop="item" href="[% canonical %]"><span itemprop="name">[%entry.title || '✖' %]</span></a>
-				<meta itemprop="position" content="3"/>
+				<meta itemprop="position" content="3">
 			</li>
 		</ol>
 		[% END %]
@@ -104,7 +104,7 @@
 		<ul>
 			<li data-id="[% entry.id %]">
 				<a href="/[% entry.path %]">
-					<b>[% entry.title || '✖' %]</b><br/>
+					<b>[% entry.title || '✖' %]</b><br>
 					<span class="summary">[% entry.summary(140) %]</span>
 
 					<time data-epoch="[% entry.created_at.epoch %]" datetime="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z" itemprop="datePublished">
@@ -128,31 +128,31 @@
 				href="https://www.facebook.com/sharer/sharer.php?u=[% canonical | uri %]"
 				onclick="ga('send', 'social', 'Facebook', 'Share', '[% canonical %]')"
 				>
-				<img src="/images/sharebuttons/FB-f-Logo__white_50.png" width="18" height="18" alt="Facebook"/>
+				<img src="/images/sharebuttons/FB-f-Logo__white_50.png" width="18" height="18" alt="Facebook">
 			</a>
 			<a class="share-button" style="background: #55acee" target="_blank" rel="nofollow"
 				href="https://twitter.com/intent/tweet?url=[% canonical | uri %]&amp;text=[% entry.title | uri %]"
 				onclick="ga('send', 'social', 'Twitter', 'Share', '[% canonical %]')"
 				>
-				<img src="/images/sharebuttons/Twitter_logo_white_48.png" width="24" height="24" alt="Twitter"/>
+				<img src="/images/sharebuttons/Twitter_logo_white_48.png" width="24" height="24" alt="Twitter">
 			</a>
 			<a class="share-button" style="box-shadow: none" target="_blank" rel="nofollow"
 				href="https://plus.google.com/share?url=[% canonical | uri %]"
 				onclick="ga('send', 'social', 'Google', 'Share', '[% canonical %]')"
 				>
-				<img src="/images/sharebuttons/g+138.png" width="45" height="45" alt="Share on Google+"/>
+				<img src="/images/sharebuttons/g+138.png" width="45" height="45" alt="Share on Google+">
 			</a>
 			<a class="share-button" style="" target="_blank" rel="nofollow"
 				href="http://line.me/R/msg/text/?[% entry.title _ '\n' _ canonical | uri %]"
 				onclick="ga('send', 'social', 'LINE', 'Share', '[% canonical %]')"
 				>
-				<img src="/images/sharebuttons/linebutton_40x40_en.png" width="40" height="40" alt="LINE it!"/>
+				<img src="/images/sharebuttons/linebutton_40x40_en.png" width="40" height="40" alt="LINE it!">
 			</a>
 			<a class="share-button" style="background: #00a4de" target="_blank" rel="nofollow"
 				href="http://b.hatena.ne.jp/add?url=[% canonical | uri %]"
 				onclick="ga('send', 'social', 'Hatena::Bookmark', 'Share', '[% canonical %]')"
 				>
-				<img src="/images/sharebuttons/hatenabookmark-logomark.svg" width="40" height="40" alt="はてなブックマーク"/>
+				<img src="/images/sharebuttons/hatenabookmark-logomark.svg" width="40" height="40" alt="はてなブックマーク">
 			</a>
 		</p>
 	</div>

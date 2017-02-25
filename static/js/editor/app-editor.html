@@ -10,6 +10,7 @@
 <link rel="import" href="/js/bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="/js/bower_components/iron-icons/notification-icons.html">
 <link rel="import" href="/js/bower_components/paper-button/paper-button.html">
+<link rel="import" href="/js/bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="/js/bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="/js/bower_components/paper-material/paper-material.html">
 <link rel="import" href="/js/bower_components/paper-styles/shadow.html">
@@ -59,9 +60,14 @@
 			margin: 0 auto;
 		}
 
+		.container .global-actions .buttons .options {
+			padding-bottom: 16px;
+		}
+
 		paper-button {
 			color: #fff;
 			background: var(--paper-cyan-600);
+			margin: 0;
 		}
 
 		.toolbar {
@@ -132,6 +138,9 @@
 					<input id="entryId" type="hidden" name="id" value="{{form.id}}">
 					<input type="hidden" name="sk" value="{{sk}}">
 					<paper-progress id="progress" disabled$="{{!saving}}" indeterminate style="width: 100%; position: absolute; top: 0; left: 0"></paper-progress>
+					<div class="options">
+						<paper-checkbox id="postBuffer">Buffer にポスト</paper-checkbox>
+					</div>
 					<paper-button on-tap="saveEntry" disabled$="{{saving}}">
 						<span hide$="{{saving}}">更新</span>
 						<span hide$="{{!saving}}">{{progressString(progress)}}</span>
@@ -151,6 +160,7 @@
 		<paper-dialog id="tagDialog" with-backdrop>
 			<paper-item on-tap="insertTag" data-tag="tech">tech</paper-item>
 			<paper-item on-tap="insertTag" data-tag="photo">photo</paper-item>
+			<paper-item on-tap="insertTag" data-tag="redeveloped">redeveloped</paper-item>
 		</paper-dialog>
 
 		<paper-dialog id="restoreDialog" with-backdrop>
@@ -171,7 +181,7 @@
 		</paper-dialog>
 
 		<script type="application/x-template" id="imagesTemplate">
-			<span itemscope itemtype="http://schema.org/Photograph">
+			<span itemscope itemtype="http://schema.org/Photograph" data-key="@@key@@">
 				<a href="@@url@@" class="picasa" itemprop="url"><img src="@@image@@" alt="photo" itemprop="image"/></a>
 			</span>
 		</script>

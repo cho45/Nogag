@@ -93,10 +93,12 @@ ins {
 }
 
 ins:before {
+	/*
 	display: block;
 	content: "追記";
 	color: #333;
 	font-size: 90%;
+	*/
 }
 
 ins.adsbygoogle ,
@@ -167,6 +169,12 @@ figure.quote figcaption {
 	margin: 0;
 	text-align: center;
 	color: #000;
+	filter: grayscale(100%);
+	transition: filter 0.3s ease 0s;
+}
+
+.share-buttons:hover {
+	filter: none;
 }
 
 .share-buttons::after {
@@ -201,16 +209,25 @@ figure.quote figcaption {
 	transform: translate(-50%, -50%);
 }
 
-article section h1 ,
-article section h2 ,
-article section h3 ,
-article section h4 ,
-article section h5 ,
-article section h6 {
-	font-size: 115%;
-	font-weight: bold;
+article h1 ,
+article h2 ,
+article h3 ,
+article h4 ,
+article h5 ,
+article h6 {
+	line-height: 1.20;
+	white-space: pre-line;
+	font-size: 140%;
+	font-family:
+		'Sawarabi Mincho', 
+		YuMincho,
+		"Hiragino Mincho ProN",
+		"HG明朝E",
+		serif;
+	font-weight: normal;
 	color: #333;
 	margin: 3em 0 0em;
+	letter-spacing: -0.05em;
 	font-feature-settings: "palt";
 }
 
@@ -237,6 +254,7 @@ body {
 		MyYuGothicM,
 		Meiryo,
 		sans-serif;
+	font-feature-settings: "pwid";
 	font-synthesis: none;
 	/* text-rendering: optimizeLegibility; */
 	word-wrap: break-word;
@@ -250,13 +268,15 @@ body > * {
 
 #global-header {
 	font-family:
-		'Merriweather', 
+		'Sawarabi Mincho', 
 		YuMincho,
 		"Hiragino Mincho ProN",
 		"HG明朝E",
 		serif;
+	font-feature-settings: "palt";
 	display: block;
 	position: relative;
+	z-index: 999;
 	margin: 0;
 	padding: 2em 0;
 	position: absolute;
@@ -300,7 +320,8 @@ body > * {
 }
 
 #global-navigation {
-	font-family: 'Merriweather', serif;
+	position: relative;
+	font-family: 'Sawarabi Mincho', serif;
 	font-weight: 400;
 	display: block;
 	margin: 0 auto;
@@ -347,6 +368,26 @@ body > * {
 	border: none;
 }
 
+#global-navigation::after {
+	content: attr(data-ip-info);
+	display: block;
+	position: absolute;
+	top: 0;
+	right: 0;
+	color: #ccc;
+	font-size: 11px;
+	font-feature-settings: "palt";
+	font-family:
+		'Noto Sans Japanese',
+		-apple-system,
+		BlinkMacSystemFont,
+		"Hiragino Kaku Gothic ProN",
+		MyYuGothicM,
+		Meiryo,
+		sans-serif;
+}
+
+
 #content {
 }
 
@@ -377,7 +418,7 @@ body > * {
 	margin: 20px 0;
 	padding: 0;
 	font-family:
-		'Merriweather', 
+		'Sawarabi Mincho', 
 		YuMincho,
 		"Hiragino Mincho ProN",
 		"HG明朝E",
@@ -400,6 +441,40 @@ body > * {
 	font-weight: normal;
 }
 
+.headline {
+	margin: 0 0 3em 0;
+	padding: 0;
+}
+
+.headline .date {
+	display: block;
+	clear: both;
+	font-family:
+		'Sawarabi Mincho', 
+		YuMincho,
+		"Hiragino Mincho ProN",
+		"HG明朝E",
+		serif;
+	font-weight: 400;
+	font-size: 80%;
+	margin: 0;
+	text-align: left;
+	border-width: 0 0 1px 0;
+	border-style: solid;
+	border-color: #eee;
+	padding: 3px 0;
+	color: #333;
+}
+
+.headline .date a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.headline .headline-item {
+	padding-left: 2em;
+}
+
 .entries {
 	margin: 0 0 3em 0;
 	padding: 0;
@@ -415,7 +490,7 @@ body > * {
 	display: block;
 	clear: both;
 	font-family:
-		'Merriweather', 
+		'Sawarabi Mincho', 
 		YuMincho,
 		"Hiragino Mincho ProN",
 		"HG明朝E",
@@ -448,55 +523,54 @@ body > * {
 .entries article header {
 	width: 1024px;
 	padding: 0 0 20px 0;
-	display: flex;
-	flex-direction: row;
-	align-items: center;
 }
 
 .entries article header h1 ,
 .entries article header h2 {
-	flex: auto;
 	font-family:
-		'Merriweather', 
+		'Sawarabi Mincho', 
 		YuMincho,
 		"Hiragino Mincho ProN",
 		"HG明朝E",
 		serif;
 	font-weight: 400;
+	letter-spacing: -0.05em;
 	/*
 	height: 30px;
 	line-height: 30px;
 	*/
 	line-height: 1.33;
 	text-align: left;
-	padding: 0;
+	padding: 8px 0;
 	margin: 0;
-	font-size: 140%;
+	font-size: 160%;
 	color: #111;
 	background: rgba(255, 255, 255, 0.7);
 }
 
 .entries article header h1 a ,
 .entries article header h2 a {
+	display: block;
 	text-decoration: none;
 }
 
 .entries article header .metadata {
 	display: block;
-	text-align: center;
+	text-align: right;
 	font-family:
-		'Merriweather', 
+		'Sawarabi Mincho', 
 		YuMincho,
 		"Hiragino Mincho ProN",
 		"HG明朝E",
 		serif;
 	font-weight: 400;
-	padding: 0 20px;
+	padding: 0 8px;
 	margin: 0;
 	font-size: 80%;
+	line-height: 1.2;
 	color: #999;
-	border-width: 0 3px 0 0;
-	border-color: #eee;
+	border-width: 0 3px 0 3px;
+	border-color: #f6f6f6;
 	border-style: solid;
 	background: repeating-linear-gradient(
 		135deg,
@@ -596,11 +670,15 @@ body > * {
 	font-size: 80%;
 	color: #444;
 	line-height: 1.66;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 
 .entries article .content.trackbacks ul li time ,
 .entries article .content.similar-entries ul li time {
-	display: block;
+	font-size: 80%;
+	color: #666;
 }
 
 .entries article pre.code {
@@ -630,6 +708,20 @@ body > * {
 	margin: 0;
 	border: none;
 	background: #fff;
+	position: relative;
+}
+
+.entries article a.picasa::after {
+	content: attr(title);
+	position: absolute;
+	display: inline-block;
+	font-size: 10px;
+	line-height: 10px;
+	background: rgba(255, 255, 255, 0.8);
+	bottom: -22px;
+	right: 0;
+	padding: 6px 0px 6px 6px;
+	color: #777;
 }
 
 .entries article a.hatena-fotolife img ,
@@ -725,6 +817,16 @@ figure.http:after {
 	padding: 0 0 5em 0;
 	font-size: 80%;
 	text-align: left;
+}
+
+#global-footer h2 {
+	font-family:
+		'Sawarabi Mincho', 
+		YuMincho,
+		"Hiragino Mincho ProN",
+		"HG明朝E",
+		serif;
+	font-weight: normal;
 }
 
 #global-footer .author {
@@ -881,12 +983,36 @@ figure.http:after {
 	width: 728px; height: 90px;
 }
 
+.af {
+	font-feature-settings: "palt";
+	margin-top: 0.5em;
+}
+
+.af .notice {
+	font-color: #777;
+	font-weight: bold;
+	font-size: 16px;
+}
+
+.af a {
+	font-weight: bold;
+}
+
+.af a:link ,
+.af a:visited {
+	color: #000088;
+}
+
+
 ol[itemtype*="BreadcrumbList"] {
-	display: block;
+	display: none;
 	list-style: none;
 	font-size: 80%;
 	margin: 0;
-	padding: 10px 0;
+	padding: 10px 0 0 0;
+}
+ol[itemtype*="BreadcrumbList"] + ol[itemtype*="BreadcrumbList"] {
+	padding: 0;
 }
 
 ol[itemtype*="BreadcrumbList"] a:link ,
@@ -910,6 +1036,63 @@ ol[itemtype*="BreadcrumbList"] li:first-child:before {
 	content: "";
 }
 
+@media only screen and (min-width : 1650px) {
+	body {
+		width: 1600px;
+	}
+	.entries .date {
+		width: 1600px;
+	}
+	.entries article header {
+		width: 1600px;
+	}
+	.entries article.photo span[itemtype="http://schema.org/Photograph"] {
+		width: 1600px;
+		/* (1600-728)/2 */
+		margin: 0 -436px;
+	}
+
+	.entries article.photo a.hatena-fotolife img ,
+	.entries article.photo a.picasa img {
+		max-height: 1280px;
+		max-width: 100%;
+	}
+
+	.adsense-responsive {
+		width: 1600px; height: 90px;
+	}
+}
+
+/*
+@media only screen and (min-width : 2100px) {
+	body {
+		transform: scale(1.25);
+		transform-origin: center top;
+	}
+}
+
+@media only screen and (min-width : 2500px) {
+	body {
+		transform: scale(1.5);
+		transform-origin: center top;
+	}
+}
+*/
+
+@media only screen and (min-width : 2900px) {
+	body {
+		transform: scale(1.75);
+		transform-origin: center top;
+	}
+}
+
+@media only screen and (min-width : 3300px) {
+	body {
+		transform: scale(2);
+		transform-origin: center top;
+	}
+}
+
 @media only screen and (max-width : 1100px) {
 	body {
 		width: 728px;
@@ -930,7 +1113,7 @@ ol[itemtype*="BreadcrumbList"] li:first-child:before {
 	}
 }
 
-@media only screen and (max-width : 800px) {
+@media only screen and (max-width : 770px) {
 	body {
 		width: 100%;
 		padding: 0;
@@ -976,6 +1159,11 @@ ol[itemtype*="BreadcrumbList"] li:first-child:before {
 		background: transparent;
 	}
 
+	#global-navigation::after {
+		color: #666;
+		padding-right: 8px;
+	}
+
 	#category-header {
 		padding: 0 10px;
 	}
@@ -1009,7 +1197,6 @@ ol[itemtype*="BreadcrumbList"] li:first-child:before {
 		display: block;
 		width: 100%;
 		margin: auto;
-		padding: 0;
 		position: relative;
 		text-align: left;
 		border: none;

@@ -4,12 +4,12 @@
 	<ul>
 		<li data-id="[% entry.id %]">
 			<a href="/[% entry.path %]" data-score="[% entry.data('score') %]">
-				<b>[% entry.title || '✖' %]</b><br/>
-				<span class="summary">[% entry.summary(140) %]</span>
-
+				<b>[% entry.title || '✖' %]</b>
 				<time data-epoch="[% entry.created_at.epoch %]" datetime="[% entry.created_at.strftime('%Y-%m-%d') _ 'T' _ entry.created_at.strftime('%H:%M:%S') %]Z" itemprop="datePublished">
 					[% entry.created_at.offset(9).strftime('%H:%M') %]
 				</time>
+				<span class="summary">[% entry.summary(200) %]</span>
+
 			</a>
 		</li>
 	</ul>

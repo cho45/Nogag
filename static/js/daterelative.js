@@ -67,13 +67,13 @@ DateRelative.update = function (target) {
 	format = dtrl.number +
 		dtrl.unit +
 		(dtrl.isFuture ? '\u5f8c' : '\u524d');
-	target.innerHTML = format;
+	target.textContent = format;
 };
 DateRelative.updateAll = function (parent) {
 	parent = parent || document;
 	var targets = parent.getElementsByTagName('time');
-	for (var i = 0, len = targets.length; i < len; i++) {
-		DateRelative.update(targets[i]);
+	for (var i = 0, it; (it = targets[i]); i++) {
+		DateRelative.update(it);
 	}
 };
 DateRelative.setupAutoUpdate = function (parent) {

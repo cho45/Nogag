@@ -13,10 +13,3 @@ CREATE INDEX index_date ON entries (`date`, `path`);
 CREATE INDEX index_path ON entries (`path`);
 CREATE INDEX index_created_at ON entries (`created_at`);
 
-CREATE TABLE options (
-	`id` INTEGER PRIMARY KEY,
-	`key` TEXT,
-	`value` BLOB
-);
-CREATE INDEX index_key ON options (`key`);
-

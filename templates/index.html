@@ -5,17 +5,16 @@
 	itemscope itemtype="[% permalink ? 'http://schema.org/BlogPosting' : 'http://schema.org/Blog' %]"
 	>
 	<head>
-		<meta charset="utf-8"/>
+		<meta charset="utf-8">
 
 		<title>[% title ? title _ " - " : "" %]氾濫原</title>
 		[% IF r.req.uri.path == '/' %]
-		<meta name="description" content="写真・文章による、ある普通の人間の人生の記録"/>
+		<meta name="description" content="写真・文章による、ある普通の人間の人生の記録">
 		[% END %]
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes"/>
-		<meta name="theme-color" content="#000000"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
+		<meta name="theme-color" content="#000000">
 
 		[%- r.link('preconnect', 'https://fonts.gstatic.com', 'crossorigin') -%]
-		[%- r.link('preconnect', 'https://s.hatena.ne.jp', 'crossorigin') -%]
 
 		[%- r.link('preconnect', 'https://googleads.g.doubleclick.net', 'crossorigin') -%]
 		[%- r.link('preconnect', 'https://www.gstatic.com', 'crossorigin') -%]
@@ -23,60 +22,85 @@
 
 		[%- r.link('preconnect', 'https://lh3.googleusercontent.com', 'crossorigin') -%]
 
-		<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"/>
-		<link rel="alternate" type="application/rss+xml" title="Feed" href="/feed"/>
+		<!-- link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"/ -->
+		<link rel="alternate" type="application/atom+xml" title="Feed" href="/feed">
 
 		[% IF permalink %]
 		<link rel="canonical" href="[% r.absolute('/' _ entry.path) %]">
 		[% END %]
 
-		<meta name="referrer" content="unsafe-url"/>
+		<meta name="referrer" content="unsafe-url">
 
 		[% UNLESS permalink %]
-		<meta itemprop="name" content="[% title ? title _ ' - ' : '' %][% r.config_param('sitename') %]"/>
-		<meta itemprop="description" content="写真・文章による、ある普通の人間の人生の記録"/>
+		<meta itemprop="name" content="[% title ? title _ ' - ' : '' %][% r.config_param('sitename') %]">
+		<meta itemprop="description" content="写真・文章による、ある普通の人間の人生の記録">
 		[% END %]
 
-		<meta property="og:title" content="[% title ? title _ ' - ' : '' %][% r.config_param('sitename') %]"/>
-		<meta property="og:type" content="[% permalink ? 'article' : 'blog' %]"/>
-		<meta property="og:url" content="[% permalink ?  r.absolute('/' _ entry.path) : r.absolute('/') %]"/>
+		<meta property="og:title" content="[% title ? title _ ' - ' : '' %][% r.config_param('sitename') %]">
+		<meta property="og:type" content="[% permalink ? 'article' : 'blog' %]">
+		<meta property="og:url" content="[% permalink ?  r.absolute('/' _ entry.path) : r.absolute('/') %]">
 		[% IF entry.image %]
-		<meta property="og:image" content="[% entry.image %]"/>
+		<meta property="og:image" content="[% entry.image %]">
 		[% END %]
-		<meta property="og:email" content="cho45@lowreal.net" />
-		<meta property="fb:admins" content="cho45" />
+		<meta property="og:email" content="cho45@lowreal.net" >
+		<meta property="fb:admins" content="cho45" >
 
-		<meta name="twitter:card" content="[% entry.has_tag('photo') ? 'photo' : 'summary' %]"/>
-		<meta name="twitter:url" content="[% permalink ?  r.absolute('/' _ entry.path) : r.absolute('/') %]"/>
-		<meta name="twitter:title" content="[% r.config_param('sitename') %]"/>
-		<meta name="twitter:description" content="[% entry.body | trim(140) || '写真・文章による、ある普通の人間の人生の記録' %]"/>
+		<meta name="twitter:card" content="[% entry.has_tag('photo') ? 'photo' : 'summary' %]">
+		<meta name="twitter:url" content="[% permalink ?  r.absolute('/' _ entry.path) : r.absolute('/') %]">
+		<meta name="twitter:title" content="[% r.config_param('sitename') %]">
+		<meta name="twitter:description" content="[% entry.body | trim(140) || '写真・文章による、ある普通の人間の人生の記録' %]">
 		[% IF entry.image %]
-		<meta name="twitter:image" content="[% entry.image %]"/>
+		<meta name="twitter:image" content="[% entry.image %]">
 		[% ELSIF entries[0].image %]
-		<meta name="twitter:image" content="[% entries[0].image %]"/>
+		<meta name="twitter:image" content="[% entries[0].image %]">
 		[% END %]
-		<meta name="twitter:site" content="cho45"/>
-		<meta name="twitter:creator" content="cho45"/>
+		<meta name="twitter:site" content="cho45">
+		<meta name="twitter:creator" content="cho45">
 
+		[%# required style %]
 		[% css = [
 			"/css/style.css",
+		] %]
+		[% FOR c IN css %]
+		[% r.preload(c, 'style') %]
+		<link rel="stylesheet" href="[% c %]">
+		[% END %]
+
+		[%# deferred style %]
+		[% css = [
 			"/css/github.css",
 		] %]
 		[% FOR c IN css %]
 		[% r.preload(c, 'style') %]
-		<link rel="stylesheet" type="text/css" href="[% c %]"/>
+		<link href="[% c %]">
 		[% END %]
 
-		[% r.preload('//fonts.googleapis.com/css?family=Merriweather:400', 'style', 'crossorigin') %]
-		<link rel="preload" href="//fonts.googleapis.com/css?family=Merriweather:400" crossorigin/>
-		<script>
-			document.querySelector('link[href*="fonts.googleapis.com"').rel = 'stylesheet';
-		</script>
+		<style>
+			/*
+			 * Sawarabi Mincho (Japanese) https://fonts.google.com/earlyaccess
+			 */
+			@font-face {
+			  font-family: 'Sawarabi Mincho';
+			  font-style: normal;
+			  font-weight: 400;
+			  src: url(//fonts.gstatic.com/ea/sawarabimincho/v1/SawarabiMincho-Regular.eot);
+			  src: url(//fonts.gstatic.com/ea/sawarabimincho/v1/SawarabiMincho-Regular.eot?#iefix) format('embedded-opentype'),
+				   url(//fonts.gstatic.com/ea/sawarabimincho/v1/SawarabiMincho-Regular.woff2) format('woff2'),
+				   url(//fonts.gstatic.com/ea/sawarabimincho/v1/SawarabiMincho-Regular.woff) format('woff'),
+				   url(//fonts.gstatic.com/ea/sawarabimincho/v1/SawarabiMincho-Regular.ttf) format('truetype');
+			}
+		</style>
+
 
 		[% MACRO __api_similar BLOCK %]/api/similar?[% FOR entry IN entries %]id=[% entry.id %];[% END %][% END %]
 		[% SET api_similar = __api_similar() %]
 		[% r.preload(api_similar) %]
 		<link rel="preload" href="[% api_similar %]" id="preload-similar-entries">
+
+		[% MACRO __api_exif BLOCK %]/api/exif?[% FOR entry IN entries %]id=[% entry.id %];[% END %][% END %]
+		[% SET api_exif = __api_exif() %]
+		[% r.preload(api_exif) %]
+		<link rel="preload" href="[% api_exif %]" id="preload-exif-entries">
 
 		<!-- htmlmin:ignore -->
 		<!--
@@ -104,6 +128,8 @@
 
 		[% js = [
 			"/js/daterelative.js",
+			"/js/balancetext/tinysegmenter.js",
+			"/js/balancetext/balance.js",
 			"/js/nogag.js",
 		] %]
 
@@ -121,19 +147,17 @@
 		<script src="/js/MathJax/MathJax.js?config=TeX-AMS_SVG-full,local/my" async defer></script>
 		[% END %]
 
+		[% IF 0 %]
 		<script src="/js/HatenaStar/HatenaStar.js" async defer></script>
+		[% END %]
 
-		[% r.preload("//www.google-analytics.com/analytics.js" , 'script') %]
+		[% r.preload("https://www.google-analytics.com/analytics.js" , 'script') %]
 		<script>
-			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-			})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
+			window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
 			ga('create', 'UA-7079167-5', 'lowreal.net');
 			ga('send', 'pageview');
-
 		</script>
+		<script async defer src='https://www.google-analytics.com/analytics.js'></script>
 
 		[% r.preload("//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" , 'script') %]
 		<script async defer src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
@@ -149,23 +173,16 @@
 			<h1 id="header">
 				[% r.preload('/images/hanrangen.svg', 'image') %]
 				<a href="/">
-					<img src="/images/hanrangen.svg" width="60" height="50" style="margin: auto; display: block" alt="[% title ? title _ ' - ' : '' %]氾濫原"/>
+					<img src="/images/hanrangen.svg" width="60" height="50" style="margin: auto; display: block" alt="[% title ? title _ ' - ' : '' %]氾濫原">
 				</a>
 			</h1>
-			[% IF r.has_auth %]
-			<!-- form action="/" method="GET" id="search-form">
-				<p>
-					<input type="text" name="query" placeholder="Search"/>
-				</p>
-			</form -->
-			[% END %]
 		</header>
 
 		<nav id="global-navigation">
 			<ul>
-				<li><a href="/">Top</a></li>
-				<li><a href="/archive">Archive</a></li>
-				<li><a href="https://www.lowreal.net/">Profile</a></li>
+				<li><a href="/">最新</a></li>
+				<li><a href="/photo/">写真</a></li>
+				<li><a href="https://www.lowreal.net/">誰？</a></li>
 				[% IF r.has_auth %]
 				<li><a href="javascript:void(0)" class="nogag-new">New Entry</a></li>
 				[% END %]
@@ -184,11 +201,42 @@
 			</header>
 			[% END %]
 
+			[% IF headline %]
+			<div class="headline">
+				<h2>ヘッドライン</h2>
+
+				[% date = '' %]
+				[% FOR entry IN headline %]
+				[% d = entry.date.strftime("%Y年 %m月 %d日") %]
+				[% is_first = (date != d) %]
+
+				[% IF is_first %]
+
+				[% date = d %]
+				<div class="date"><a href="[% entry.date.strftime('/%Y/%m/%d/') %]">[% date %]</a></div>
+				[% END %]
+
+				[% INCLUDE "_headline.html" WITH entry = entry, adsense = loop.is_first %]
+
+				[% ELSE %]
+
+				<p>もうエントリはありません</p>
+
+				[% END %]
+			</div>
+
+			<div class="pager">
+				[% IF next_page %]
+				<a href="[% next_page %]" rel="next">&#x25BC; もっと古いエントリ</a>
+				[% END %]
+			</div>
+			[% END %]
+
 			[% IF entries %]
 			<div class="entries">
 				[% date = '' %]
 				[% FOR entry IN entries %]
-				[% d = entry.date.strftime("%a, %b %e. %Y") %]
+				[% d = entry.date.strftime("%Y年 %m月 %d日") %]
 				[% is_first = (date != d) %]
 
 				[% IF is_first %]
@@ -259,7 +307,7 @@
 					</ol>
 				</section>
 				[% END %]
-				<hr />
+				<hr >
 			</section>
 			[% END # IF archive %]
 
@@ -292,7 +340,7 @@
 			<h2>書いている人</h2>
 			<div class="author">
 				<div class="image">
-					<img src="/images/profile.jpg" alt="Photo" width="90" height="90"/>
+					<img src="/images/profile.jpg" alt="Photo" width="160" height="160">
 				</div>
 				<div class="desc">
 					<p>
@@ -319,15 +367,30 @@
 						</a>
 						<a class="google-plus-button" rel="me" href="https://plus.google.com/114431815111528304586?rel=author"
 							onclick="ga('send', 'social', 'Google', 'Follow', 'cho45')"
-							><img src="//www.google.com/images/icons/ui/gprofile_button-16.png" width="16" height="16" alt="Google+"/></a>
+							><img src="//www.google.com/images/icons/ui/gprofile_button-16.png" width="16" height="16" alt="Google+"></a>
 					</p>
 					<p>
+						<a href="/archive">アーカイブ</a>
 						[% count %]
 					</p>
 				</div>
 			</div>
 		</footer>
 
+		<script>
+			(function () {
+				var requestAnimationFrame = window.requestAnimationFrame || mozRequestAnimationFrame || webkitRequestAnimationFrame || msRequestAnimationFrame || function (cb) {
+					setTimeout(cb, 20);
+				};
+
+				requestAnimationFrame(function () {
+					var nodes = document.querySelectorAll('link[href$=".css"]');
+					for (var i = 0, it; (it = nodes[i]); i++) {
+						it.rel = 'stylesheet';
+					}
+				});
+			})();
+		</script>
 		<script async defer src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 	</body>
 </html>

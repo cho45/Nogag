@@ -213,6 +213,7 @@ Nogag.Editor = {
 						if (doc.type === 'photo') {
 							var it = {
 								url : doc.url,
+								key: doc.mediaKey,
 								image : doc.thumbnails[3].url.replace(/\/s\d+\//, '/s2048/')
 							};
 							var template = document.getElementById('images-template').innerText;

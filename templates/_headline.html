@@ -1,0 +1,4 @@
+[% canonical = r.absolute('/' _ entry.path) %]
+<div class="headline-item">
+	<a href="/[% entry.path %]" class="bookmark" rel="bookmark" itemprop="url">[% entry.raw_title || entry.summary(80) || '✖' %]</a>
+</div>

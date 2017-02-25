@@ -23,6 +23,7 @@ my $XSLATE = Text::Xslate->new(
 	syntax   => 'TTerse',
 	path     => [ config->root->subdir('templates') ],
 	cache    => 1,
+	cache_dir => config->root->subdir('.xslate_cache'),
 	function => {
 		trim => sub {
 			my ($len) = @_;
@@ -34,27 +35,30 @@ my $XSLATE = Text::Xslate->new(
 		},
 	},
 );
+
+my $slurp_template = sub {
+	my ($self, $input_layer, $fullpath) = @_;
+	my $source = sub {
+		if (ref $fullpath eq 'SCALAR') {
+			return $$fullpath;
+		} else {
+			open my($source), '<' . $input_layer, $fullpath
+				or $self->_error("LoadError: Cannot open $fullpath for reading: $!");
+			local $/;
+			return scalar <$source>;
+		}
+	}->();
+	if ($fullpath =~ /\.html$/) {
+		$source = Nogag::Utils->minify($source);
+		return $source;
+	} else {
+		return $source;
+	}
+};
+
 {
 	no warnings 'redefine';
-	local *Text::Xslate::slurp_template = sub {
-		my ($self, $input_layer, $fullpath) = @_;
-		my $source = sub {
-			if (ref $fullpath eq 'SCALAR') {
-				return $$fullpath;
-			} else {
-				open my($source), '<' . $input_layer, $fullpath
-					or $self->_error("LoadError: Cannot open $fullpath for reading: $!");
-				local $/;
-				return scalar <$source>;
-			}
-		}->();
-		if ($fullpath =~ /\.html$/) {
-			$source = Nogag::Utils->minify($source);
-			return $source;
-		} else {
-			return $source;
-		}
-	};
+	local *Text::Xslate::slurp_template = $slurp_template;
 	$XSLATE->load_file($_) for qw{
 		feed.xml
 		sitemap.xml
@@ -80,6 +84,8 @@ sub render {
 
 sub html {
 	my ($r, $name, $vars) = @_;
+	no warnings 'redefine';
+	local *Text::Xslate::slurp_template = $slurp_template;
 	my $html = $r->render($name, $vars);
 	$html =~ s{(<img[^>]*? src=["']?https?://[^.]+?\.(?:googleusercontent|ggpht)\.com/.+?)/s\d+/([^"'<>]+?["']?)}{
 		no warnings "uninitialized";

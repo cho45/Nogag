@@ -31,6 +31,7 @@ our @EXPORT = qw(config throw);
 
 route "/" => \&index;
 route "/.page/{page:[0-9]{8}}/{epp:[0-9]}" => \&index;
+route "/headline" => \&headline;
 route "/login" => \&login;
 route "/logout" => \&logout;
 route "/sitemap.xml" => \&sitemap;
@@ -43,6 +44,7 @@ route "/api/edit" => \&edit;
 route "/api/edit/progress" => \&edit_progress;
 route "/api/kousei" => "Nogag::API kousei";
 route "/api/similar" => \&similar;
+route "/api/exif" => \&exif;
 
 # route '/{year:[0-9]{4}}/' => \&archive;
 route '/{year:[0-9]{4}}/{month:[0-9]{2}}/' => \&archive;
@@ -130,6 +132,11 @@ sub edit {
 			invalidate_target => $invalidate_target,
 		}, uniqkey => 'postentry-' . $entry->id);
 
+		if ($r->req->param('post_buffer')) {
+			$r->work_job('Nogag::Worker::PostBuffer', {
+				entry => $entry,
+			}, uniqkey => 'postbuffer-' . $entry->id);
+		}
 
 		$r->service('Nogag::Service::Cache')->set('progress', => '');
 		$r->res->header('X-Entry', $entry->id);
@@ -146,6 +153,8 @@ sub edit {
 
 sub edit_progress {
 	my ($r) = @_;
+	return $r->json({ error => 'require authentication' }) unless $r->has_auth;
+
 	my $progress = $r->service('Nogag::Service::Cache')->get('progress');
 	$r->json(+{
 		progress => $progress
@@ -154,6 +163,7 @@ sub edit_progress {
 
 sub edit_form {
 	my ($r) = @_;
+	return $r->json({ error => 'require authentication' }) unless $r->has_auth;
 
 	my $entry;
 	if (my $id = $r->req->param('id')) {
@@ -263,6 +273,48 @@ sub index {
 		warn "Cannot compress: $gzerrno\n";
 	}
 	Nogag::Service::Cache->set($cache_key => $r->res->finalize, [ ($page ? () : "/"), map { $_->id } @$entries ]);
+}
+
+sub headline {
+	my ($r) = @_;
+
+	my $page = $r->req->date_param('page') || '';
+	my $epp  = 10;
+
+	my $entries;
+	my $dates = $r->dbh->select(q{
+		SELECT `date` FROM entries
+		WHERE `date` <= :page
+		GROUP BY `date`
+		ORDER BY `date` DESC
+		LIMIT :limit
+	}, {
+		page   => $page ? $page->strftime('%Y-%m-%d') : '9999-99-99',
+		limit  => $epp + 1,
+	});
+
+	my $next_page;
+	if (@$dates > $epp) {
+		$next_page = localtime->from_db((pop @$dates)->{date})->strftime('%Y%m%d');
+	}
+
+	$entries = $r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE `date` IN (:dates)
+		ORDER BY `date` DESC, `created_at` ASC
+	}, {
+		dates => [ map { $_->{date} } @$dates ]
+	});
+
+	Nogag::Model::Entry->bless($_) for @$entries;
+
+	$r->stash(headline => $entries);
+	$r->stash(next_page => do {
+		if ($next_page) {
+			sprintf('/headline?page=%s', $next_page);
+		}
+	});
+	$r->html('index.html');
 }
 
 sub archive {
@@ -580,13 +632,55 @@ sub similar {
 			my $html = $r->render('_similar.html', {
 				similar_entries => $entries,
 			});
-			($_ => $html)
+			$html =~ s/^\s+|\s+$//g;
+			$html ? ($_ => $html) : ()
 		} @ids
 	};
 
+	my $ad = $r->render('_affiliate.html', {
+	});
+
 	$r->res->header('Cache-Control' => 'max-age=3600');
 	$r->json({
-		result => $result
+		result => $result,
+		ad => $ad,
+	});
+}
+
+sub exif {
+	my ($r) = @_;
+	my @ids = $r->req->param('id');
+	my $entries = $r->dbh->select(q{
+		SELECT * FROM entries
+		WHERE id IN (:ids)
+	}, {
+		ids => \@ids
+	});
+
+	my $picasa = $r->service('Nogag::Service::Picasa');
+
+	my $result = {};
+	for my $entry (@$entries) {
+		Nogag::Model::Entry->bless($entry);
+		my $targets = [ $entry->body =~ m{(https://picasaweb.google.com/\d+/[^/#]+#\d+)}g ];
+		for my $target (@$targets) {
+			eval {
+				infof("extract exif %s", $target);
+				my $exif = $picasa->extract_exif($target) ;
+				local $Log::Minimal::AUTODUMP = 1;
+				infof("extract exif %s -> %s", $target, $exif);
+				delete $exif->{original_uri};
+				delete $exif->{uri};
+				$result->{$target} = $exif;
+			};
+			if ($@) {
+				warnf("failed to extract_exif %s", $@);
+			}
+		}
+	}
+
+	$r->json({
+		result => $result,
 	});
 }
 

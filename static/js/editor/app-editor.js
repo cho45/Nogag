@@ -189,6 +189,7 @@ Polymer({
 		data.set('title', this.form.title);
 		data.set('body', this.form.body);
 		data.set('sk', this.sk);
+		data.set('post_buffer', this.$.postBuffer.checked ? "1" : "");
 
 		var req = new XMLHttpRequest();
 		req.open("POST", '/api/edit');
@@ -207,6 +208,7 @@ Polymer({
 		};
 		req.send(data);
 
+		var self = this;
 		(function progress () {
 			var req = new XMLHttpRequest();
 			req.open("GET", '/api/edit/progress');
@@ -221,7 +223,7 @@ Polymer({
 
 				var data = JSON.parse(req.responseText);
 
-				this.set('progress', data.progress);
+				self.set('progress', data.progress);
 				setTimeout(() => {
 					progress();
 				}, 500);
@@ -356,6 +358,7 @@ Polymer({
 					if (doc.type === 'photo') {
 						var it = {
 							url : doc.url,
+							key: doc.mediaKey,
 							image : doc.thumbnails[3].url.replace(/\/s\d+\//, '/s2048/')
 						};
 						var template = this.$.imagesTemplate.textContent;

@@ -174,6 +174,16 @@ sub work_job {
 	$self->worker->insert($job);
 }
 
+sub config_dbh {
+	$_[0]->{config_dbh} //= do {
+		DBI->connect('dbi:SQLite:' . config->param('config_db'), "", "", {
+			RaiseError => 1,
+			sqlite_see_if_its_a_number => 1,
+			sqlite_unicode => 1,
+		});
+	};
+}
+
 sub setup_schema {
 	my ($class) = @_;
 	my $load_schema = sub {
@@ -192,11 +202,16 @@ sub setup_schema {
 	do {
 		$load_schema->(config->param('db'), 'db/schema.sql');
 		$load_schema->(config->param('db'), 'db/20160501-trackback.sql');
+		$load_schema->(config->param('db'), 'db/20170215-exif.sql');
 	} unless -e config->param('db');
 
 	do {
 		$load_schema->(config->param('cache_db'), 'db/cache.sql');
 	} unless -e config->param('cache_db');
+
+	do {
+		$load_schema->(config->param('config_db'), 'db/config.sql');
+	} unless -e config->param('config_db');
 
 	do {
 		$load_schema->(config->param('tfidf_db'), 'db/tfidf.sql');
