@@ -68,16 +68,16 @@ mjAPI.config({
 	extensions: ["tex2jax.js"]
 });
 
-function processWithString (html) {
+async function processWithString (html) {
 	console.log('processWithString');
-	return Promise.resolve(html).
-		then(processMathJax).
-		then(processMinify);
+	html = await processMathJax(html);
+	html = await processMinify(html);
+	return html;
 }
 
-function processWithDOM (html) {
+async function processWithDOM (html) {
 	console.log('processWithDOM');
-	var document = jsdom(undefined, {
+	const document = jsdom(undefined, {
 		features: {
 			FetchExternalResources: false,
 			ProcessExternalResources: false,
@@ -85,16 +85,16 @@ function processWithDOM (html) {
 		}
 	});
 	document.body.innerHTML = html;
+
 	var dom = document.body;
-	return Promise.resolve(dom).
-		then(processHighlight).
-		then(processImages).
-		then(processWidgets).
-		then( (dom) => dom.innerHTML );
+	dom = await processHighlight(dom);
+	dom = await processImages(dom);
+	dom = await processWidgets(dom);
+	return dom.innerHTML;
 }
 
 
-function processHighlight (node) {
+async function processHighlight (node) {
 	console.log('processHighlight');
 	var codes = node.querySelectorAll('pre.code');
 	for (var i = 0, it; (it = codes[i]); i++) {
@@ -103,10 +103,10 @@ function processHighlight (node) {
 			hljs.highlightBlock(it);
 		}
 	}
-	return Promise.resolve(node);
+	return node;
 }
 
-function processImages (node) {
+async function processImages (node) {
 	console.log('processImages');
 	{
 		var imgs = node.querySelectorAll('img[src*="googleusercontent"], img[src*="ggpht"]');
@@ -150,10 +150,11 @@ function processImages (node) {
 			promises.push(promise);
 		})(img);
 	}
-	return Promise.all(promises).then( () => node );
+	await Promise.all(promises);
+	return node;
 }
 
-function processWidgets (node) {
+async function processWidgets (node) {
 	var promises = [];
 
 	console.log('processWidgets');
@@ -189,15 +190,16 @@ function processWidgets (node) {
 		}
 	})(it);
 
-	return Promise.all(promises).then( () => node );
+	await Promise.all(promises);
+	return node;
 }
 
-function processMathJax (html) {
+async function processMathJax (html) {
 	console.log('processMathJax');
 	if (!html.match(/\\\(|\$\$/)) {
-		return Promise.resolve(html);
+		return html;
 	}
-	return new Promise( (resolve, reject) => {
+	return await new Promise( (resolve, reject) => {
 		mjAPI.typeset({
 			html: html,
 			renderer: "SVG",
@@ -213,8 +215,8 @@ function processMathJax (html) {
 	});
 }
 
-function processMinify (html) {
-	return Promise.resolve(minify(html, {
+async function processMinify (html) {
+	return minify(html, {
 		html5: true,
 		customAttrSurround: [
 			[/\[%\s*(?:IF|UNLESS)\s+.+?\s*%\]/, /\[%\s*END\s*%\]/]
@@ -237,7 +239,7 @@ function processMinify (html) {
 		sortAttributes: true,
 		sortClassName: false,
 		useShortDoctype: true
-	}));
+	});
 }
 const port = process.env['PORT'] || 13370
 
@@ -284,4 +286,6 @@ http.createServer(function (req, res) {
 		}
 	});
 }).listen(port, '127.0.0.1');
+
+console.log(process.versions);
 console.log('Server running at http://127.0.0.1:' + port);

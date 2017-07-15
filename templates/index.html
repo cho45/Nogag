@@ -72,7 +72,7 @@
 		] %]
 		[% FOR c IN css %]
 		[% r.preload(c, 'style') %]
-		<link href="[% c %]">
+		<link rel="stylesheet" href="[% c %]">
 		[% END %]
 
 		<style>
@@ -377,20 +377,6 @@
 			</div>
 		</footer>
 
-		<script>
-			(function () {
-				var requestAnimationFrame = window.requestAnimationFrame || mozRequestAnimationFrame || webkitRequestAnimationFrame || msRequestAnimationFrame || function (cb) {
-					setTimeout(cb, 20);
-				};
-
-				requestAnimationFrame(function () {
-					var nodes = document.querySelectorAll('link[href$=".css"]');
-					for (var i = 0, it; (it = nodes[i]); i++) {
-						it.rel = 'stylesheet';
-					}
-				});
-			})();
-		</script>
 		<script async defer src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 	</body>
 </html>

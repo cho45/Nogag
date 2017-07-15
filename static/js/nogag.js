@@ -14,7 +14,7 @@ function webfontReady (font, opts) {
 			var w2 = ctx.measureText(TEST_TEXT).width;
 			ctx.font = TEST_SIZE + " '" + font + "', monospace";
 			var w3 = ctx.measureText(TEST_TEXT).width;
-			console.log(w1, w2, w3);
+			// console.log(w1, w2, w3);
 			if (w1 === w2 && w1 === w3) {
 				resolve();
 			} else {
@@ -28,28 +28,70 @@ function webfontReady (font, opts) {
 	});
 }
 
+if (typeof IntersectionObserver === "undefined") {
+	window.IntersectionObserver = function () { };
+	window.IntersectionObserver.prototype = {
+		observe: function () {}
+	};
+}
+
 Nogag = {
 	data : function (key) {
 		return document.documentElement.getAttribute('data-' + key);
 	},
 
-	init : function () {
+	initImages : function () {
+		var canvas = document.createElement('canvas');
+		var ctx = canvas.getContext('2d');
 
-		var articles = document.querySelectorAll('article');
-		for (var i = 0, it; (it = articles[i]); i++) {
-			Nogag.initEntry(it);
-		}
+		/*
+		var observer = new IntersectionObserver( function (entries) {
+			for (let entry of entries) {
+				if (entry.isIntersecting && entry.intersectionRatio > 0.90) {
+					console.log(entry.intersectionRatio);
+					entry.target.classList.add("intersecting");
+				} else {
+					entry.target.classList.remove("intersecting");
+				}
+			}
+		}, {
+			threshold: [0.25, 0.89, 0.90, 1.0]
+		});
+		*/
 
 		var photos = document.querySelectorAll('a.picasa');
+		var placeholders = {};
 		for (var i = 0, it; (it = photos[i]); i++) (function (anchor) {
 			var img = anchor.querySelector('img');
 			var src = img.getAttribute('src');
 			anchor.setAttribute('data-href', anchor.href);
 
-			var size = 2048; //default;
+			// observer.observe(it);
+
+			// Loading placeholder
+			var width = img.getAttribute('width');
+			var height = img.getAttribute('height');
+			var wRatio = width  / window.innerWidth;
+			var hRatio = height / window.innerHeight;
+			var ratio = Math.max(wRatio, hRatio);
+			if (ratio > 1) {
+				width  = Math.round(width  / ratio);
+				height = Math.round(height / ratio);
+			}
+			// console.log('fill empty image', width, height, wRatio, hRatio);
+			if (width && height) {
+				if (!placeholders[ width + 'x' + height ]) {
+					canvas.width = width;
+					canvas.height = height;
+					ctx.fillStyle = "#dddddd";
+					ctx.fillRect(0, 0, width, height);
+					placeholders[ width + 'x' + height ] = canvas.toDataURL('image/png');
+				}
+				img.src = placeholders[ width + 'x' + height ];
+			}
+
 			if (window.innerWidth > 1650) {
 				// use fullsize
-				size = 0;
 				src = src.replace(/\/s\d+\//, '/s0/');
 			}
 
@@ -58,15 +100,25 @@ Nogag = {
 			anchor.href = link;
 
 			if (src !== img.getAttribute('src')) {
+				anchor.classList.add("loading");
 				var loader = new Image();
-				loader.src = src;
-				console.log('upgrade loading ' + src);
+				// console.log('upgrade loading ' + src);
 				loader.onload = function () {
 					img.src = src;
-					console.log('upgraded');
+					// console.log('upgraded');
+					anchor.classList.remove('loading')
 				};
+				loader.src = src;
 			}
 		})(it);
+
+	},
+
+	init : function () {
+		var articles = document.querySelectorAll('article');
+		for (var i = 0, it; (it = articles[i]); i++) {
+			Nogag.initEntry(it);
+		}
 
 		DateRelative.updateAll();
 
@@ -211,6 +263,8 @@ Nogag = {
 		});
 	}
 };
+
+Nogag.initImages();
 
 document.addEventListener('DOMContentLoaded', function () {
 	Nogag.init();

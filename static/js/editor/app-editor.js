@@ -202,9 +202,11 @@ Polymer({
 			var data = JSON.parse(req.responseText);
 			location.href = data.location;
 		};
-		req.onerror = function (e) {
-			alert('error ' + e);
+		req.onerror = (e) => {
 			this.set('saving', false);
+			if (confirm('error ' + e + "\nRetry?")) {
+				this.saveEntry();
+			}
 		};
 		req.send(data);
 

@@ -80,7 +80,6 @@ sub mechanize {
 
 sub cleanup_database {
 	$r->dbh->do('DELETE FROM entries');
-	$r->dbh->do('DELETE FROM options');
 	$r->dbh->do('DELETE FROM trackbacks');
 	$r->service('Nogag::Service::SimilarEntry')->_dbh->do('DELETE FROM tfidf');
 	$r->service('Nogag::Service::SimilarEntry')->_dbh->do('DELETE FROM related_entries');

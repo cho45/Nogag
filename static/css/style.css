@@ -276,7 +276,7 @@ body > * {
 	font-feature-settings: "palt";
 	display: block;
 	position: relative;
-	z-index: 999;
+	z-index: 200;
 	margin: 0;
 	padding: 2em 0;
 	position: absolute;
@@ -709,6 +709,33 @@ body > * {
 	border: none;
 	background: #fff;
 	position: relative;
+	text-align: center;
+}
+
+.entries article a.picasa.loading::before {
+	position: absolute;
+	display: block;
+	top: 50%;
+	left: 50%;
+	content: "";
+
+	width: 40px;
+	height: 40px;
+	margin: 0;
+	background-color: #fff;
+
+	transform: translate(-50%, -50%);
+	animation: sk-scaleout 1.0s infinite ease-in-out;
+}
+
+@keyframes sk-scaleout {
+	0% {
+		transform: translate(-50%, -50%), scale(0);
+	}
+	100% {
+		transform: translate(-50%, -50%), scale(1.0);
+		opacity: 0;
+	}
 }
 
 .entries article a.picasa::after {
@@ -727,7 +754,7 @@ body > * {
 .entries article a.hatena-fotolife img ,
 .entries article a.picasa img {
 	display: block;
-	max-height: 700px;
+	max-height: 100vh;
 	max-width: 100%;
 	margin: 1em auto;
 	border-width: 20px 30px;
@@ -750,9 +777,6 @@ body > * {
 	width: 1024px;
 	float: none;
 	margin: 0 -148px;
-}
-
-.entries article.photo .metadata {
 }
 
 .entries article .social {
@@ -1054,7 +1078,7 @@ ol[itemtype*="BreadcrumbList"] li:first-child:before {
 
 	.entries article.photo a.hatena-fotolife img ,
 	.entries article.photo a.picasa img {
-		max-height: 1280px;
+		max-height: 100vh;
 		max-width: 100%;
 	}
 
@@ -1256,7 +1280,7 @@ ol[itemtype*="BreadcrumbList"] li:first-child:before {
 	.entries article a.hatena-fotolife img ,
 	.entries article a.picasa img {
 		max-width: 100%;
-		max-height: 500px;
+		max-height: 100vh;
 		border-width: 10px;
 		box-sizing: border-box;
 		-webkit-box-sizing: border-box;
@@ -1266,7 +1290,7 @@ ol[itemtype*="BreadcrumbList"] li:first-child:before {
 
 	.entries article.photo span[itemtype="http://schema.org/Photograph"] img {
 		max-width: 100%;
-		max-height: 100%;
+		max-height: 100vh;
 	}
 
 

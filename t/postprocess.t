@@ -16,7 +16,7 @@ use Nogag::Test;
 
 use Test::More;
 use Test::TCP;
-use Test::HTML::Differences -color;
+use Test::HTML::Differences;
 
 
 my $backend = Nogag::Test::postprocess;
