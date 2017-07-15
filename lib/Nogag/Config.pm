@@ -14,6 +14,7 @@ common +{
 	entry_per_page => 3,
 	base_uri       => URI->new('https://lowreal.net'),
 	postprocess    => URI->new('http://127.0.0.1:13370'),
+	imgcache_root  => root->subdir("imgcache"),
 	version        => scalar time,
 	load("app.conf"),
 };
@@ -31,6 +32,7 @@ config development => {
 	tfidf_db => root->file('db/development-tfidf.db'),
 	worker_db => root->file('db/development-worker.db'),
 	postprocess    => URI->new('http://127.0.0.1:13371'),
+	images_db => root->file('db/development-images.db'),
 	explain => 0,
 };
 
@@ -49,6 +51,7 @@ config test => {
 	config_db => root->file('db/test-config.db'),
 	tfidf_db => root->file('db/test-tfidf.db'),
 	worker_db => root->file('db/test-worker.db'),
+	images_db => root->file('db/test-images.db'),
 };
 
 config production => {
@@ -63,6 +66,7 @@ config production => {
 	config_db => root->file('db/config.db'),
 	tfidf_db => root->file('db/tfidf.db'),
 	worker_db => root->file('db/worker.db'),
+	images_db => root->file('db/images.db'),
 };
 
 config default => { parent('development') };

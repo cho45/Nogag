@@ -134,11 +134,16 @@ sub has_tag {
 	0;
 }
 
+sub images {
+	my ($self) = @_;
+	my $html = $self->{formatted_body};
+	my $ret = [ grep { $_ } map { m{src=['"]?([^'"> ]+)['"]?} } ($html =~ m{(<img[^>]+>)}g) ];
+	[ grep { $_ } map { m{src=['"]?([^'"> ]+)['"]?} } ($html =~ m{(<img[^>]+>)}g) ];
+}
+
 sub image {
 	my ($self) = @_;
-	my ($img)  = ($self->formatted_body =~ m{(<img[^>]+>)}) or return undef;
-	my ($src)  = ($img =~ m{src=['"]?([^'"> ]+)['"]?}) or return undef;
-	$src;
+	$self->images->[0];
 }
 
 sub summary {

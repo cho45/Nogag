@@ -184,6 +184,16 @@ sub config_dbh {
 	};
 }
 
+sub images_dbh {
+	$_[0]->{images_dbh} //= do {
+		DBI->connect('dbi:SQLite:' . config->param('images_db'), "", "", {
+			RaiseError => 1,
+			sqlite_see_if_its_a_number => 1,
+			sqlite_unicode => 1,
+		});
+	};
+}
+
 sub setup_schema {
 	my ($class) = @_;
 	my $load_schema = sub {
@@ -220,6 +230,10 @@ sub setup_schema {
 	do {
 		$load_schema->(config->param('worker_db'), 'db/theschwartz.sql');
 	} unless -e config->param('worker_db');
+
+	do {
+		$load_schema->(config->param('images_db'), 'db/images.sql');
+	} unless -e config->param('images_db');
 }
 
 sub sk {
@@ -260,7 +274,7 @@ sub absolute {
 sub service {
 	my ($r, $class) = @_;
 	$r->{$class} ||= do {
-		$class->use;
+		$class->use or die $@;;
 		$class->new($r);
 	};
 }
