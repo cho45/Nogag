@@ -13,6 +13,7 @@ use Digest::MD5 qw(md5_hex);
 use Cache::FileCache;
 use Log::Minimal;
 use JSON::XS;
+use List::Util qw(reduce);
 
 use Nogag::Base;
 use Nogag::Time;
@@ -628,10 +629,34 @@ sub similar {
 
 	my $result = {
 		map {
+			my $html;
+
 			my $entries = $r->service('Nogag::Service::SimilarEntry')->get_similar_entries($_);
-			my $html = $r->render('_similar.html', {
-				similar_entries => $entries,
-			});
+			if (@$entries) {
+				$html = $r->render('_similar.html', {
+					similar_entries => $entries,
+				});
+			} else {
+				my $photos = $r->service('Nogag::Service::SimilarImage')->get_similar_photos_by_entry_id($_, limit => 3);
+				my $entries = $r->dbh->select(q{
+					SELECT * FROM entries
+					WHERE id IN (:ids)
+				}, {
+					ids => [
+						map {
+							$_->{entry_id}
+						}
+						@$photos
+					]
+				});
+				my $map = reduce { $a->{$b->{id}} = $b; $a } +{}, @$entries;
+				for my $photo (@$photos) {
+					$photo->{entry} = Nogag::Model::Entry->bless($map->{$photo->{entry_id}});
+				}
+				$html = $r->render('_similar_images.html', {
+					similar_images => $photos
+				});
+			}
 			$html =~ s/^\s+|\s+$//g;
 			$html ? ($_ => $html) : ()
 		} @ids

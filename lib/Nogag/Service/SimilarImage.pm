@@ -158,7 +158,26 @@ sub similar_photos {
 		warnf("unindexed photo: %s", $url);
 		return [];
 	}
+	$self->similar_photos_by_id($id);
+}
 
+sub get_similar_photos_by_entry_id {
+	my ($self, $entry_id, %opts) = @_;
+	my $ids = $self->r->images_dbh->select(q{
+		SELECT id FROM images WHERE entry_id = :entry_id
+	}, { entry_id => $entry_id });
+	my $res = [];
+	for my $id (@$ids) {
+		# マージしてしまう
+		push @$res, @{ $self->similar_photos_by_id($id->{id}, %opts) };
+	}
+	[ (sort {
+		$b->{score} <=> $a->{score}
+	} @$res)[0..($opts{limit}-1)] ];
+}
+
+sub similar_photos_by_id {
+	my ($self, $id, %opts) = @_;
 	my $res = $self->r->images_dbh->select(q{
 		SELECT
 			i.uri,

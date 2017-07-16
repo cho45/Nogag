@@ -681,6 +681,40 @@ body > * {
 	color: #666;
 }
 
+.entries article .content.similar-entries ul.similar-images {
+	display: flex;
+	flex-wrap: nowrap;
+	justify-content: space-between;
+	align-items: center;
+	margin: 0 -5px;
+}
+
+.entries article .content.similar-entries ul.similar-images li {
+	flex: 1;
+	margin: 5px;
+}
+.entries article .content.similar-entries ul.similar-images a {
+	display: block;
+	position: relative;
+	height: 200px;
+	background-position: center;
+	background-size: cover;
+}
+
+.entries article .content.similar-entries ul.similar-images .meta {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	padding: 0 5px;
+	background: rgba(0, 0, 0, 0.5);
+	color: #fff;
+}
+
+.entries article .content.similar-entries ul.similar-images img {
+	max-width: 100%;
+}
+
 .entries article pre.code {
 	border-width: 0 0 0 3px;
 	margin: 1em 0;

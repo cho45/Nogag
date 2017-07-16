@@ -1,0 +1,20 @@
+[% IF similar_images && similar_images.size() %]
+	<h3>関連写真</h3>
+	<ul class="similar-images">
+	[% FOR photo IN similar_images %]
+		<li data-id="[% photo.entry.id %]">
+			<a href="/[% photo.entry.path %]" data-score="[% photo.score %]"
+				style="background-image: url('[% photo.uri %]');"
+				>
+				<div class="meta">
+					<b>[% photo.entry.title || '✖' %]</b>
+					<time data-epoch="[% photo.entry.created_at.epoch %]" datetime="[% photo.entry.created_at.strftime('%Y-%m-%d') _ 'T' _ photo.entry.created_at.strftime('%H:%M:%S') %]Z" itemprop="datePublished">
+						[% entry.created_at.offset(9).strftime('%H:%M') %]
+					</time>
+				</div>
+			</a>
+		</li>
+	[% END %]
+	</ul>
+[% END %]
+

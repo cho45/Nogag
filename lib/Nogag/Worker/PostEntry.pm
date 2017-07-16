@@ -25,6 +25,7 @@ sub work {
 	for my $tag (@{ $entry->tags }) {
 		$r->service('Nogag::Service::Cache')->generate_cache_for_path('/'.$tag.'/');
 	}
+	$r->service('Nogag::Service::SimilarImage')->index($entry);
 
 	$job->completed;
 }
