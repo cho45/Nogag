@@ -148,3 +148,5 @@ sub _extract_exif {
 		speed        => $exif->{'exif$exposure'}->{'$t'},
 	}
 }
+
+1;

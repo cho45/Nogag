@@ -948,6 +948,7 @@ figure.http:after {
 
 .button.twitter-follow-button {
 	background-color: #1b95e0;
+	color: #fff;
 }
 
 .button.twitter-follow-button i {
@@ -1372,6 +1373,14 @@ ol[itemtype*="BreadcrumbList"] li:first-child:before {
 
 	.adsense-responsive {
 		width: 468px; height: 60px;
+	}
+
+	.entries article .content.similar-entries ul.similar-images a {
+		display: block;
+		position: relative;
+		height: 100px;
+		background-position: center;
+		background-size: cover;
 	}
 }
 

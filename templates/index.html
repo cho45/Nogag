@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html
+	lang="ja"
 	data-auth="[% IF r.has_auth %]true[% END %]"
 	data-permalink="[% permalink %]"
 	itemscope itemtype="[% permalink ? 'http://schema.org/BlogPosting' : 'http://schema.org/Blog' %]"
@@ -94,13 +95,13 @@
 
 		[% MACRO __api_similar BLOCK %]/api/similar?[% FOR entry IN entries %]id=[% entry.id %];[% END %][% END %]
 		[% SET api_similar = __api_similar() %]
-		[% r.preload(api_similar) %]
-		<link rel="preload" href="[% api_similar %]" id="preload-similar-entries">
+		[% r.preload(api_similar, "fetch") %]
+		<link rel="preload" href="[% api_similar %]" id="preload-similar-entries" as="fetch" crossorigin>
 
 		[% MACRO __api_exif BLOCK %]/api/exif?[% FOR entry IN entries %]id=[% entry.id %];[% END %][% END %]
 		[% SET api_exif = __api_exif() %]
-		[% r.preload(api_exif) %]
-		<link rel="preload" href="[% api_exif %]" id="preload-exif-entries">
+		[% r.preload(api_exif, "fetch") %]
+		<link rel="preload" href="[% api_exif %]" id="preload-exif-entries" as="fetch" crossorigin>
 
 		<!-- htmlmin:ignore -->
 		<!--
