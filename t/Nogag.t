@@ -41,7 +41,7 @@ subtest xframeoptions => sub {
 
 	Nogag::route('/' => sub {
 		my ($r) = @_;
-		$r->res->content('foobar');
+		$r->res->decoded_content('foobar');
 	});
 
 	Nogag::route('/sameorigin' => sub {
@@ -76,7 +76,7 @@ subtest login => sub {
 	{
 		my $res = $mech->get("/", 'Cache-Control' => 'no-cache');
 		is($res->code, 404);
-		like($res->content, qr{data-auth=""});
+		like($res->decoded_content, qr{data-auth=""});
 	};
 
 	$mech->login;
@@ -84,7 +84,7 @@ subtest login => sub {
 	{
 		my $res = $mech->get("/", 'Cache-Control' => 'no-cache');
 		is($res->code, 404);
-		like($res->content, qr{data-auth="true"});
+		like($res->decoded_content, qr{data-auth="true"});
 	};
 
 	$mech->logout;
@@ -92,7 +92,7 @@ subtest login => sub {
 	{
 		my $res = $mech->get("/", 'Cache-Control' => 'no-cache');
 		is($res->code, 404);
-		like($res->content, qr{data-auth=""});
+		like($res->decoded_content, qr{data-auth=""}, "missing data-auth");
 	};
 };
 
@@ -224,34 +224,34 @@ subtest basic_pages => sub {
 		$m->get_dispatched_ok('/archive','/archive');
 
 		$res = $m->get_dispatched_ok('/feed','/feed');
-		unlike $res->content, qr"@{[$entry1->path('/')]}";
-		like $res->content, qr"@{[$entry2->path('/')]}";
+		unlike $res->decoded_content, qr"@{[$entry1->path('/')]}";
+		like $res->decoded_content, qr"@{[$entry2->path('/')]}";
 
 		$res = $m->get_dispatched_ok('/','/');
-		$tree = tree($res->content);
+		$tree = tree($res->decoded_content);
 		ok $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
 		ok $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry2->path('/').'")] ');
 
 		$res = $m->get_dispatched_ok('/tech/','/:category_name/');
-		$tree = tree($res->content);
+		$tree = tree($res->decoded_content);
 		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
 		ok $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry2->path('/').'")] ');
 
 		$res = $m->get_dispatched_ok($entry1->path('/'),'/{path:.+}');
-		$tree = tree($res->content);
+		$tree = tree($res->decoded_content);
 		ok $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
 		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry2->path('/').'")] ');
 
 		$res = $m->get_dispatched_ok($entry1->date->strftime('/%Y/%m/%d/'),'/{year:[0-9]{4}}/{month:[0-9]{2}}/{day:[0-9]{2}}/');
-		$tree = tree($res->content);
+		$tree = tree($res->decoded_content);
 		ok $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
 
 		$res = $m->get_dispatched_ok($entry1->date->strftime('/%Y/%m/'),'/{year:[0-9]{4}}/{month:[0-9]{2}}/');
-		$tree = tree($res->content);
+		$tree = tree($res->decoded_content);
 		ok $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
 
 		$res = $m->get_dispatched_ok($entry2->path('/'),'/{path:.+}');
-		$tree = tree($res->content);
+		$tree = tree($res->decoded_content);
 		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
 		ok $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry2->path('/').'")] ');
 	}
@@ -282,8 +282,8 @@ subtest trackbacks => sub {
 
 	{
 		my $res = $mech->get($entry1->path('/'));
-		ok tree($res->content)->exists('//*[@class="content trackbacks"]//a[contains(@href, "'.$entry2->path('/').'")]');
-		ok tree($res->content)->exists('//*[@class="content trackbacks"]//a[contains(@href, "'.$entry3->path('/').'")]');
+		ok tree($res->decoded_content)->exists('//*[@class="content trackbacks"]//a[contains(@href, "'.$entry2->path('/').'")]');
+		ok tree($res->decoded_content)->exists('//*[@class="content trackbacks"]//a[contains(@href, "'.$entry3->path('/').'")]');
 	};
 
 	$entry2 = get_entry($mech->edit(
@@ -294,8 +294,8 @@ subtest trackbacks => sub {
 
 	{
 		my $res = $mech->get($entry1->path('/'));
-		ok !tree($res->content)->exists('//*[@class="content trackbacks"]//a[contains(@href, "'.$entry2->path('/').'")]');
-		ok tree($res->content)->exists('//*[@class="content trackbacks"]//a[contains(@href, "'.$entry3->path('/').'")]');
+		ok !tree($res->decoded_content)->exists('//*[@class="content trackbacks"]//a[contains(@href, "'.$entry2->path('/').'")]');
+		ok tree($res->decoded_content)->exists('//*[@class="content trackbacks"]//a[contains(@href, "'.$entry3->path('/').'")]');
 	};
 };
 
@@ -350,7 +350,7 @@ subtest pager => sub {
 		my ($res, $tree);
 
 		$res = $mech->get_dispatched_ok('/','/');
-		$tree = tree($res->content);
+		$tree = tree($res->decoded_content);
 		is $tree->findvalue('//link[@rel="canonical"]/@href'), '';
 		ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry4->path('/').'")] ');
 		ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry3->path('/').'")] ');
@@ -359,7 +359,7 @@ subtest pager => sub {
 		is $tree->findvalue('//a[@rel="next"]/@href'), '/.page/20160502/2';
 
 		$res = $mech->get_dispatched_ok('/.page/20160503/2','/.page/{page:[0-9]{8}}/{epp:[0-9]}');
-		$tree = tree($res->content);
+		$tree = tree($res->decoded_content);
 		is $tree->findvalue('//link[@rel="canonical"]/@href'), '';
 		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry4->path('/').'")] ');
 		ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry3->path('/').'")] ');
@@ -368,7 +368,7 @@ subtest pager => sub {
 		is $tree->findvalue('//a[@rel="next"]/@href'), '/.page/20160501/2';
 
 		$res = $mech->get_dispatched_ok('/.page/20160502/2','/.page/{page:[0-9]{8}}/{epp:[0-9]}');
-		$tree = tree($res->content);
+		$tree = tree($res->decoded_content);
 		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry4->path('/').'")] ');
 		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry3->path('/').'")] ');
 		ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry2->path('/').'")] ');
@@ -380,7 +380,7 @@ subtest pager => sub {
 		my ($res, $tree);
 
 		$res = $mech->get_dispatched_ok('/tech/','/:category_name/');
-		$tree = tree($res->content);
+		$tree = tree($res->decoded_content);
 		is $tree->findvalue('//link[@rel="canonical"]/@href'), '';
 		ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry4->path('/').'")] ');
 		ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry3->path('/').'")] ');
@@ -389,7 +389,7 @@ subtest pager => sub {
 		is $tree->findvalue('//a[@rel="next"]/@href'), '/tech/.page/20160502000000/2';
 
 		$res = $mech->get_dispatched_ok('/tech/.page/20160502000000/2', '/:category_name/.page/{page:[0-9]{14}}/{epp:[0-9]}');
-		$tree = tree($res->content);
+		$tree = tree($res->decoded_content);
 		is $tree->findvalue('//link[@rel="canonical"]/@href'), '';
 		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry4->path('/').'")] ');
 		ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry3->path('/').'")] ');

@@ -33,13 +33,8 @@ our @EXPORT = qw(
 	mechanize
 	postprocess
 	tree
-
-	$r
 );
 
-Nogag->setup_schema;
-
-our $r = Nogag->new({});
 cleanup_database();
 
 no warnings 'redefine';
@@ -79,15 +74,19 @@ sub mechanize {
 };
 
 sub cleanup_database {
-	$r->dbh->do('DELETE FROM entries');
-	$r->dbh->do('DELETE FROM trackbacks');
-	$r->service('Nogag::Service::SimilarEntry')->_dbh->do('DELETE FROM tfidf');
-	$r->service('Nogag::Service::SimilarEntry')->_dbh->do('DELETE FROM related_entries');
+	note "CLEANUP DATABASE";
+	unlink config->param('db');
+	unlink config->param('cache_db');
+	unlink config->param('config_db');
+	unlink config->param('tfidf_db');
+	unlink config->param('worker_db');
+	unlink config->param('images_db');
+	Nogag->setup_schema;
 }
 
 sub get_entry {
 	my ($entry_id) = @_;
-	my $entry = $r->dbh->select(q{
+	my $entry = Nogag->new({})->dbh->select(q{
 		SELECT * FROM entries
 		WHERE id = :id
 	}, {
@@ -99,6 +98,7 @@ sub get_entry {
 
 sub create_entry {
 	my (%params) = @_;
+	my $r = Nogag->new({});
 	$r->dbh->update(q{
 		INSERT INTO entries
 			(
@@ -202,7 +202,7 @@ sub edit {
 			%opts,
 			sk => $mech->{sk},
 		});
-		is($res->code, 302);
+		is($res->code, 200);
 		Nogag::Test::work('Nogag::Worker::PostEntry');
 		my $entry_id = $res->header('X-Entry');
 		return $entry_id;
