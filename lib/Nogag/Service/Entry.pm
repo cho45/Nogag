@@ -37,6 +37,7 @@ sub create_new_entry {
 	$params{date} ||= $date->strftime('%Y-%m-%d');
 	$params{created_at}  = $now;
 	$params{modified_at} = $now;
+	$params{publish_at} //= undef;
 
 	$params{formatted_body} = $self->format_body(Nogag::Model::Entry->bless({
 		%params
@@ -51,6 +52,7 @@ sub create_new_entry {
 				`path`,
 				`format`,
 				`date`,
+				`publish_at`,
 				`created_at`,
 				`modified_at`
 			)
@@ -62,6 +64,7 @@ sub create_new_entry {
 				:path,
 				:format,
 				:date,
+				:publish_at,
 				:created_at,
 				:modified_at
 			)
@@ -86,6 +89,7 @@ sub update_entry {
 			title = :title,
 			body = :body,
 			modified_at = :modified_at,
+			publish_at = :publish_at,
 			formatted_body = :formatted_body
 		WHERE
 			id = :id
@@ -94,6 +98,7 @@ sub update_entry {
 		title          => $entry->{title},
 		body           => $entry->{body},
 		formatted_body => $entry->{formatted_body},
+		publish_at     => $entry->{publish_at},
 		modified_at    => gmtime.q(),
 	});
 

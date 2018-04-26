@@ -213,6 +213,7 @@ sub setup_schema {
 		$load_schema->(config->param('db'), 'db/schema.sql');
 		$load_schema->(config->param('db'), 'db/20160501-trackback.sql');
 		$load_schema->(config->param('db'), 'db/20170215-exif.sql');
+		$load_schema->(config->param('db'), 'db/20180501-publish_at.sql');
 	} unless -e config->param('db');
 
 	do {
