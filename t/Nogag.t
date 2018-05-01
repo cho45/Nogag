@@ -121,6 +121,11 @@ subtest edit => sub {
 		location => '/',
 	));
 
+	subtest edit_form => sub {
+		my $res = $mech->get('/edit?id=' . $entry->id);
+		is($res->code, 200);
+	};
+
 	{
 		my $mech = mechanize();
 		$mech->get_and_cache_created_ok('/');
@@ -399,5 +404,145 @@ subtest pager => sub {
 	};
 };
 
+subtest headline => sub {
+	cleanup_database;
+	my $mech = mechanize();
+	$mech->login;
+
+	my $entry1 = get_entry($mech->edit(
+		title => 'test',
+		body => 'test',
+		location => '/',
+	));
+
+	{
+		my $res = $mech->get('/headline');
+		is($res->code, 200);
+	};
+};
+
+subtest entry_status => sub {
+	cleanup_database;
+
+	local $Test::Time::time = localtime->strptime('2016-05-01', '%Y-%m-%d')->epoch;
+
+	my $mech = mechanize();
+	$mech->login;
+
+	my $entry1 = get_entry($mech->edit(
+		title => '[tech][public]  test',
+		body => 'test public',
+		status => 'public',
+	));
+	note "entry1->created_at ". $entry1->created_at;
+	is $entry1->status, 'public';
+
+	my $entry2 = get_entry($mech->edit(
+		title => '[tech][private]  test',
+		body => 'test private',
+		status => 'private',
+	));
+	note "entry2->created_at ". $entry2->created_at;
+	is $entry2->status, 'private';
+
+	my $entry3 = get_entry($mech->edit(
+		title => '[tech][scheduled]  test',
+		body => 'test scheduled',
+		status => 'scheduled',
+	));
+	note "entry3->created_at ". $entry3->created_at;
+	is $entry3->status, 'scheduled';
+
+	subtest index => sub {
+		my ($res, $tree);
+
+		subtest guest => sub {
+			my $mech = mechanize();
+
+			$res = $mech->get_dispatched_ok('/','/');
+			$tree = tree($res->decoded_content);
+			ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
+			ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry2->path('/').'")] ');
+			ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry3->path('/').'")] ');
+		};
+
+		subtest has_auth => sub {
+			my $mech = mechanize();
+			$mech->login;
+
+			$res = $mech->get_dispatched_ok('/','/');
+			$tree = tree($res->decoded_content);
+			ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
+			ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry2->path('/').'")] ');
+			ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry3->path('/').'")] ');
+		};
+	};
+
+	subtest category => sub {
+		my ($res, $tree);
+
+		subtest guest => sub {
+			my $mech = mechanize();
+
+			$res = $mech->get_dispatched_ok('/tech/','/:category_name/');
+			$tree = tree($res->decoded_content);
+			ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
+			ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry2->path('/').'")] ');
+			ok !$tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry3->path('/').'")] ');
+		};
+
+		subtest has_auth => sub {
+			my $mech = mechanize();
+			$mech->login;
+
+			$res = $mech->get_dispatched_ok('/tech/','/:category_name/');
+			$tree = tree($res->decoded_content);
+			ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry1->path('/').'")] ');
+			ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry2->path('/').'")] ');
+			ok  $tree->exists('//a[@class="bookmark" and contains(@href,"'.$entry3->path('/').'")] ');
+		};
+	};
+
+	subtest headline => sub {
+		my ($res, $tree);
+
+		subtest guest => sub {
+			my $mech = mechanize();
+
+			$res = $mech->get_dispatched_ok('/headline','/headline');
+			$tree = tree($res->decoded_content);
+			ok  $tree->exists('//a[contains(@href,"'.$entry1->path('/').'")] ');
+			ok !$tree->exists('//a[contains(@href,"'.$entry2->path('/').'")] ');
+			ok !$tree->exists('//a[contains(@href,"'.$entry3->path('/').'")] ');
+		};
+	};
+
+	subtest feed => sub {
+		my ($res, $tree);
+
+		subtest guest => sub {
+			my $mech = mechanize();
+
+			$res = $mech->get_dispatched_ok('/feed','/feed');
+			$tree = tree($res->decoded_content);
+			ok  $tree->exists('//link[contains(@href,"'.$entry1->path('/').'")] ');
+			ok !$tree->exists('//link[contains(@href,"'.$entry2->path('/').'")] ');
+			ok !$tree->exists('//link[contains(@href,"'.$entry3->path('/').'")] ');
+		};
+	};
+
+	subtest sitemap => sub {
+		my ($res, $tree);
+
+		subtest guest => sub {
+			my $mech = mechanize();
+
+			$res = $mech->get_dispatched_ok('/sitemap.xml','/sitemap.xml');
+			  like $res->decoded_content, qr!@{[ $entry1->path('/') ]}!;
+			unlike $res->decoded_content, qr!@{[ $entry2->path('/') ]}!;
+			unlike $res->decoded_content, qr!@{[ $entry3->path('/') ]}!;
+		};
+	};
+};
 
 done_testing;

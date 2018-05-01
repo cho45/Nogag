@@ -30,6 +30,17 @@ sub data {
 	$self->{$key};
 }
 
+sub as_json {
+	my ($self) = @_;
+	+{
+		id         => $self->{id} || '',
+		title      => $self->{title} || '',
+		body       => $self->{body} || '',
+		status     => $self->{status} || 'public',
+		publish_at => $self->publish_at ? $self->publish_at->epoch : 0,
+	}
+}
+
 sub id             { $_[0]->{id} }
 sub body           { $_[0]->{body} }
 sub formatted_body {
@@ -50,6 +61,7 @@ sub formatted_body {
 	}
 }
 sub format         { $_[0]->{format} }
+sub status         { $_[0]->{status} }
 
 sub formatted_body_text {
 	my ($self) = @_;
@@ -74,6 +86,16 @@ sub created_at {
 
 sub modified_at {
 	$_[0]->{__modified_at} //= Nogag::Time->from_db($_[0]->{modified_at});
+}
+
+sub publish_at {
+	$_[0]->{__publish_at} //= do {
+		if (defined $_[0]->{publish_at}) {
+			Nogag::Time->from_db($_[0]->{publish_at});
+		} else {
+			undef;
+		}
+	};
 }
 
 sub title_tags {

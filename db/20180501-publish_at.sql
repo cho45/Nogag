@@ -1,0 +1,3 @@
+ALTER TABLE entries ADD COLUMN `publish_at` DATETIME;
+ALTER TABLE entries ADD COLUMN `status` TEXT NOT NULL DEFAULT 'public';
+

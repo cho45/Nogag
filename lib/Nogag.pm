@@ -108,18 +108,25 @@ sub edit {
 	} elsif ($r->req->method eq 'POST') {
 		$r->service('Nogag::Service::Cache')->set('progress', => 'saving');
 
+		my $status = $r->req->entry_status_param('status') or throw code => 400, message => 'Invalid status param';
+		my $publish_at = gmtime($r->req->number_param('publish_at', 0xffffffff));
+
 		my $invalidate_target = '/';
 		if ($entry->id) {
 			$entry = $r->service('Nogag::Service::Entry')->update_entry($entry,
-				title          => $r->req->string_param('title'),
-				body           => $r->req->string_param('body'),
+				title      => $r->req->string_param('title'),
+				body       => $r->req->string_param('body'),
+				publish_at => $publish_at,
+				status     => $status,
 			);
 
 			$invalidate_target = "".$entry->id;;
 		} else {
 			$entry = $r->service('Nogag::Service::Entry')->create_new_entry(
-				title          => $r->req->string_param('title'),
-				body           => $r->req->string_param('body'),
+				title      => $r->req->string_param('title'),
+				body       => $r->req->string_param('body'),
+				publish_at => $publish_at,
+				status     => $status,
 			);
 			$invalidate_target = '/';
 		}
@@ -175,16 +182,10 @@ sub edit_form {
 			id => $id
 		})->[0];
 	};
+	$entry ||= {};
+	Nogag::Model::Entry->bless($entry);
 
-	$r->stash(entry_json => encode_json($entry ? {
-		id => $entry->{id},
-		title => $entry->{title},
-		body => $entry->{body},
-	} : {
-		id => '',
-		title => '',
-		body  => '',
-	}));
+	$r->stash(entry_json => encode_json($entry->as_json));
 
 
 	$r->html('edit.tt');
@@ -209,10 +210,12 @@ sub index {
 		}
 	}
 
+	my $permission = $r->has_auth ? "" : "AND status = 'public'";
+
 	my $entries;
-	my $dates = $r->dbh->select(q{
+	my $dates = $r->dbh->select(qq{
 		SELECT `date` FROM entries
-		WHERE `date` <= :page
+		WHERE `date` <= :page $permission
 		GROUP BY `date`
 		ORDER BY `date` DESC
 		LIMIT :limit
@@ -226,9 +229,9 @@ sub index {
 		$next_page = localtime->from_db((pop @$dates)->{date})->strftime('%Y%m%d');
 	}
 
-	$entries = $r->dbh->select(q{
+	$entries = $r->dbh->select(qq{
 		SELECT * FROM entries
-		WHERE `date` IN (:dates)
+		WHERE `date` IN (:dates) $permission
 		ORDER BY `date` DESC, `created_at` ASC
 	}, {
 		dates => [ map { $_->{date} } @$dates ]
@@ -238,7 +241,7 @@ sub index {
 	$r->service('Nogag::Service::Trackback')->fill_trackbacks($_) for @$entries;
 	# $r->service('Nogag::Service::SimilarEntry')->fill_similar_entries($_) for @$entries;
 
-	my $count = $r->dbh->value('SELECT count(*) FROM entries');
+	my $count = $r->dbh->value("SELECT count(*) FROM entries");
 
 	@$entries or $r->res->status(404);
 
@@ -285,7 +288,7 @@ sub headline {
 	my $entries;
 	my $dates = $r->dbh->select(q{
 		SELECT `date` FROM entries
-		WHERE `date` <= :page
+		WHERE `date` <= :page AND status = 'public'
 		GROUP BY `date`
 		ORDER BY `date` DESC
 		LIMIT :limit
@@ -301,7 +304,7 @@ sub headline {
 
 	$entries = $r->dbh->select(q{
 		SELECT * FROM entries
-		WHERE `date` IN (:dates)
+		WHERE `date` IN (:dates) AND status = 'public'
 		ORDER BY `date` DESC, `created_at` ASC
 	}, {
 		dates => [ map { $_->{date} } @$dates ]
@@ -341,7 +344,7 @@ sub archive {
 
 	my $entries = $r->dbh->select(q{
 		SELECT * FROM entries
-		WHERE :start <= date AND date < :end
+		WHERE :start <= date AND date < :end AND status = 'public'
 		ORDER BY created_at
 	}, {
 		start => $start->strftime("%Y-%m-%d"),
@@ -380,6 +383,7 @@ sub archive_index {
 			strftime('%Y-%m', date) as date,
 			count(*) as count
 		FROM entries
+		WHERE status = 'public'
 		GROUP BY strftime('%Y-%m', date)
 		ORDER BY date
 	});
@@ -425,9 +429,11 @@ sub permalink {
 		}
 	}
 
-	my $entry = $r->dbh->select(q{
+	my $permission = $r->has_auth ? "" : "AND status = 'public'";
+
+	my $entry = $r->dbh->select(qq{
 		SELECT * FROM entries
-		WHERE path = :path
+		WHERE path = :path $permission
 	}, {
 		path => $path,
 	})->[0] or throw code => 404, message => 'Not Found';
@@ -443,18 +449,18 @@ sub permalink {
 
 	$r->res->header('Last-Modified' => $entry->modified_at->strftime('%a, %d %b %Y %H:%M:%S GMT'));
 
-	my $old_entry = $r->dbh->select(q{
+	my $old_entry = $r->dbh->select(qq{
 		SELECT * FROM entries
-		WHERE created_at < :created_at
+		WHERE created_at < :created_at $permission
 		ORDER BY created_at DESC
 		LIMIT 1
 	}, {
 		created_at => $entry->{created_at}
 	})->[0];
 
-	my $new_entry = $r->dbh->select(q{
+	my $new_entry = $r->dbh->select(qq{
 		SELECT * FROM entries
-		WHERE created_at > :created_at
+		WHERE created_at > :created_at $permission
 		ORDER BY created_at ASC
 		LIMIT 1
 	}, {
@@ -503,9 +509,11 @@ sub category {
 		}
 	}
 
-	my $entries = $r->dbh->select(q{
+	my $permission = $r->has_auth ? "" : "AND status = 'public'";
+
+	my $entries = $r->dbh->select(qq{
 		SELECT * FROM entries
-		WHERE `created_at` <= :page AND title LIKE :query
+		WHERE `created_at` <= :page AND title LIKE :query $permission
 		ORDER BY `date` DESC, `created_at` ASC
 		LIMIT :limit
 	}, {
@@ -523,7 +531,7 @@ sub category {
 	$r->service('Nogag::Service::Trackback')->fill_trackbacks($_) for @$entries;
 	# $r->service('Nogag::Service::SimilarEntry')->fill_similar_entries($_) for @$entries;
 
-	my $count = $r->dbh->value('SELECT count(*) FROM entries');
+	my $count = $r->dbh->value("SELECT count(*) FROM entries");
 
 	@$entries or $r->res->status(404);
 	$r->stash(mathjax => enable_mathjax(@$entries));
@@ -575,6 +583,7 @@ sub sitemap {
 			strftime('%Y%m%d', date) as date,
 			strftime('%Y-%m-%dT%H:%M:%SZ', modified_at) as lastmod
 		FROM entries
+		WHERE status = 'public'
 		ORDER BY `date` DESC
 	});
 
@@ -582,6 +591,7 @@ sub sitemap {
 		SELECT
 			strftime('/%Y/%m/%d/', date) as date
 		FROM entries
+		WHERE status = 'public'
 		GROUP BY date
 	});
 
@@ -589,6 +599,7 @@ sub sitemap {
 		SELECT
 			strftime('/%Y/%m/', date) as month
 		FROM entries
+		WHERE status = 'public'
 		GROUP BY month
 	});
 
@@ -606,9 +617,10 @@ sub feed {
 	my $entries = $r->dbh->select(q{
 		SELECT * FROM entries
 		WHERE
-			title LIKE "%[photo]%" OR
+			status = 'public' AND
+			(title LIKE "%[photo]%" OR
 			title LIKE "%[tech]%" OR
-			formatted_body LIKE "%nuso-22%"
+			formatted_body LIKE "%nuso-22%")
 		ORDER BY `date` DESC, `created_at` ASC
 		LIMIT :limit
 	}, {
@@ -640,7 +652,7 @@ sub similar {
 				my $photos = $r->service('Nogag::Service::SimilarImage')->get_similar_photos_by_entry_id($_, limit => 3);
 				my $entries = $r->dbh->select(q{
 					SELECT * FROM entries
-					WHERE id IN (:ids)
+					WHERE id IN (:ids) AND status = 'public'
 				}, {
 					ids => [
 						map {
@@ -677,7 +689,7 @@ sub exif {
 	my @ids = $r->req->param('id');
 	my $entries = $r->dbh->select(q{
 		SELECT * FROM entries
-		WHERE id IN (:ids)
+		WHERE id IN (:ids) AND status = 'public'
 	}, {
 		ids => \@ids
 	});

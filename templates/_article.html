@@ -1,7 +1,7 @@
 [% canonical = r.absolute('/' _ entry.path) %]
 <article
 	id="post-[% entry.created_at.epoch %]"
-	class="[% entry.tags.join(' ') %] [% IF is_first %]first[% END %]"
+	class="[% entry.tags.join(' ') %] [% IF is_first %]first[% END %] status-[% entry.status %]"
 	data-id="[% entry.id %]"
 	[% UNLESS permalink %]itemprop="blogPosts"[% END %]
 	[% UNLESS permalink %]itemscope[% END %]
@@ -25,6 +25,9 @@
 				[%END %]
 			[% END %]
 			|
+			[% IF entry.status == "scheduled" %]
+			| <time data-epoch="[% entry.publish_at.epoch %]" datetime="[% entry.publish_at.strftime('%Y-%m-%d') _ 'T' _ entry.publish_at.strftime('%H:%M:%S') %]Z">[% entry.publish_at.offset(9) %]</time>に公開
+			[% END %]
 			[% IF r.has_auth %]
 			<a href="javascript:void(0)" class="nogag-edit">編集</a>
 			[% END %]

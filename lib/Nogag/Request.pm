@@ -72,6 +72,16 @@ sub time_param {
 	$ret;
 }
 
+sub entry_status_param {
+	my ($self, $key) = @_;
+	my $val = $self->param($key) // "";
+	if ($val =~ qr{^(public|scheduled|private)$}) {
+		$val
+	} else {
+		undef;
+	}
+}
+
 sub if_none_match {
 	my ($self, $etag) = @_;
 	my $match = $self->header('If-None-Match') || '';

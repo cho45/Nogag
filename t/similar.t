@@ -18,7 +18,8 @@ use Nogag::Service::SimilarEntry;
 
 my $postprocess = postprocess(dummy => 1);
 
-my $service = Nogag::Service::SimilarEntry->new(Nogag->new({}));
+my $r = Nogag->new({});
+my $service = Nogag::Service::SimilarEntry->new($r);
 
 subtest tfidf => sub {
 	my $entries = {

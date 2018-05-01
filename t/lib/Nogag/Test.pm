@@ -199,6 +199,7 @@ sub edit {
 	}
 	{
 		my $res = $mech->post('/api/edit', {
+			status => 'public',
 			%opts,
 			sk => $mech->{sk},
 		});

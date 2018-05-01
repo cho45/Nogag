@@ -9,6 +9,7 @@ use parent qw(Nogag::Service);
 use Nogag::Time;
 use Time::Seconds;
 use Nogag::Model::Entry;
+use Log::Minimal;
 
 sub retrieve_entry_by_id {
 	my ($self, $id) = @_;
@@ -37,7 +38,12 @@ sub create_new_entry {
 	$params{date} ||= $date->strftime('%Y-%m-%d');
 	$params{created_at}  = $now;
 	$params{modified_at} = $now;
-	$params{publish_at} //= undef;
+	$params{status} ||= 'public';
+	# always set GMT on DB
+	$params{publish_at} = defined $params{publish_at} ? gmtime($params{publish_at}->epoch) : undef;
+	if ($params{publish_at} && $params{publish_at} > gmtime) {
+		$params{status} = 'scheduled';
+	}
 
 	$params{formatted_body} = $self->format_body(Nogag::Model::Entry->bless({
 		%params
@@ -52,9 +58,10 @@ sub create_new_entry {
 				`path`,
 				`format`,
 				`date`,
-				`publish_at`,
 				`created_at`,
-				`modified_at`
+				`modified_at`,
+				`publish_at`,
+				`status`
 			)
 			VALUES
 			(
@@ -64,9 +71,10 @@ sub create_new_entry {
 				:path,
 				:format,
 				:date,
-				:publish_at,
 				:created_at,
-				:modified_at
+				:modified_at,
+				:publish_at,
+				:status
 			)
 	}, {
 		%params
@@ -82,6 +90,12 @@ sub update_entry {
 	$entry->{title} = $params{title};
 	$entry->{body} = $params{body};
 	$entry->{formatted_body} = $self->format_body($entry);
+	$entry->{status} = $params{status} || 'public';
+	# always set GMT on DB
+	$entry->{publish_at} = defined $params{publish_at} ? gmtime($params{publish_at}->epoch) : undef;
+	if ($params{publish_at} && $params{publish_at} > gmtime) {
+		$params{status} = 'scheduled';
+	}
 
 	$self->dbh->update(q{
 		UPDATE entries
@@ -90,7 +104,8 @@ sub update_entry {
 			body = :body,
 			modified_at = :modified_at,
 			publish_at = :publish_at,
-			formatted_body = :formatted_body
+			formatted_body = :formatted_body,
+			status = :status
 		WHERE
 			id = :id
 	}, {
@@ -100,9 +115,10 @@ sub update_entry {
 		formatted_body => $entry->{formatted_body},
 		publish_at     => $entry->{publish_at},
 		modified_at    => gmtime.q(),
+		status         => $entry->{status},
 	});
 
-	$entry;
+	$self->retrieve_entry_by_id($entry->id);
 }
 
 sub format_body {
@@ -111,6 +127,42 @@ sub format_body {
 	$formatter->use or die $@;
 	my $formatted_body = $formatter->format($entry);
 	$formatted_body = Nogag::Utils->postprocess($formatted_body);
+}
+
+sub publish_scheduled_entries {
+	my ($self) = @_;
+
+	my $now = gmtime;
+
+	my $entries = $self->dbh->select(q{
+		SELECT * FROM entries
+		WHERE status = 'scheduled' AND publish_at < :now
+	}, {
+		now => $now
+	});
+
+	Nogag::Model::Entry->bless($_) for @$entries;
+
+	infof("publish_scheduled_entries %s -> count %d",$now, scalar @$entries);
+
+	$self->dbh->update(q{
+		UPDATE entries
+		SET status = 'public'
+		WHERE id IN (:ids)
+	}, {
+		ids => [ map { $_->id } @$entries ]
+	});
+
+	for my $entry (@$entries) {
+
+		infof("published %s (%d). append worker", $entry->path, $entry->id);
+		$self->r->work_job('Nogag::Worker::PostEntry', {
+			entry => $entry,
+			invalidate_target => "".$entry->id,
+		}, uniqkey => 'postentry-' . $entry->id);
+	}
+
+	$entries;
 }
 
 

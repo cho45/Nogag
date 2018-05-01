@@ -520,6 +520,16 @@ body > * {
 	position: relative;
 }
 
+.entries article.status-scheduled {
+	background: repeating-linear-gradient(
+		135deg,
+		#ffffff,
+		#ffffff 5px,
+		#fafafa 5px,
+		#fafafa 10px
+	) !important;
+}
+
 .entries article header {
 	width: 1024px;
 	padding: 0 0 20px 0;

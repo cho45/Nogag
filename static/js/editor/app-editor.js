@@ -27,7 +27,8 @@ Polymer({
 			value: {
 				id: null,
 				title: '',
-				body: ''
+				body: '',
+				status: null
 			}
 		},
 
@@ -37,7 +38,8 @@ Polymer({
 			value: {
 				id: null,
 				title: '',
-				body: ''
+				body: '',
+				publishLater: false
 			}
 		},
 
@@ -105,10 +107,12 @@ Polymer({
 		}
 
 		this.entry = JSON.parse(this.entryJson);
+		console.log(this.entry);
 
 		this.set('form.id', this.entry.id);
 		this.set('form.title', this.entry.title);
 		this.set('form.body', this.entry.body);
+		this.set('form.publishLater', this.entry.status === "scheduled");
 
 		this.$.body.insertText = function (text, select) {
 			var selectionStart = body.selectionStart;
@@ -190,6 +194,16 @@ Polymer({
 		data.set('body', this.form.body);
 		data.set('sk', this.sk);
 		data.set('post_buffer', this.$.postBuffer.checked ? "1" : "");
+		if (this.$.publishLater.checked) {
+			var epoch = 
+				this.entry.publish_at ||
+				((Date.now() / 1000) + (60 * 60 * 24 * 30));
+
+			data.set('publish_at',  epoch);
+			data.set('status', 'scheduled');
+		} else {
+			data.set('status', 'public');
+		}
 
 		var req = new XMLHttpRequest();
 		req.open("POST", '/api/edit');
@@ -326,27 +340,27 @@ Polymer({
 
 			var openPicker = (callback) => {
 				return this.oauthGoogle().
-				then(() => {
-					console.log('google_access_token', this.google_access_token);
-					var picker = new google.picker.PickerBuilder().
-						setOAuthToken(this.google_access_token).
-						// setOrigin(window.location.protocol + '//' + window.location.host).
-						setDeveloperKey(this.google_developer_key).
-						addView(new google.picker.PhotosView().setType('camerasync')).
-						addView(google.picker.ViewId.PHOTOS).
-						addView(google.picker.ViewId.PHOTO_UPLOAD).
-						addView(google.picker.ViewId.YOUTUBE).
-						// addView(google.picker.ViewId.MAPS).
-						enableFeature(google.picker.Feature.MULTISELECT_ENABLED).
-						setSize(window.innerWidth, window.innerHeight).
-						setCallback(function (data) {
-							console.log('openPicker', data);
-							callback(data);
-						}).
-						build();
+					then(() => {
+						console.log('google_access_token', this.google_access_token);
+						var picker = new google.picker.PickerBuilder().
+							setOAuthToken(this.google_access_token).
+							// setOrigin(window.location.protocol + '//' + window.location.host).
+							setDeveloperKey(this.google_developer_key).
+							addView(new google.picker.PhotosView().setType('camerasync')).
+							addView(google.picker.ViewId.PHOTOS).
+							addView(google.picker.ViewId.PHOTO_UPLOAD).
+							addView(google.picker.ViewId.YOUTUBE).
+							// addView(google.picker.ViewId.MAPS).
+							enableFeature(google.picker.Feature.MULTISELECT_ENABLED).
+							setSize(window.innerWidth, window.innerHeight).
+							setCallback(function (data) {
+								console.log('openPicker', data);
+								callback(data);
+							}).
+							build();
 
-					picker.setVisible(true);
-				});
+						picker.setVisible(true);
+					});
 			};
 
 			openPicker( (data) => {

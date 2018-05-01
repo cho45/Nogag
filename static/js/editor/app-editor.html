@@ -140,6 +140,7 @@
 					<paper-progress id="progress" disabled$="{{!saving}}" indeterminate style="width: 100%; position: absolute; top: 0; left: 0"></paper-progress>
 					<div class="options">
 						<paper-checkbox id="postBuffer">Buffer にポスト</paper-checkbox>
+						<paper-checkbox id="publishLater" checked="{{form.publishLater::change}}">公開を遅延</paper-checkbox>
 					</div>
 					<paper-button on-tap="saveEntry" disabled$="{{saving}}">
 						<span hide$="{{saving}}">更新</span>
