@@ -219,7 +219,7 @@ article h6 {
 	white-space: pre-line;
 	font-size: 140%;
 	font-family:
-		'Sawarabi Mincho', 
+		'Noto Serif JP', 
 		YuMincho,
 		"Hiragino Mincho ProN",
 		"HG明朝E",
@@ -247,6 +247,7 @@ body {
 	background: #fff;
 	line-height: 1.9;
 	font-family:
+		'Noto Serif JP',
 		'Noto Sans Japanese',
 		-apple-system,
 		BlinkMacSystemFont,
@@ -268,7 +269,7 @@ body > * {
 
 #global-header {
 	font-family:
-		'Sawarabi Mincho', 
+		'Noto Serif JP',
 		YuMincho,
 		"Hiragino Mincho ProN",
 		"HG明朝E",
@@ -321,7 +322,7 @@ body > * {
 
 #global-navigation {
 	position: relative;
-	font-family: 'Sawarabi Mincho', serif;
+	font-family: 'Noto Serif JP', serif;
 	font-weight: 400;
 	display: block;
 	margin: 0 auto;
@@ -418,7 +419,7 @@ body > * {
 	margin: 20px 0;
 	padding: 0;
 	font-family:
-		'Sawarabi Mincho', 
+		'Noto Serif JP',
 		YuMincho,
 		"Hiragino Mincho ProN",
 		"HG明朝E",
@@ -450,7 +451,7 @@ body > * {
 	display: block;
 	clear: both;
 	font-family:
-		'Sawarabi Mincho', 
+		'Noto Serif JP',
 		YuMincho,
 		"Hiragino Mincho ProN",
 		"HG明朝E",
@@ -490,7 +491,7 @@ body > * {
 	display: block;
 	clear: both;
 	font-family:
-		'Sawarabi Mincho', 
+		'Noto Serif JP',
 		YuMincho,
 		"Hiragino Mincho ProN",
 		"HG明朝E",
@@ -538,7 +539,7 @@ body > * {
 .entries article header h1 ,
 .entries article header h2 {
 	font-family:
-		'Sawarabi Mincho', 
+		'Noto Serif JP',
 		YuMincho,
 		"Hiragino Mincho ProN",
 		"HG明朝E",
@@ -568,7 +569,7 @@ body > * {
 	display: block;
 	text-align: right;
 	font-family:
-		'Sawarabi Mincho', 
+		'Noto Serif JP',
 		YuMincho,
 		"Hiragino Mincho ProN",
 		"HG明朝E",
@@ -620,6 +621,9 @@ body > * {
 	color: #333;
 }
 
+.entries article .content {
+}
+
 .entries article .content a.seemore:link {
 	text-decoration: underline;
 }
@@ -637,6 +641,10 @@ body > * {
 	max-width: 100%;
 	height: auto;
 	width: auto;
+}
+
+.entries article .content .lang-abc svg {
+	max-width: none;
 }
 
 .entries article .content iframe {
@@ -889,7 +897,7 @@ figure.http:after {
 
 #global-footer h2 {
 	font-family:
-		'Sawarabi Mincho', 
+		'Noto Serif JP',
 		YuMincho,
 		"Hiragino Mincho ProN",
 		"HG明朝E",

@@ -109,6 +109,7 @@ sub config_param {
 
 sub preload {
 	my ($r, $url, $as, @rest) = @_;
+
 	my $link = join("; ",
 		"<$url>",
 		"rel=preload",

@@ -6,13 +6,14 @@
 		<title>login</title>
 		<link href="/css/bootstrap/css/bootstrap.css" rel="stylesheet"/>
 		<link href="/css/bootstrap/css/bootstrap-responsive.css" rel="stylesheet"/>
+		<script src="/js/login.js" defer></script>
 	</head>
 	<body>
 		<div class="container">
 			<div class="page-header">
 				<h1>Login</h1>
 			</div>
-			<form action="" method="post" class="form-horizontal">
+			<form action="" method="post" class="form-horizontal" id="login">
 				[% IF error %]
 				<div class="alert alert-error">
 					[% error %]

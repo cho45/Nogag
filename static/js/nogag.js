@@ -6,7 +6,7 @@ function webfontReady (font, opts) {
 		var TEST_TEXT = "test.@01N日本語";
 		var TEST_SIZE = "100px";
 
-		var timeout = Date.now() + (opts.timeout || 3000);
+		var timeout = Date.now() + (opts.timeout || 5000);
 		(function me () {
 			ctx.font = TEST_SIZE + " '" + font + "', sans-serif";
 			var w1 = ctx.measureText(TEST_TEXT).width;
@@ -14,7 +14,7 @@ function webfontReady (font, opts) {
 			var w2 = ctx.measureText(TEST_TEXT).width;
 			ctx.font = TEST_SIZE + " '" + font + "', monospace";
 			var w3 = ctx.measureText(TEST_TEXT).width;
-			// console.log(w1, w2, w3);
+			console.log(w1, w2, w3);
 			if (w1 === w2 && w1 === w3) {
 				resolve();
 			} else {
@@ -122,102 +122,12 @@ Nogag = {
 
 		DateRelative.updateAll();
 
-//		var timer = null, current = null;
-//		$(window).scroll(function () {
-//			clearTimeout(timer);
-//			timer = setTimeout(function () {
-//				var sections = $('article > header').map(function () {
-//					var $this = $(this);
-//					var article = $this.parent();
-//					return {
-//						element : article,
-//						start : $this.offset().top,
-//						end   : $this.offset().top + article.height()
-//					};
-//				});
-//
-//				var scrollTop = $(window).scrollTop();
-//				var section = null;
-//				for (var i = 0, it; (it = sections[i]); i++) {
-//					if (it.start < scrollTop && scrollTop < it.end) {
-//						section = it;
-//						break;
-//					}
-//				}
-//
-//				if (current !== section) {
-//					if (current) current.element.removeClass('current');
-//					if (section) section.element.addClass('current');
-//					current = section;
-//				}
-//			}, 10);
-//		}).scroll();
+		this.initSimilarEntries();
+		this.initExif();
+		this.initWebfont();
+		this.initABC();
 
 		(function () {
-			var similar = document.getElementById('preload-similar-entries').href;
-			var req = new XMLHttpRequest();
-			req.open("GET", similar);
-			req.onload = function (e) {
-				var data = JSON.parse(req.responseText);
-				var ids = similar.match(/id=(\d+)/g);
-				for (var i = 0, it; (it = ids[i]); i++) {
-					var key = it.replace(/^id=/, '')
-					var val = data.result[key] || '';
-					if (data.ad)  {
-						val += data.ad;
-						data.ad = ""; // display once
-					}
-					if (!val) continue;
-
-					var article = document.querySelector('article[data-id="' + key + '"]');
-					var container = article.querySelector('.similar-entries');
-					container.innerHTML = val;
-
-					var trackbacks = article.querySelector('.content.trackbacks');
-					if (trackbacks) {
-						var links = trackbacks.getElementsByTagName('li');
-						for (var j = 0, link; (link = links[j]); j++) {
-							var duplicate = container.querySelector('li[data-id="' + link.getAttribute('data-id') + '"]');
-							if (duplicate) {
-								duplicate.parentNode.removeChild(duplicate);
-							}
-						}
-						if (!container.getElementsByTagName('li').length) {
-							container.parentNode.removeChild(container);
-						}
-					}
-
-					DateRelative.updateAll(container);
-				}
-			};
-			req.onerror = function (e) {
-			};
-			req.send(null);
-		})();
-
-		(function () {
-			var exif = document.getElementById('preload-exif-entries').href;
-			var req = new XMLHttpRequest();
-			req.open("GET", exif);
-			req.onload = function (e) {
-				var data = JSON.parse(req.responseText);
-				for (var key in data.result) if (data.result.hasOwnProperty(key)) {
-					var val = data.result[key];
-					if (!val || !val.model) continue;
-					var target = document.querySelector('[data-href="' + key + '"]');
-					var info =
-						val.model + ' (' + val.make + ') ' +
-						val.focallength + 'mm ' +
-						'F' + val.fnumber + ' ' +
-						'ISO' + val.iso + ' ' +
-						(val.speed < 1 ? '1/' + Math.round(1/val.speed): val.speed ) + 'sec ';
-					target.title = info;
-				}
-			};
-			req.onerror = function (e) {
-			};
-			req.send(null);
-
 			if (Nogag.data('auth')) {
 				var button = document.querySelector('.nogag-new');
 				if (button) {
@@ -227,8 +137,67 @@ Nogag = {
 				}
 			}
 		})();
+	},
 
-		webfontReady("Sawarabi Mincho").then(function () {
+	initSimilarEntries : async function () {
+		const similar = document.getElementById('preload-similar-entries').href;
+		console.log('fetch', similar);
+		const res = await fetch(similar);
+		const data = await res.json();
+
+		const ids = similar.match(/id=(\d+)/g);
+		for (let i = 0, it; (it = ids[i]); i++) {
+			const key = it.replace(/^id=/, '')
+			let val = data.result[key] || '';
+			if (data.ad)  {
+				val += data.ad;
+				data.ad = ""; // display once
+			}
+			if (!val) continue;
+
+			const article = document.querySelector('article[data-id="' + key + '"]');
+			const container = article.querySelector('.similar-entries');
+			container.innerHTML = val;
+
+			const trackbacks = article.querySelector('.content.trackbacks');
+			if (trackbacks) {
+				const links = trackbacks.getElementsByTagName('li');
+				for (let j = 0, link; (link = links[j]); j++) {
+					const duplicate = container.querySelector('li[data-id="' + link.getAttribute('data-id') + '"]');
+					if (duplicate) {
+						duplicate.parentNode.removeChild(duplicate);
+					}
+				}
+				if (!container.getElementsByTagName('li').length) {
+					container.parentNode.removeChild(container);
+				}
+			}
+
+			DateRelative.updateAll(container);
+		}
+	},
+
+	initExif: async function () {
+		const exif = document.getElementById('preload-exif-entries').href;
+		const res = await fetch(exif);
+		const data = await res.json();
+
+		for (let key in data.result) if (data.result.hasOwnProperty(key)) {
+			const val = data.result[key];
+			if (!val || !val.model) continue;
+			const target = document.querySelector('[data-href="' + key + '"]');
+			const info =
+				val.model + ' (' + val.make + ') ' +
+				val.focallength + 'mm ' +
+				'F' + val.fnumber + ' ' +
+				'ISO' + val.iso + ' ' +
+				(val.speed < 1 ? '1/' + Math.round(1/val.speed): val.speed ) + 'sec ';
+			target.title = info;
+		}
+	},
+
+	initWebfont: function () {
+		webfontReady("Noto Serif JP").then(function () {
 			balance(document.querySelectorAll([
 				'.entries article header h1 a',
 				'.entries article header h2 a',
@@ -240,6 +209,18 @@ Nogag = {
 				'.entries article .content h6'
 			].join(',')));
 		});
+
+	},
+
+	initABC : function () {
+		const targets = document.querySelectorAll('pre.lang-abc');
+		for (var i = 0, it; (it = targets[i]); i++) {
+			const notation = it.textContent;
+			const container = document.createElement('div');
+			container.setAttribute("class", "lang-abc");
+			ABCJS.renderAbc(container, notation);
+			it.parentNode.replaceChild(container, it);
+		}
 	},
 
 	initEntry : function (entry) {

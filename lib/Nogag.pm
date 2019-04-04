@@ -47,6 +47,13 @@ route "/api/kousei" => "Nogag::API kousei";
 route "/api/similar" => \&similar;
 route "/api/exif" => \&exif;
 
+# process by proxy
+route "/.ip" => sub {
+	my ($r) = @_;
+	$r->res->content_type('text/plain');
+	$r->res->content('IPv4'); 
+};
+
 # route '/{year:[0-9]{4}}/' => \&archive;
 route '/{year:[0-9]{4}}/{month:[0-9]{2}}/' => \&archive;
 route '/{year:[0-9]{4}}/{month:[0-9]{2}}/{day:[0-9]{2}}/' => \&archive;
@@ -54,7 +61,6 @@ route '/archive' => \&archive_index;
 route '/:category_name/' => \&category;
 route "/:category_name/.page/{page:[0-9]{14}}/{epp:[0-9]}" => \&category;
 route '/{path:.+}' => \&permalink;
-
 sub login {
 	my ($r) = @_;
 

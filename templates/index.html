@@ -76,31 +76,16 @@
 		<link rel="stylesheet" href="[% c %]">
 		[% END %]
 
-		<style>
-			/*
-			 * Sawarabi Mincho (Japanese) https://fonts.google.com/earlyaccess
-			 */
-			@font-face {
-			  font-family: 'Sawarabi Mincho';
-			  font-style: normal;
-			  font-weight: 400;
-			  src: url(//fonts.gstatic.com/ea/sawarabimincho/v1/SawarabiMincho-Regular.eot);
-			  src: url(//fonts.gstatic.com/ea/sawarabimincho/v1/SawarabiMincho-Regular.eot?#iefix) format('embedded-opentype'),
-				   url(//fonts.gstatic.com/ea/sawarabimincho/v1/SawarabiMincho-Regular.woff2) format('woff2'),
-				   url(//fonts.gstatic.com/ea/sawarabimincho/v1/SawarabiMincho-Regular.woff) format('woff'),
-				   url(//fonts.gstatic.com/ea/sawarabimincho/v1/SawarabiMincho-Regular.ttf) format('truetype');
-			}
-		</style>
+		<link href="https://fonts.googleapis.com/css?family=Noto+Serif+JP:400,700&amp;subset=japanese" rel="stylesheet">
 
-
-		[% MACRO __api_similar BLOCK %]/api/similar?[% FOR entry IN entries %]id=[% entry.id %];[% END %][% END %]
+		[% MACRO __api_similar BLOCK %]/api/similar?[% FOR entry IN entries %]id=[% entry.id %]&[% END %][% END %]
 		[% SET api_similar = __api_similar() %]
-		[% r.preload(api_similar, "fetch") %]
+		[% r.preload(api_similar, "fetch", "crossorigin") %]
 		<link rel="preload" href="[% api_similar %]" id="preload-similar-entries" as="fetch" crossorigin>
 
-		[% MACRO __api_exif BLOCK %]/api/exif?[% FOR entry IN entries %]id=[% entry.id %];[% END %][% END %]
+		[% MACRO __api_exif BLOCK %]/api/exif?[% FOR entry IN entries %]id=[% entry.id %]&[% END %][% END %]
 		[% SET api_exif = __api_exif() %]
-		[% r.preload(api_exif, "fetch") %]
+		[% r.preload(api_exif, "fetch", "crossorigin") %]
 		<link rel="preload" href="[% api_exif %]" id="preload-exif-entries" as="fetch" crossorigin>
 
 		<!-- htmlmin:ignore -->
@@ -131,6 +116,7 @@
 			"/js/daterelative.js",
 			"/js/balancetext/tinysegmenter.js",
 			"/js/balancetext/balance.js",
+			"/js/abcjs_basic_5.1.1-min.js",
 			"/js/nogag.js",
 		] %]
 

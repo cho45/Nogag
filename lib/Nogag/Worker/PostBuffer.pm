@@ -23,6 +23,7 @@ sub work {
 	my $r = Nogag->new({});
 	my $entry = $job->arg->{entry};
 
+	# https://buffer.com/developers/apps
 	my $token = config->param('buffer_access_token');
 
 	my $res = $ua->request(GET 'https://api.bufferapp.com/1/profiles.json', 'Authorization' => 'Bearer ' . $token);
@@ -33,7 +34,7 @@ sub work {
 	# $profiles = [ $profiles->[0] ];
 
 	my $form_data = [
-		(map { ('profile_ids[]' => $_->{id}) } @$profiles),
+		(map { ('profile_ids[]' => $_->{id}) } grep { $_->{service} eq 'twitter' } @$profiles),
 
 		'text' => $entry->title_for_permalink . "\n" . $r->absolute($entry->path),
 		'media[link]' => $r->absolute($entry->path),
