@@ -8,12 +8,14 @@ use warnings;
 use Encode;
 use Time::Seconds;
 use HTML::Trim;
+use URI;
 use URI::QueryParam;
 use Digest::MD5 qw(md5_hex);
 use Cache::FileCache;
 use Log::Minimal;
 use JSON::XS;
 use List::Util qw(reduce);
+use URI::Escape qw(uri_escape);
 
 use Nogag::Base;
 use Nogag::Time;
@@ -69,7 +71,9 @@ sub login {
 		my $password = $r->req->param('password') // '';
 		if ($username eq config->param('username') && $password eq config->param('password')) {
 			$r->session->set('auth' => 1);
-			throw code => 302, location => '/?' . scalar time;
+			my $uri = URI->new($r->req->param('return') || '/');
+			$uri->query_param(t => scalar time());
+			throw code => 302, location => "$uri";
 		} else {
 			$r->stash('error' => 'Invalid Username or Password');
 		}
@@ -177,7 +181,10 @@ sub edit_progress {
 
 sub edit_form {
 	my ($r) = @_;
-	return $r->json({ error => 'require authentication' }) unless $r->has_auth;
+	unless ($r->has_auth) {
+		$r->redirect('/login?return='. uri_escape($r->req->uri));
+		return;
+	}
 
 	my $entry;
 	if (my $id = $r->req->param('id')) {
@@ -692,35 +699,35 @@ sub similar {
 
 sub exif {
 	my ($r) = @_;
-	my @ids = $r->req->param('id');
-	my $entries = $r->dbh->select(q{
-		SELECT * FROM entries
-		WHERE id IN (:ids) AND status = 'public'
-	}, {
-		ids => \@ids
-	});
-
-	my $picasa = $r->service('Nogag::Service::Picasa');
+#	my @ids = $r->req->param('id');
+#	my $entries = $r->dbh->select(q{
+#		SELECT * FROM entries
+#		WHERE id IN (:ids) AND status = 'public'
+#	}, {
+#		ids => \@ids
+#	});
+#
+#	my $picasa = $r->service('Nogag::Service::Picasa');
 
 	my $result = {};
-	for my $entry (@$entries) {
-		Nogag::Model::Entry->bless($entry);
-		my $targets = [ $entry->body =~ m{(https://picasaweb.google.com/\d+/[^/#]+#\d+)}g ];
-		for my $target (@$targets) {
-			eval {
-				infof("extract exif %s", $target);
-				my $exif = $picasa->extract_exif($target) ;
-				local $Log::Minimal::AUTODUMP = 1;
-				infof("extract exif %s -> %s", $target, $exif);
-				delete $exif->{original_uri};
-				delete $exif->{uri};
-				$result->{$target} = $exif;
-			};
-			if ($@) {
-				warnf("failed to extract_exif %s", $@);
-			}
-		}
-	}
+#	for my $entry (@$entries) {
+#		Nogag::Model::Entry->bless($entry);
+#		my $targets = [ $entry->body =~ m{(https://picasaweb.google.com/\d+/[^/#]+#\d+)}g ];
+#		for my $target (@$targets) {
+#			eval {
+#				infof("extract exif %s", $target);
+#				my $exif = $picasa->extract_exif($target) ;
+#				local $Log::Minimal::AUTODUMP = 1;
+#				infof("extract exif %s -> %s", $target, $exif);
+#				delete $exif->{original_uri};
+#				delete $exif->{uri};
+#				$result->{$target} = $exif;
+#			};
+#			if ($@) {
+#				warnf("failed to extract_exif %s", $@);
+#			}
+#		}
+#	}
 
 	$r->json({
 		result => $result,
