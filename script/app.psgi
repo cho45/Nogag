@@ -48,10 +48,17 @@ builder {
 		root => config->root->subdir('static');
 
 	enable "Plack::Middleware::ReverseProxy";
-	enable "Plack::Middleware::Session",
+	enable_if {
+		# disable static like path
+		$_[0]->{PATH_INFO} !~ m{^/api/(similar|exif)}
+	} "Plack::Middleware::Session",
 		state => Plack::Session::State::Cookie->new(
 			session_key => 's',
-			expires => undef,
+			expires => 7776000,
+			httponly => 1,
+			samesite => 'lax',
+			secure => 1,
+			
 		),
 		store => Plack::Session::Store::Cache->new(
 			cache => Cache::Memcached::Fast::Safe->new(config->param('session')),
