@@ -365,6 +365,7 @@ Polymer({
 
 			openPicker( (data) => {
 				if (data[google.picker.Response.ACTION] !== google.picker.Action.PICKED) return;
+				console.log(data);
 
 				var syntax = '';
 

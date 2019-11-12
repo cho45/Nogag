@@ -218,7 +218,11 @@ Nogag = {
 			const notation = it.textContent;
 			const container = document.createElement('div');
 			container.setAttribute("class", "lang-abc");
-			ABCJS.renderAbc(container, notation);
+			ABCJS.renderAbc(container, notation, {
+				staffwidth: container.offsetWidth,
+				add_classes: true,
+				responsive: "resize"
+			});
 			it.parentNode.replaceChild(container, it);
 		}
 	},

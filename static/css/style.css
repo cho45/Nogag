@@ -1053,6 +1053,7 @@ figure.http:after {
 	text-align: center;
 	margin: 0;
 	padding: 0;
+	height: 280px;
 }
 
 .adsense-responsive {
@@ -1111,6 +1112,16 @@ ol[itemtype*="BreadcrumbList"] li:before {
 
 ol[itemtype*="BreadcrumbList"] li:first-child:before {
 	content: "";
+}
+
+.abcjs-lyric {
+	font-weight: normal;
+	font-size: 14px;
+}
+
+.abcjs-annotation {
+	font-weight: normal;
+	font-size: 14px;
 }
 
 @media only screen and (min-width : 1650px) {
