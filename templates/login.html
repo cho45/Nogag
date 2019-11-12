@@ -33,6 +33,7 @@
 				</div>
 				<div class="form-actions">
 					<input type="hidden" name="sk" value="[% r.sk %]"/>
+					<input type="hidden" name="return" value="[% r.req.param('return') || '/' %]"/>
 					<input type="submit" value="Login" class="btn btn-primary"/>
 				</div>
 			</form>
