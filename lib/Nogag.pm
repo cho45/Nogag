@@ -75,8 +75,12 @@ sub login {
 			$uri->query_param(t => scalar time());
 			throw code => 302, location => "$uri";
 		} else {
-			$r->stash('error' => 'Invalid Username or Password');
+			throw code => 302, location => "/login?invalid=1";
 		}
+	}
+
+	if ($r->req->param('invalid')) {
+		$r->stash('error' => 'Invalid Username or Password');
 	}
 
 	$r->session->set('login' => 1); # ensure create session

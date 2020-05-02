@@ -27,8 +27,12 @@ sub work {
 	my $token = config->param('buffer_access_token');
 
 	my $res = $ua->request(GET 'https://api.bufferapp.com/1/profiles.json', 'Authorization' => 'Bearer ' . $token);
+	unless ($res->is_success) {
+		die $res->decoded_content;
+	}
+
 	my $profiles = decode_json $res->decoded_content;
-	infof("Buffer %d profiles", scalar @$profiles);
+	infof("[$class] Buffer %d profiles", scalar @$profiles);
 
 	# XXX
 	# $profiles = [ $profiles->[0] ];
@@ -43,12 +47,12 @@ sub work {
 		'media[photo]' => $entry->image,
 		# 	'scheduled_at' => time() + 60 * 60 * 24 * 7
 	];
-	infof("Post %s", $form_data);
+	infof("[$class] Post %s", $form_data);
 
 	my $res = $ua->request(POST 'https://api.bufferapp.com/1/updates/create.json', $form_data, 'Authorization' => 'Bearer ' . $token);
 
 	my $result = decode_json $res->decoded_content;
-	infof("Buffer result %s", $result);
+	infof("[$class] Buffer result %s", $result);
 
 	$job->completed;
 }

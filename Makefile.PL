@@ -41,6 +41,7 @@ requires 'Email::MIME';
 requires 'Email::Send';
 requires 'HTTP::Message::PSGI';
 requires 'HTTP::Message::Common';
+requires 'Amazon::PAApi5::Signature';
 
 requires 'Starlet';
 requires 'Log::Minimal';

@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 
-const jsdom = require("jsdom").jsdom;
-const mjAPI = require("mathjax-node/lib/mj-page.js");
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
+
+// const mjAPI = require("mathjax-node");
+const { mjpage } = require("mathjax-node-page");
 const hljs = require('highlight.js');
 
 const minify = require('html-minifier').minify;
@@ -59,15 +62,6 @@ const HTTPS = {
 	}
 };
 
-mjAPI.start();
-mjAPI.config({
-	tex2jax: {
-		inlineMath: [["\\(","\\)"]],
-		displayMath: [ ["$$", "$$"] ]
-	},
-	extensions: ["tex2jax.js"]
-});
-
 async function processWithString (html) {
 	console.log('processWithString');
 	html = await processMathJax(html);
@@ -77,13 +71,13 @@ async function processWithString (html) {
 
 async function processWithDOM (html) {
 	console.log('processWithDOM');
-	const document = jsdom(undefined, {
+	const { document } = (new JSDOM(``, {
 		features: {
 			FetchExternalResources: false,
 			ProcessExternalResources: false,
 			SkipExternalResources: /./
 		}
-	});
+	})).window;
 	document.body.innerHTML = html;
 
 	var dom = document.body;
@@ -200,18 +194,29 @@ async function processMathJax (html) {
 		return html;
 	}
 	return await new Promise( (resolve, reject) => {
-		mjAPI.typeset({
-			html: html,
-			renderer: "SVG",
-			inputs: ["TeX"],
-			ex: 6,
-			width: 40
-		}, function (result) {
-			console.log('typeset done');
-			console.log(result);
-
-			resolve(result.html);
-		});
+		mjpage(
+			html, 
+			{
+				MathJax: {
+					tex2jax: {
+						inlineMath: [["\\(","\\)"]],
+							displayMath: [ ["$$", "$$"] ]
+					},
+						extensions: ["tex2jax.js"]
+				},
+			},
+			{
+				svg: true,
+				inputs: ["TeX"],
+				cjkCharWidth: 24,
+				ex: 6,
+				width: 40,
+				speakText: false,
+			},
+			function (output) {
+				resolve(output);
+			}
+		)
 	});
 }
 

@@ -647,6 +647,11 @@ body > * {
 	max-width: none;
 }
 
+.entries article .content .lang-math ,
+.entries article .content .mjpage__block {
+	font-size: 24px;
+}
+
 .entries article .content iframe {
 	max-width: 100%;
 }

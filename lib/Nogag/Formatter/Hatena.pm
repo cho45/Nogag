@@ -76,10 +76,13 @@ sub match ($$) { ## no critic
 }
 
 use URI::Escape;
-use URI::Amazon::APA;
+use Amazon::PAApi5::Signature;
+use Amazon::PAApi5::Payload;
+use HTTP::Request::Common;
 use LWP::UserAgent;
 use XML::LibXML;
 use Text::Xslate qw(mark_raw);
+use JSON::XS;
 
 use Nogag::Config;
 
@@ -153,38 +156,44 @@ match qr{\[?asin:([^:]+):detail\]?(\s*[.\d]+)?}=> sub {
 	my $data = $self->cache->get($key);
 	if (not defined $data) {
 		infof("REQUESTING: %s", $key);
-		my $uri = URI::Amazon::APA->new('http://webservices.amazon.co.jp/onca/xml');
-		$uri->query_form(
-			Service		  => 'AWSECommerceService',
-			Operation	  => 'ItemLookup',
-			IdType		  => 'ASIN',
-			ItemId		  => $asin,
-			AssociateTag  => config->param('amazon_tag'),
-			Condition	  => 'All',
-			ResponseGroup => 'ItemAttributes,Images',
+
+		my $payload = Amazon::PAApi5::Payload->new(
+			config->param("amazon_tag"),
+			'www.amazon.co.jp',
+		)->to_json({
+			Operation => 'GetItems',
+			ItemIds => [$asin],
+			Resources   => [qw/
+				ItemInfo.Title
+				ItemInfo.ByLineInfo
+				Images.Primary.Large
+			/],
+		});
+		 
+		my $sig = Amazon::PAApi5::Signature->new(
+			config->param("amazon_pa_api_access_key"),
+			config->param("amazon_pa_api_secret_key"),
+			$payload,
+			{
+				resource_path => '/paapi5/getitems',
+				operation     => 'GetItems',
+				host          => 'webservices.amazon.co.jp',
+				region        => 'us-west-2',
+			},
 		);
 
-		$uri->sign(
-			key    => config->param('amazon_key'),
-			secret => config->param('amazon_secret'),
-		);
+		my $req = POST $sig->req_url, $sig->headers, Content => $sig->payload;
+		my $res = $ua->request($req);
+		infof("RESPONSE FROM PA-API", $res);
+		my $json = decode_json $res->decoded_content;
 
-		my $res  = $self->ua->get($uri);
-		$res->is_success or die $res->content;
+		my $item = $json->{ItemsResult}->{Items}->[0];
 
-		my $doc = XML::LibXML->load_xml( string => $res->content );
-		my $xpc = XML::LibXML::XPathContext->new($doc);
-		$xpc->registerNs('a', 'http://webservices.amazon.com/AWSECommerceService/2011-08-01');
-		my $node = $xpc->findnodes('/a:ItemLookupResponse/a:Items/a:Item')->[0];
-
-		my $image = $xpc->findvalue('a:MediumImage/a:URL', $node) || '';
-		$image =~ s{http://ecx\.images-amazon\.com}{https://images-na.ssl-images-amazon.com};
-
-		$data = {
-			author => $xpc->findvalue('a:ItemAttributes/a:Author', $node),
-			title  => $xpc->findvalue('a:ItemAttributes/a:Title', $node),
-			image  => $image,
-			link   => $xpc->findvalue('a:DetailPageURL', $node),
+		my $data = {
+			author => $item->{ItemInfo}->{ByLineInfo}->{Contributors}->[0]->{Name} || $item->{ItemInfo}->{ByLineInfo}->{Brand}->{DisplayValue},
+			title  => $item->{ItemInfo}->{Title}->{DisplayValue},
+			image  => $item->{Images}->{Primary}->{Large}->{URL},
+			link   => $item->{DetailPageURL},
 		};
 
 		$self->cache->set($key => $data, '1 month');

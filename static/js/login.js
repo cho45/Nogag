@@ -1,5 +1,7 @@
 
 (async function () {
+	if (location.search.indexOf('invalid') !== -1) return;
+
 	const cred = await navigator.credentials.get({
 		password: true
 	});
