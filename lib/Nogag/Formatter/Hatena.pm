@@ -189,7 +189,7 @@ match qr{\[?asin:([^:]+):detail\]?(\s*[.\d]+)?}=> sub {
 
 		my $item = $json->{ItemsResult}->{Items}->[0];
 
-		my $data = {
+		$data = {
 			author => $item->{ItemInfo}->{ByLineInfo}->{Contributors}->[0]->{Name} || $item->{ItemInfo}->{ByLineInfo}->{Brand}->{DisplayValue},
 			title  => $item->{ItemInfo}->{Title}->{DisplayValue},
 			image  => $item->{Images}->{Primary}->{Large}->{URL},

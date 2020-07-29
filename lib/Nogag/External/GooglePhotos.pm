@@ -96,11 +96,16 @@ sub _access_token {
 	$self->{config}->{access_token};
 }
 
-sub _request {
+sub _raw_request {
 	my ($self, $req) = @_;
 	$req->header('Authorization' => 'Bearer ' . $self->_access_token);
 	$req->header('GData-Version' => '2');
-	my $res = $self->{ua}->request($req);
+	$self->{ua}->request($req);
+}
+
+sub _request {
+	my ($self, $req) = @_;
+	my $res = $self->_raw_request($req);
 	if ($res->is_success) {
 		$res->content;
 	} else {
