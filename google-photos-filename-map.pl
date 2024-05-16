@@ -25,7 +25,8 @@ infof("LOADING google photos metadata file");
 	while (my $line = <$out>) {
 		my $item = decode_json($line);
 		my $fn = NFC($item->{filename});
-		$map->{$fn} = $item->{id};
+		$map->{$fn} ||= [];
+		push @{ $map->{$fn} }, $item;
 	}
 	$out->close;
 }
@@ -50,24 +51,29 @@ my $rows =
 
 say scalar @$rows;
 
-my $media_ids = [];
+my $download_media_items = [];
 
 sub replace {
-	my ($img) = @_;
+	my ($entry, $img) = @_;
 	my ($a, $b) = ($img =~ /src=(?:"([^"]+)"|'([^']+)')/);
 	my $uri = $a || $b;
 	my ($filename) = ($uri =~ m{([^/]+)$});
+	return $img unless $filename;
 	$filename = uri_unescape(uri_unescape($filename));
 	$filename =~ s/\+/ /g;
-	$filename = NFC(decode_utf8($filename));
+	$filename = NFC($filename);
 
-	my $media_id = map_of($filename);
-	if ($media_id) {
+	my $media_items = map_of($filename);
+	if ($media_items) {
+		if (scalar @$media_items > 1) {
+			warnf("https://lowreal.net/%s conflict filename %s : %s", $entry->path, $filename, join(", ", map { $_->{id} } @$media_items));
+		}
+		push @$download_media_items, $media_items;
+
 		my $new = $img;
-		my $path = sprintf("/images/entry/$filename", uri_escape_utf8($filename));
+		my $path = sprintf("/images/entry/%s", uri_escape_utf8($filename));
 		$new =~ s{src=(?:"([^"]+)"|'([^']+)')}{src="$path"};
-		infof("REPLACE %s => %s", $img, $new);
-		push @$media_ids, $media_id;
+		# infof("REPLACE %s => %s", $img, $new);
 		$new;
 	} else {
 		$img;
@@ -78,21 +84,21 @@ for my $entry (@$rows) {
 	Nogag::Model::Entry->bless($entry);
 
 	my $body = $entry->body;
-	$body =~ s{<img[^>]+>}{replace($&)}ge;
+	$body =~ s{<img[^>]+>}{replace($entry, $&)}ge;
 
-	if ($body ne $entry->body) {
-		infof("UPDATE entry https://lowreal.net/%s", $entry->path);
-		$entry = $r->service('Nogag::Service::Entry')->update_entry($entry,
-			title      => $entry->raw_title,
-			body       => $body,
-		);
-	}
+#	if ($body ne $entry->body) {
+#		infof("UPDATE entry https://lowreal.net/%s", $entry->path);
+#		$entry = $r->service('Nogag::Service::Entry')->update_entry($entry,
+#			title      => $entry->raw_title,
+#			body       => $body,
+#		);
+#	}
 }
 
 {
 	my $out = file("google-photos-target-media-ids.txt");
 	my $fh = $out->open("w") or die $!;
-	$fh->print(encode_json($media_ids));
+	$fh->print(encode_json($download_media_items));
 	$fh->close;
 }
 

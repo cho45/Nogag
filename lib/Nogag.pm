@@ -5,6 +5,8 @@ use utf8;
 use strict;
 use warnings;
 
+use Unicode::Normalize;
+use Path::Class;
 use Encode;
 use Time::Seconds;
 use HTML::Trim;
@@ -15,7 +17,8 @@ use Cache::FileCache;
 use Log::Minimal;
 use JSON::XS;
 use List::Util qw(reduce);
-use URI::Escape qw(uri_escape);
+use URI::Escape qw(uri_escape uri_escape_utf8);
+use File::Copy qw(move);
 
 use Nogag::Base;
 use Nogag::Time;
@@ -48,6 +51,7 @@ route "/api/edit/progress" => \&edit_progress;
 route "/api/kousei" => "Nogag::API kousei";
 route "/api/similar" => \&similar;
 route "/api/exif" => \&exif;
+route "/api/upload/image" => \&upload_image;
 
 # process by proxy
 route "/.ip" => sub {
@@ -635,9 +639,11 @@ sub feed {
 		SELECT * FROM entries
 		WHERE
 			status = 'public' AND
-			(title LIKE "%[photo]%" OR
-			title LIKE "%[tech]%" OR
-			formatted_body LIKE "%nuso-22%")
+			(
+				title LIKE "%[photo]%" OR
+				title LIKE "%[tech]%" OR
+				formatted_body LIKE "%nuso-22%"
+			)
 		ORDER BY `date` DESC, `created_at` ASC
 		LIMIT :limit
 	}, {
@@ -735,6 +741,26 @@ sub exif {
 
 	$r->json({
 		result => $result,
+	});
+}
+
+sub upload_image {
+	my ($r) = @_;
+	if ($r->req->method ne 'POST') {
+		throw code => 400, message => "require method POST";
+	}
+
+	my $root = dir("/data/public/images");
+
+	my $file = $r->req->upload("file");
+	my $filename = sprintf("%s-%s", localtime->strftime("%Y%m%d%H%M%S"), NFC($file->basename));
+	my $dest = $root->file($filename);
+	infof("uploaded file %s => normalized %s => saving to %s", $file->basename, $filename, $dest);
+
+	move($file->path, $dest);
+
+	$r->json({
+		uploaded => sprintf("/images/entry/%s", uri_escape($filename)),
 	});
 }
 

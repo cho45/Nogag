@@ -57,11 +57,6 @@ Polymer({
 	},
 
 	created: function () {
-		this.google_client_id =  '980119139173.apps.googleusercontent.com';
-		this.google_developer_key = 'AIzaSyCDevJrf8SOEfeSeYDOGT9e6jjGDNT6lM4';
-		this.googleAPI = null;
-
-
 		var loadScript = function (url) {
 			return new Promise( function (resolve, reject) {
 				var script = document.createElement('script');
@@ -71,34 +66,6 @@ Polymer({
 				document.body.appendChild(script);
 			});
 		};
-
-		var initGoogleAPI = new Promise( (resolve, reject) => {
-			window['Nogag.Editor.initGoogleAPI'] = () => {
-				delete window['Nogag.Editor.initGoogleAPI'];
-				resolve();
-			};
-			loadScript('https://apis.google.com/js/api.js?onload=Nogag.Editor.initGoogleAPI').
-				catch(reject);
-		});
-
-		var loadGoogle = function (name) {
-			return new Promise( (resolve, reject) => {
-				gapi.load(name, {'callback': resolve } );
-			});
-		};
-
-		this.googleAPI = initGoogleAPI.
-			then( () => {
-				console.log('Google API Loaded');
-			}).
-			then( () => Promise.all([
-				loadGoogle('auth'),
-				loadGoogle('picker')
-			])).
-			then( () => {
-				console.log('Google API Loaded / auth, picker');
-			}).
-			catch( (e) => alert(e) );
 	},
 
 	ready : function () {
@@ -300,102 +267,114 @@ Polymer({
 		}, 10);
 	},
 
-	oauthGoogle : function () {
-		if (!this.google_access_token) {
-			return new Promise( (resolve, reject) => {
-				gapi.auth.authorize(
-					{
-						'client_id': this.google_client_id,
-						'scope': [
-							'https://www.googleapis.com/auth/photos',
-							'https://www.googleapis.com/auth/drive.readonly',
-							'https://www.googleapis.com/auth/photos.upload',
-							'https://www.googleapis.com/auth/youtube'
-						],
-						'immediate': false
-					},
-					(result) => {
-						console.log(result);
-						if (result && !result.error) {
-							this.google_access_token = result.access_token;
-							resolve(result);
-						} else {
-							alert(result.error);
-							reject(result);
-						}
-					}
-				);
+	openUploadDialog : function () {
+		const input = document.createElement('input');
+		input.type = "file";
+		input.oninput = (e) => {
+			console.log(e, input.files[0]);
+
+			const formData = new FormData();
+			formData.append('file', input.files[0]);
+			formData.append('sk', this.sk);
+
+			const req = new XMLHttpRequest();
+			req.open("POST", "/api/upload/image");
+			req.upload.addEventListener("progress", (e) => {
+				const percent = e.loaded / e.total * 100;
+				console.log(percent);
 			});
-		} else {
-			return Promise.resolve();
-		}
-	},
-
-	openGooglePicker : function () {
-		// hide software keyboard
-		this.$.body.blur();
-		this.$.title.blur();
-
-		this.async( () => {
-
-			var openPicker = (callback) => {
-				return this.oauthGoogle().
-					then(() => {
-						console.log('google_access_token', this.google_access_token);
-						var picker = new google.picker.PickerBuilder().
-							setOAuthToken(this.google_access_token).
-							// setOrigin(window.location.protocol + '//' + window.location.host).
-							setDeveloperKey(this.google_developer_key).
-							addView(new google.picker.PhotosView().setType('camerasync')).
-							addView(google.picker.ViewId.PHOTOS).
-							addView(google.picker.ViewId.PHOTO_UPLOAD).
-							addView(google.picker.ViewId.YOUTUBE).
-							// addView(google.picker.ViewId.MAPS).
-							enableFeature(google.picker.Feature.MULTISELECT_ENABLED).
-							setSize(window.innerWidth, window.innerHeight).
-							setCallback(function (data) {
-								console.log('openPicker', data);
-								callback(data);
-							}).
-							build();
-
-						picker.setVisible(true);
-					});
-			};
-
-			openPicker( (data) => {
-				if (data[google.picker.Response.ACTION] !== google.picker.Action.PICKED) return;
-				console.log(data);
-
-				var syntax = '';
-
-				var docs = data[google.picker.Response.DOCUMENTS];
-
-				for (var i = 0, doc; (doc = docs[i]); i++) {
-					if (doc.type === 'photo') {
-						var it = {
-							url : doc.url,
-							key: doc.mediaKey,
-							image : doc.thumbnails[3].url.replace(/\/s\d+\//, '/s2048/')
-						};
-						var template = this.$.imagesTemplate.textContent;
-						syntax    += template.replace(/@@(\w+)@@/g, function (_, name) { return it[name] }).replace(/\s+/g, ' ') + '\n';
-					} else
-					if (doc.type === 'location') {
-						console.log(doc.thumbnails[3]);
-						syntax += '<img src+"' + doc.thumbnails[3].url + '" alt="[MAP]"/>' + '\n';
-					}
-				}
-
-				if (syntax) {
+			req.onload = (e) => {
+				if (req.status === 200) {
+					const data = JSON.parse(req.responseText);
+					console.log(data);
+					const it = {
+						url : data.uploaded,
+						image : data.uploaded,
+					};
+					const template = this.$.imagesTemplate.textContent;
+					const syntax = template.replace(/@@(\w+)@@/g, function (_, name) { return it[name] }).replace(/\s+/g, ' ') + '\n';
 					this.$.body.insertText(syntax, true);
 					this.set('form.body', this.$.body.value.replace(/\r\n/g, '\n'));
-				}
 
-				this.$.body.focus();
-			});
-		}, 100);
+					this.$.body.focus();
+				} else {
+					alert(req.status);
+				}
+			};
+			req.onerror = (e) => {
+				console.log(e);
+				alert(e);
+			};
+			req.send(formData);
+		};
+		input.click();
 	},
+
+//	openGooglePicker : function () {
+//		// hide software keyboard
+//		this.$.body.blur();
+//		this.$.title.blur();
+//
+//		this.async( () => {
+//
+//			var openPicker = (callback) => {
+//				return this.oauthGoogle().
+//					then(() => {
+//						console.log('google_access_token', this.google_access_token);
+//						var picker = new google.picker.PickerBuilder().
+//							setOAuthToken(this.google_access_token).
+//							// setOrigin(window.location.protocol + '//' + window.location.host).
+//							setDeveloperKey(this.google_developer_key).
+//							addView(new google.picker.PhotosView().setType('camerasync')).
+//							addView(google.picker.ViewId.PHOTOS).
+//							addView(google.picker.ViewId.PHOTO_UPLOAD).
+//							addView(google.picker.ViewId.YOUTUBE).
+//							// addView(google.picker.ViewId.MAPS).
+//							enableFeature(google.picker.Feature.MULTISELECT_ENABLED).
+//							setSize(window.innerWidth, window.innerHeight).
+//							setCallback(function (data) {
+//								console.log('openPicker', data);
+//								callback(data);
+//							}).
+//							build();
+//
+//						picker.setVisible(true);
+//					});
+//			};
+//
+//			openPicker( (data) => {
+//				if (data[google.picker.Response.ACTION] !== google.picker.Action.PICKED) return;
+//				console.log(data);
+//
+//				var syntax = '';
+//
+//				var docs = data[google.picker.Response.DOCUMENTS];
+//
+//				for (var i = 0, doc; (doc = docs[i]); i++) {
+//					if (doc.type === 'photo') {
+//						var it = {
+//							url : doc.url,
+//							key: doc.mediaKey,
+//							image : doc.thumbnails[3].url.replace(/\/s\d+\//, '/s2048/')
+//						};
+//						var template = this.$.imagesTemplate.textContent;
+//						syntax    += template.replace(/@@(\w+)@@/g, function (_, name) { return it[name] }).replace(/\s+/g, ' ') + '\n';
+//					} else
+//					if (doc.type === 'location') {
+//						console.log(doc.thumbnails[3]);
+//						syntax += '<img src+"' + doc.thumbnails[3].url + '" alt="[MAP]"/>' + '\n';
+//					}
+//				}
+//
+//				if (syntax) {
+//					this.$.body.insertText(syntax, true);
+//					this.set('form.body', this.$.body.value.replace(/\r\n/g, '\n'));
+//				}
+//
+//				this.$.body.focus();
+//			});
+//		}, 100);
+//	},
 
 	progressString : function () {
 		if (this.progress) {

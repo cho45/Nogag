@@ -124,7 +124,7 @@
 					</div>
 					<div class="toolbar">
 						<paper-icon-button icon="icons:loyalty" on-tap="openTagDialog"></paper-icon-button>
-						<paper-icon-button icon="editor:insert-photo" on-tap="openGooglePicker"></paper-icon-button>
+						<paper-icon-button icon="editor:insert-photo" on-tap="openUploadDialog"></paper-icon-button>
 					</div>
 					<div class="flex relative">
 						<div class="body fit">
@@ -162,6 +162,8 @@
 			<paper-item on-tap="insertTag" data-tag="tech">tech</paper-item>
 			<paper-item on-tap="insertTag" data-tag="photo">photo</paper-item>
 			<paper-item on-tap="insertTag" data-tag="redeveloped">redeveloped</paper-item>
+			<paper-item on-tap="insertTag" data-tag="stablediffusion">stablediffusion</paper-item>
+			<paper-item on-tap="insertTag" data-tag="photoshopped">photoshopped</paper-item>
 		</paper-dialog>
 
 		<paper-dialog id="restoreDialog" with-backdrop>

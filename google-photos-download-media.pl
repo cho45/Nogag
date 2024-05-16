@@ -20,20 +20,38 @@ use LWP::Simple qw($ua);
 binmode STDOUT, 'encoding(utf-8)';
 
 my $r = Nogag->new({});
-
-infof("LOADING google photos target media ids");
-my $media_ids = [];
-{
-	my $out_file = file("./google-photos-target-media-ids.txt");
-	$media_ids = decode_json($out_file->slurp);
-}
-
-$media_ids = [ uniq @$media_ids ];
-
-infof("LOADED target medis ids %d", scalar @$media_ids);
-
 my $service = $r->service('Nogag::Service::GooglePhotos');
 my $root = dir("./static/images/entry");
+
+infof("LOADING google photos target media ids");
+my $download_media_items = [];
+{
+	my $out_file = file("./google-photos-target-media-ids.txt");
+	$download_media_items = decode_json($out_file->slurp);
+}
+
+my $filename_by_media_id = {};
+for my $items (@$download_media_items) {
+	my $filename = NFC($items->[0]->{filename});
+	if (@$items > 1) {
+		for my $item (@$items) {
+#			my $dest = $root->file($filename);
+#			unlink($dest);
+			$filename_by_media_id->{$item->{id}} = sprintf("_%s-%s", $filename, $item->{mediaMetadata}->{creationTime});
+		}
+	} else {
+		$filename_by_media_id->{$items->[0]->{id}} = $filename;
+	}
+}
+
+
+my $media_ids = [ grep { 
+	my $filename = $filename_by_media_id->{$_};
+	my $dest = $root->file($filename);
+	!(-f $dest)
+} uniq keys %$filename_by_media_id ];
+
+infof("LOADED target medis ids %d", scalar @$media_ids);
 
 while (@$media_ids) {
 	my $part = [ splice @$media_ids, 0, 50 ];
@@ -45,7 +63,7 @@ while (@$media_ids) {
 	infof("GET %s", $uri);
 	my $results = decode_json $service->client->_request(GET "$uri");
 	for my $result (@{ $results->{mediaItemResults} }) {
-		my $filename = NFC($result->{mediaItem}->{filename});
+		my $filename = $filename_by_media_id->{$result->{mediaItem}->{id}};
 		my $base_url = $result->{mediaItem}->{baseUrl};
 		my $download_url = "$base_url=d";
 

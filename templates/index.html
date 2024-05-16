@@ -15,11 +15,10 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
 		<meta name="theme-color" content="#000000">
 
+		[%- r.link('preconnect', 'https://fonts.googleapis.com', 'crossorigin') -%]
 		[%- r.link('preconnect', 'https://fonts.gstatic.com', 'crossorigin') -%]
 
 		[%- r.link('preconnect', 'https://googleads.g.doubleclick.net', 'crossorigin') -%]
-		[%- r.link('preconnect', 'https://www.gstatic.com', 'crossorigin') -%]
-		[%- r.link('preconnect', 'https://tpc.googlesyndication.com', 'crossorigin') -%]
 
 		<!-- link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon"/ -->
 		<link rel="alternate" type="application/atom+xml" title="Feed" href="/feed">
@@ -74,7 +73,8 @@
 		<link rel="stylesheet" href="[% c %]">
 		[% END %]
 
-		<link href="https://fonts.googleapis.com/css?family=Noto+Serif+JP:400,700&amp;subset=japanese" rel="stylesheet">
+		[% r.preload('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap', 'style') %]
+		<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
 
 		[% MACRO __api_similar BLOCK %]/api/similar?[% FOR entry IN entries %]id=[% entry.id %]&[% END %][% END %]
 		[% SET api_similar = __api_similar() %]
@@ -131,18 +131,6 @@
 		[%# r.preload("/js/MathJax/jax/output/SVG/fonts/TeX/fontdata.js?rev=2.6.1" , 'script', 'nopush') %]
 		<script src="/js/MathJax/MathJax.js?config=TeX-AMS_SVG-full,local/my" async defer></script>
 		[% END %]
-
-		[% r.preload("https://www.googletagmanager.com/gtag/js?id=UA-7079167-5" , 'script') %]
-		<!-- Global site tag (gtag.js) - Google Analytics -->
-		<script async src="https://www.googletagmanager.com/gtag/js?id=UA-7079167-5"></script>
-		<script>
-			window.dataLayer = window.dataLayer || [];
-			function gtag(){dataLayer.push(arguments);}
-			gtag('js', new Date());
-
-			gtag('config', 'UA-7079167-5');
-		</script>
-
 
 		[% r.preload("https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" , 'script') %]
 		<script data-ad-client="ca-pub-4629424540171624" async defer src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>

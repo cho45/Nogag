@@ -184,7 +184,7 @@ match qr{\[?asin:([^:]+):detail\]?(\s*[.\d]+)?}=> sub {
 
 		my $req = POST $sig->req_url, $sig->headers, Content => $sig->payload;
 		my $res = $ua->request($req);
-		infof("RESPONSE FROM PA-API", $res);
+		infof("RESPONSE FROM PA-API %s", $res);
 		my $json = decode_json $res->decoded_content;
 
 		my $item = $json->{ItemsResult}->{Items}->[0];
@@ -210,7 +210,9 @@ match qr{\[?asin:([^:]+):detail\]?(\s*[.\d]+)?}=> sub {
 				<p class="title" itemprop="itemReviewed" itemscope itemtype="http://schema.org/Product">
 					<a href="[% link %]" itemprop="url"><span itemprop="name">[% title %]</span></a>
 					<span itemprop="review" itemscope itemtype="http://schema.org/Review">
-						<span itemprop="author" itemscope itemtype="https://schema.org/Person"></span>
+						<span itemprop="author" itemscope itemtype="https://schema.org/Person">
+						<span itemprop="name">cho45</span>
+						</span>
 					</span>
 				</p>
 				<p class="author">[% author %]</p>
