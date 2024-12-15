@@ -635,15 +635,24 @@ sub sitemap {
 sub feed {
 	my ($r) = @_;
 
+#	my $entries = $r->dbh->select(q{
+#		SELECT * FROM entries
+#		WHERE
+#			status = 'public' AND
+#			(
+#				title LIKE "%[photo]%" OR
+#				title LIKE "%[tech]%" OR
+#				formatted_body LIKE "%nuso-22%"
+#			)
+#		ORDER BY `date` DESC, `created_at` ASC
+#		LIMIT :limit
+#	}, {
+#		limit => 50,
+#	});
 	my $entries = $r->dbh->select(q{
 		SELECT * FROM entries
 		WHERE
-			status = 'public' AND
-			(
-				title LIKE "%[photo]%" OR
-				title LIKE "%[tech]%" OR
-				formatted_body LIKE "%nuso-22%"
-			)
+			status = 'public'
 		ORDER BY `date` DESC, `created_at` ASC
 		LIMIT :limit
 	}, {

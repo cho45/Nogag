@@ -43,18 +43,6 @@
 		<meta property="og:email" content="cho45@lowreal.net" >
 		<meta property="fb:admins" content="cho45" >
 
-		<meta name="twitter:card" content="[% entry.has_tag('photo') ? 'photo' : 'summary' %]">
-		<meta name="twitter:url" content="[% permalink ?  r.absolute('/' _ entry.path) : r.absolute('/') %]">
-		<meta name="twitter:title" content="[% r.config_param('sitename') %]">
-		<meta name="twitter:description" content="[% entry.body | trim(140) || '写真・文章による、ある普通の人間の人生の記録' %]">
-		[% IF entry.image %]
-		<meta name="twitter:image" content="[% entry.image %]">
-		[% ELSIF entries[0].image %]
-		<meta name="twitter:image" content="[% entries[0].image %]">
-		[% END %]
-		<meta name="twitter:site" content="cho45">
-		<meta name="twitter:creator" content="cho45">
-
 		[%# required style %]
 		[% css = [
 			"/css/style.css",
@@ -131,9 +119,6 @@
 		[%# r.preload("/js/MathJax/jax/output/SVG/fonts/TeX/fontdata.js?rev=2.6.1" , 'script', 'nopush') %]
 		<script src="/js/MathJax/MathJax.js?config=TeX-AMS_SVG-full,local/my" async defer></script>
 		[% END %]
-
-		[% r.preload("https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" , 'script') %]
-		<script data-ad-client="ca-pub-4629424540171624" async defer src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 	</head>
 	<body>
 		<header id="global-header">
@@ -221,23 +206,6 @@
 				[% END %]
 			</div>
 
-			[% UNLESS permalink %]
-			<div class="adsense">
-				<!-- script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script -->
-				<!-- 関連コンテンツ -->
-				<ins class="adsbygoogle"
-					 style="display:block"
-					 data-ad-client="ca-pub-4629424540171624"
-					 data-ad-slot="2513927769"
-					 data-ad-format="autorelaxed"></ins>
-				<script>
-				(adsbygoogle = window.adsbygoogle || []).push({});
-				</script>
-			</div>
-			[% END %]
-
-			[% INCLUDE "_adsense.html" %]
-
 			<div class="pager">
 				[% IF next_page %]
 				<a href="[% next_page %]" rel="next">&#x25BC; もっと古いエントリ</a>
@@ -318,13 +286,6 @@
 						JavaScript, Perl, Ruby, HTML, CSS, Web etc
 					</p>
 					<p>
-						<a class="button twitter-follow-button" href="https://twitter.com/intent/follow?&ref_src=twsrc%5Etfw&region=follow_link&screen_name=cho45&tw_p=followbutton" rel="nofollow"
-							onclick="ga('send', 'social', 'Twitter', 'Follow', 'cho45')"
-							><i></i>
-							<span class="label">
-								Follow <b>@cho45</b>
-							</span>
-						</a>
 						<a class="button github-button" href="https://github.com/cho45" rel="nofollow"
 							onclick="ga('send', 'social', 'GitHub', 'Follow', 'cho45')"
 							><i></i>
@@ -332,9 +293,6 @@
 								Follow <b>@cho45</b>
 							</span>
 						</a>
-						<a class="google-plus-button" rel="me" href="https://plus.google.com/114431815111528304586?rel=author"
-							onclick="ga('send', 'social', 'Google', 'Follow', 'cho45')"
-							><img src="//www.google.com/images/icons/ui/gprofile_button-16.png" width="16" height="16" alt="Google+"></a>
 					</p>
 					<p>
 						<a href="/archive">アーカイブ</a>
@@ -343,7 +301,5 @@
 				</div>
 			</div>
 		</footer>
-
-		<script async defer src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 	</body>
 </html>

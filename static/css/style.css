@@ -969,15 +969,6 @@ figure.http:after {
 	vertical-align: top;
 }
 
-.button.twitter-follow-button {
-	background-color: #1b95e0;
-	color: #fff;
-}
-
-.button.twitter-follow-button i {
-	background-image: url('/images/twitter.svg');
-}
-
 .button.github-button {
 	top: 1px;
 	background: #ddd;

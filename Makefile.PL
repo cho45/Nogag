@@ -26,6 +26,7 @@ requires 'Time::HiRes';
 requires 'Time::Seconds';
 requires 'List::Util';
 requires 'LWP::UserAgent';
+requires 'CACertOrg::CA';
 requires 'Text::Xatena';
 requires 'URI::Amazon::APA';
 requires 'XML::LibXML';

@@ -184,6 +184,8 @@ match qr{\[?asin:([^:]+):detail\]?(\s*[.\d]+)?}=> sub {
 
 		my $req = POST $sig->req_url, $sig->headers, Content => $sig->payload;
 		my $res = $ua->request($req);
+		use Data::Dumper;
+		warn Dumper $res ;
 		infof("RESPONSE FROM PA-API %s", $res);
 		my $json = decode_json $res->decoded_content;
 
